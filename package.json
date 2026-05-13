@@ -1,11 +1,11 @@
 {
-  "name": "devreluni-mcp",
-  "version": "1.0.0",
-  "description": "",
+  "name": "product-validation-mcp",
+  "version": "0.1.0",
+  "description": "MCP server that gives AI agents the primitives to validate product ideas before building them",
   "main": "index.js",
   "type": "module",
   "bin": {
-    "weather": "./build/index.js"
+    "product-validation": "./build/index.js"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
