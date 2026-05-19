@@ -1,225 +1,107 @@
 #!/usr/bin/env node
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
-import { z } from 'zod';
+import { readFileSync } from 'fs';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
 
-const NWS_API_BASE = 'https://api.weather.gov';
-const USER_AGENT = 'weather-app/1.0';
+// Tools
+import { registerFindClosestCompetitor } from './tools/find-closest-competitor.js';
+import { registerReadCompetitorChangelog } from './tools/read-competitor-changelog.js';
+import { registerMapCompetitiveWeaknesses } from './tools/map-competitive-weaknesses.js';
+import { registerScanProductHuntLaunches } from './tools/scan-producthunt-launches.js';
+import { registerGetCategoryFailureModes } from './tools/get-category-failure-modes.js';
+import { registerFindYCRFSAlignment } from './tools/find-yc-rfs-alignment.js';
+import { registerFindPricingAnchors } from './tools/find-pricing-anchors.js';
+
+// Prompts
+import { registerValidateIdeaPrompt } from './prompts/validate-idea.js';
+import { registerSteelmanAgainstPrompt } from './prompts/steelman-against.js';
+import { registerRunSingleGatePrompt } from './prompts/run-single-gate.js';
+import { registerGenerateTestCardsPrompt } from './prompts/generate-test-cards.js';
+import { registerQuickKillCheckPrompt } from './prompts/quick-kill-check.js';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+
+/**
+ * Load a resource file fresh per invocation — not cached at startup.
+ * Per MCP spec: resources must be loaded fresh per invocation of the master prompt.
+ */
+function loadResource(filename: string): string {
+  return readFileSync(join(__dirname, '..', 'src', 'resources', filename), 'utf-8');
+}
 
 const server = new McpServer({
-  name: 'weather',
-  version: '1.0.0',
+  name: 'product-validation',
+  version: '0.1.0',
 });
 
-// Helper function for making NWS API requests
-async function makeNWSRequest<T>(url: string): Promise<T | null> {
-  const headers = {
-    'User-Agent': USER_AGENT,
-    Accept: 'application/geo+json',
-  };
-
-  try {
-    const response = await fetch(url, { headers });
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    return (await response.json()) as T;
-  } catch (error) {
-    console.error('Error making NWS request:', error);
-    return null;
-  }
-}
-
-interface AlertFeature {
-  properties: {
-    event?: string;
-    areaDesc?: string;
-    severity?: string;
-    status?: string;
-    headline?: string;
-  };
-}
-
-// Format alert data
-function formatAlert(feature: AlertFeature): string {
-  const props = feature.properties;
-  return [
-    `Event: ${props.event || 'N/A'}`,
-    `Area: ${props.areaDesc || 'N/A'}`,
-    `Severity: ${props.severity || 'N/A'}`,
-    `Status: ${props.status || 'N/A'}`,
-    `Headline: ${props.headline || 'N/A'}`,
-    '---',
-  ].join('\n');
-}
-
-interface ForecastPeriod {
-  name?: string;
-  temperature?: number;
-  temperatureUnit?: string;
-  windSpeed?: string;
-  windDirection?: string;
-  shortForecast?: string;
-}
-
-interface AlertsResponse {
-  features: AlertFeature[];
-}
-
-interface PointsResponse {
-  properties: {
-    forecast?: string;
-  };
-}
-
-interface ForecastResponse {
-  properties: {
-    periods: ForecastPeriod[];
-  };
-}
-
-// Register weather tools
-
-server.registerTool(
-  'get_alerts',
-  {
-    description: 'Get current weather alerts for a state',
-    inputSchema: {
-      state: z.string().length(2).describe("Two-letter state code (e.g., 'CA' for California)"),
-    },
-  },
-  async ({ state }) => {
-    const stateCode = state.toUpperCase();
-    const alertsUrl = `${NWS_API_BASE}/alerts?area=${stateCode}`;
-    const alertsData = await makeNWSRequest<AlertsResponse>(alertsUrl);
-
-    if (!alertsData) {
-      return {
-        content: [
-          {
-            type: 'text',
-            text: 'Failed to retrieve alerts data',
-          },
-        ],
-      };
-    }
-
-    const features = alertsData.features || [];
-    if (!features.length) {
-      return {
-        content: [
-          {
-            type: 'text',
-            text: `No active alerts for ${stateCode}`,
-          },
-        ],
-      };
-    }
-
-    const formattedAlerts = features.map(formatAlert);
-    const alertsText = `Active alerts for ${stateCode}:\n\n${formattedAlerts.join('\n')}`;
-
-    return {
-      content: [
-        {
-          type: 'text',
-          text: alertsText,
-        },
-      ],
-    };
-  }
+// Resources — loaded fresh per request (not at import time)
+server.resource(
+  'source-tier-bias',
+  'resource://source-tier-bias',
+  async () => ({
+    contents: [
+      {
+        uri: 'resource://source-tier-bias',
+        mimeType: 'text/markdown',
+        text: loadResource('source-tier-bias.md'),
+      },
+    ],
+  })
 );
 
-server.registerTool(
-  'get_forecast',
-  {
-    description: 'Get weather forecast for a location',
-    inputSchema: {
-      latitude: z.number().min(-90).max(90).describe('Latitude of the location'),
-      longitude: z.number().min(-180).max(180).describe('Longitude of the location'),
-    },
-  },
-  async ({ latitude, longitude }) => {
-    // Get grid point data
-    const pointsUrl = `${NWS_API_BASE}/points/${latitude.toFixed(4)},${longitude.toFixed(4)}`;
-    const pointsData = await makeNWSRequest<PointsResponse>(pointsUrl);
-
-    if (!pointsData) {
-      return {
-        content: [
-          {
-            type: 'text',
-            text: `Failed to retrieve grid point data for coordinates: ${latitude}, ${longitude}. This location may not be supported by the NWS API (only US locations are supported).`,
-          },
-        ],
-      };
-    }
-
-    const forecastUrl = pointsData.properties?.forecast;
-    if (!forecastUrl) {
-      return {
-        content: [
-          {
-            type: 'text',
-            text: 'Failed to get forecast URL from grid point data',
-          },
-        ],
-      };
-    }
-
-    // Get forecast data
-    const forecastData = await makeNWSRequest<ForecastResponse>(forecastUrl);
-    if (!forecastData) {
-      return {
-        content: [
-          {
-            type: 'text',
-            text: 'Failed to retrieve forecast data',
-          },
-        ],
-      };
-    }
-
-    const periods = forecastData.properties?.periods || [];
-    if (periods.length === 0) {
-      return {
-        content: [
-          {
-            type: 'text',
-            text: 'No forecast periods available',
-          },
-        ],
-      };
-    }
-
-    // Format forecast periods
-    const formattedForecast = periods.map((period: ForecastPeriod) =>
-      [
-        `${period.name || 'Unknown'}:`,
-        `Temperature: ${period.temperature || 'Unknown'}°${period.temperatureUnit || 'F'}`,
-        `Wind: ${period.windSpeed || 'Unknown'} ${period.windDirection || ''}`,
-        `${period.shortForecast || 'No forecast available'}`,
-        '---',
-      ].join('\n')
-    );
-
-    const forecastText = `Forecast for ${latitude}, ${longitude}:\n\n${formattedForecast.join('\n')}`;
-
-    return {
-      content: [
-        {
-          type: 'text',
-          text: forecastText,
-        },
-      ],
-    };
-  }
+server.resource(
+  'tool-to-gate-map',
+  'resource://tool-to-gate-map',
+  async () => ({
+    contents: [
+      {
+        uri: 'resource://tool-to-gate-map',
+        mimeType: 'text/markdown',
+        text: loadResource('tool-to-gate-map.md'),
+      },
+    ],
+  })
 );
 
-async function main() {
+server.resource(
+  'evaluation-lens-matrix',
+  'resource://evaluation-lens-matrix',
+  async () => ({
+    contents: [
+      {
+        uri: 'resource://evaluation-lens-matrix',
+        mimeType: 'text/markdown',
+        text: loadResource('evaluation-lens-matrix.md'),
+      },
+    ],
+  })
+);
+
+// Register tools
+registerFindClosestCompetitor(server);
+registerReadCompetitorChangelog(server);
+registerMapCompetitiveWeaknesses(server);
+registerScanProductHuntLaunches(server);
+registerGetCategoryFailureModes(server);
+registerFindYCRFSAlignment(server);
+registerFindPricingAnchors(server);
+
+// Register prompts
+registerValidateIdeaPrompt(server);
+registerSteelmanAgainstPrompt(server);
+registerRunSingleGatePrompt(server);
+registerGenerateTestCardsPrompt(server);
+registerQuickKillCheckPrompt(server);
+
+async function main(): Promise<void> {
   const transport = new StdioServerTransport();
   await server.connect(transport);
-  console.error('Weather MCP Server running on stdio');
+  console.error('ProductValidation MCP Server running on stdio');
+  console.error('Tools: find_closest_competitor, read_competitor_changelog, map_competitive_weaknesses, scan_producthunt_launches, get_category_failure_modes, find_yc_rfs_alignment, find_pricing_anchors');
+  console.error('Prompts: validate_idea, steelman_against, run_single_gate, generate_test_cards, quick_kill_check');
+  console.error('Resources: source-tier-bias, tool-to-gate-map, evaluation-lens-matrix');
 }
 
 main().catch((error) => {
