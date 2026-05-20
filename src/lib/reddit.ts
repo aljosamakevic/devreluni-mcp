@@ -1,4 +1,20 @@
+// Reddit search via Serper (Google) with `site:reddit.com` instead of the Reddit OAuth API.
+//
+// Why: Reddit gates app creation aggressively (Responsible Builder Policy);
+// for our use case (surfacing pain-point quotes from competitor discussions),
+// Google's index of Reddit captures the signal we need without auth.
+//
+// Tradeoffs vs. OAuth API:
+//   ✓ Zero Reddit credentials required
+//   ✓ One less integration to maintain (Serper already in the stack)
+//   ✗ Snippets only — no full comment threads
+//   ✗ Score / comment_count not available — set to 0
+//   ✗ Subreddit extracted heuristically from URL
+//
+// Source tier: B (aggregated snippet, not direct API) — honest about what we get.
+
 import type { ToolSource } from '../types.js';
+import { serperSearch, isSerperLive } from './serper.js';
 
 export interface RedditPost {
   id: string;
@@ -18,100 +34,71 @@ export interface RedditSearchResult {
   subreddit?: string;
 }
 
-async function getRedditToken(): Promise<string | null> {
-  const clientId = process.env['REDDIT_CLIENT_ID'];
-  const clientSecret = process.env['REDDIT_CLIENT_SECRET'];
-  if (!clientId || !clientSecret) return null;
+/** Extract subreddit name from a reddit.com URL. Returns 'unknown' if not parseable. */
+function extractSubreddit(url: string): string {
+  const match = url.match(/reddit\.com\/r\/([^/]+)/i);
+  return match ? match[1] : 'unknown';
+}
 
+/** Convert a full reddit.com URL into a permalink (path-only). */
+function urlToPermalink(url: string): string {
   try {
-    const credentials = Buffer.from(`${clientId}:${clientSecret}`).toString('base64');
-    const response = await fetch('https://www.reddit.com/api/v1/access_token', {
-      method: 'POST',
-      headers: {
-        Authorization: `Basic ${credentials}`,
-        'Content-Type': 'application/x-www-form-urlencoded',
-        'User-Agent': 'product-validation-mcp/0.1.0',
-      },
-      body: 'grant_type=client_credentials',
-    });
-
-    if (!response.ok) return null;
-    const data = (await response.json()) as { access_token: string };
-    return data.access_token;
+    return new URL(url).pathname;
   } catch {
-    return null;
+    return url;
   }
+}
+
+/** Stable-ish post id derived from the URL (last path segment). */
+function urlToId(url: string): string {
+  const segments = urlToPermalink(url).split('/').filter(Boolean);
+  return segments[segments.length - 1] ?? 'unknown';
 }
 
 export async function searchReddit(query: string, limit = 10): Promise<RedditSearchResult> {
-  const token = await getRedditToken();
+  // Force Reddit-only results via Google's site: operator.
+  const scopedQuery = `${query} site:reddit.com`;
 
-  if (!token) {
-    return getRedditStub(query);
-  }
+  const results = await serperSearch(scopedQuery, limit);
 
-  try {
-    const params = new URLSearchParams({ q: query, limit: String(limit), sort: 'relevance', t: 'year' });
-    const response = await fetch(`https://oauth.reddit.com/search?${params}`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        'User-Agent': 'product-validation-mcp/0.1.0',
-      },
-    });
+  const posts: RedditPost[] = results
+    .filter((r) => r.link.includes('reddit.com'))
+    .map((r) => ({
+      id: urlToId(r.link),
+      title: r.title,
+      selftext: r.snippet,
+      url: r.link,
+      subreddit: extractSubreddit(r.link),
+      score: 0, // not available from SERP
+      num_comments: 0, // not available from SERP
+      created_utc: 0, // not available from SERP
+      permalink: urlToPermalink(r.link),
+      author: 'unknown', // not available from SERP
+    }));
 
-    if (!response.ok) {
-      return getRedditStub(query);
-    }
-
-    const data = (await response.json()) as {
-      data: { children: { data: RedditPost }[] };
-    };
-
-    const posts = data.data.children.map((c) => c.data);
-    return { posts };
-  } catch {
-    return getRedditStub(query);
-  }
-}
-
-function getRedditStub(query: string): RedditSearchResult {
-  return {
-    posts: [
-      {
-        id: 'stub1',
-        title: `[STUB] Reddit discussions about: ${query}`,
-        selftext: `[STUB DATA — set REDDIT_CLIENT_ID and REDDIT_CLIENT_SECRET for live results] This is a placeholder Reddit post for the query: "${query}". Real data would include actual user complaints, praise, and switching discussions.`,
-        url: 'https://reddit.com/r/stub/stub1',
-        subreddit: 'stub',
-        score: 0,
-        num_comments: 0,
-        created_utc: Date.now() / 1000,
-        permalink: '/r/stub/comments/stub1',
-        author: 'stub_user',
-      },
-    ],
-  };
+  return { posts };
 }
 
 export function isRedditLive(): boolean {
-  return Boolean(process.env['REDDIT_CLIENT_ID'] && process.env['REDDIT_CLIENT_SECRET']);
+  // Reddit data is "live" iff our underlying SERP fetcher is live.
+  return isSerperLive();
 }
 
 export function redditSource(query: string): ToolSource {
   const live = isRedditLive();
   return {
-    url: `https://www.reddit.com/search/?q=${encodeURIComponent(query)}`,
-    tier: 'A',
+    url: `https://www.google.com/search?q=${encodeURIComponent(query + ' site:reddit.com')}`,
+    tier: 'B', // aggregated snippets — not first-party Reddit API
     bias: 'independent',
     fetched_at: new Date().toISOString(),
     contribution: live
-      ? `Reddit search results for: ${query}`
-      : `[STUB] Placeholder Reddit data for: ${query} — set REDDIT_CLIENT_ID + REDDIT_CLIENT_SECRET for live data`,
+      ? `Reddit discussions surfaced via Google SERP for: ${query} (site:reddit.com)`
+      : `[STUB] Placeholder Reddit data for: ${query} — set SERPER_API_KEY for live data`,
   };
 }
 
 export function redditConfidenceNote(): string {
   return isRedditLive()
-    ? 'Reddit data is live.'
-    : 'Set REDDIT_CLIENT_ID and REDDIT_CLIENT_SECRET for live Reddit data. Results are stubbed.';
+    ? 'Reddit data sourced via Serper (Google) with site:reddit.com. Tier B — snippets only, no full threads, no score/comment counts.'
+    : 'Set SERPER_API_KEY for live Reddit data via Google. Results are stubbed.';
 }

@@ -1,9 +1,19 @@
 #!/usr/bin/env node
+import { config as loadDotenv } from 'dotenv';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { readFileSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
+
+// Load .env from the package root (one level up from build/ or src/).
+// Works regardless of cwd — Claude Desktop spawns from /, dev runs from anywhere.
+// quiet: true is critical — dotenv v17+ logs "injected env (N)" to stdout by default,
+// which corrupts the JSON-RPC channel the MCP server uses over stdio.
+loadDotenv({
+  path: join(dirname(fileURLToPath(import.meta.url)), '..', '.env'),
+  quiet: true,
+});
 
 // Tools
 import { registerFindClosestCompetitor } from './tools/find-closest-competitor.js';
@@ -37,47 +47,35 @@ const server = new McpServer({
 });
 
 // Resources — loaded fresh per request (not at import time)
-server.resource(
-  'source-tier-bias',
-  'resource://source-tier-bias',
-  async () => ({
-    contents: [
-      {
-        uri: 'resource://source-tier-bias',
-        mimeType: 'text/markdown',
-        text: loadResource('source-tier-bias.md'),
-      },
-    ],
-  })
-);
+server.resource('source-tier-bias', 'resource://source-tier-bias', async () => ({
+  contents: [
+    {
+      uri: 'resource://source-tier-bias',
+      mimeType: 'text/markdown',
+      text: loadResource('source-tier-bias.md'),
+    },
+  ],
+}));
 
-server.resource(
-  'tool-to-gate-map',
-  'resource://tool-to-gate-map',
-  async () => ({
-    contents: [
-      {
-        uri: 'resource://tool-to-gate-map',
-        mimeType: 'text/markdown',
-        text: loadResource('tool-to-gate-map.md'),
-      },
-    ],
-  })
-);
+server.resource('tool-to-gate-map', 'resource://tool-to-gate-map', async () => ({
+  contents: [
+    {
+      uri: 'resource://tool-to-gate-map',
+      mimeType: 'text/markdown',
+      text: loadResource('tool-to-gate-map.md'),
+    },
+  ],
+}));
 
-server.resource(
-  'evaluation-lens-matrix',
-  'resource://evaluation-lens-matrix',
-  async () => ({
-    contents: [
-      {
-        uri: 'resource://evaluation-lens-matrix',
-        mimeType: 'text/markdown',
-        text: loadResource('evaluation-lens-matrix.md'),
-      },
-    ],
-  })
-);
+server.resource('evaluation-lens-matrix', 'resource://evaluation-lens-matrix', async () => ({
+  contents: [
+    {
+      uri: 'resource://evaluation-lens-matrix',
+      mimeType: 'text/markdown',
+      text: loadResource('evaluation-lens-matrix.md'),
+    },
+  ],
+}));
 
 // Register tools
 registerFindClosestCompetitor(server);
@@ -99,7 +97,9 @@ async function main(): Promise<void> {
   const transport = new StdioServerTransport();
   await server.connect(transport);
   console.error('ProductValidation MCP Server running on stdio');
-  console.error('Tools: find_closest_competitor, read_competitor_changelog, map_competitive_weaknesses, scan_producthunt_launches, get_category_failure_modes, find_yc_rfs_alignment, find_pricing_anchors');
+  console.error(
+    'Tools: find_closest_competitor, read_competitor_changelog, map_competitive_weaknesses, scan_producthunt_launches, get_category_failure_modes, find_yc_rfs_alignment, find_pricing_anchors'
+  );
   console.error('Prompts: validate_idea, steelman_against, run_single_gate, generate_test_cards, quick_kill_check');
   console.error('Resources: source-tier-bias, tool-to-gate-map, evaluation-lens-matrix');
 }
