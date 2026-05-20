@@ -3,6 +3,7 @@ import { z } from 'zod';
 import type { ToolResult, ToolSource } from '../types.js';
 import { fetchPage, stripHtml } from '../lib/webfetch.js';
 import { serperSearch, serperSource, serperConfidenceNote, isSerperLive } from '../lib/serper.js';
+import { waybackLookup, waybackSource, waybackConfidenceNote } from '../lib/wayback.js';
 
 type PricingModel = 'subscription' | 'one-time' | 'freemium' | 'usage-based' | 'unknown';
 
@@ -122,6 +123,8 @@ export function registerFindPricingAnchors(server: McpServer): void {
       const current_pricing: CurrentPricing[] = [];
       const pricing_history: PricingHistory[] = [];
       const all_churn_signals: string[] = [];
+      let waybackAttempted = 0;
+      let waybackFound = 0;
 
       if (!isSerperLive()) fallbacksUsed.push('serper (stub — set SERPER_API_KEY)');
 
@@ -130,6 +133,7 @@ export function registerFindPricingAnchors(server: McpServer): void {
         const pricingUrl = guessPricingUrl(competitor);
         let fetchedText = '';
         let fetchedSuccessfully = false;
+        let liveFetchedUrl: string | null = null;
 
         // Step 1: Fetch live pricing page
         for (const path of [pricingUrl, ...PRICING_URL_PATHS.map((p) => `https://${domain}${p}`)]) {
@@ -137,6 +141,7 @@ export function registerFindPricingAnchors(server: McpServer): void {
           if (result.ok && result.text.length > 300) {
             fetchedText = stripHtml(result.text).slice(0, 5000);
             fetchedSuccessfully = true;
+            liveFetchedUrl = path;
             sources.push({
               url: path,
               tier: 'S',
@@ -148,15 +153,24 @@ export function registerFindPricingAnchors(server: McpServer): void {
           }
         }
 
-        // Step 2: Wayback Machine reference (not fetched live, recorded as source)
-        const waybackUrl = `https://web.archive.org/web/2024*/${domain}/pricing`;
-        sources.push({
-          url: waybackUrl,
-          tier: 'S',
-          bias: 'independent',
-          fetched_at: new Date().toISOString(),
-          contribution: `Wayback Machine historical pricing reference for ${competitor} — use to detect price changes`,
-        });
+        // Step 2: Wayback Machine — verified snapshot ONLY (no fabrication; H8 fix).
+        // Per spec §11 anti-pattern 2: we never record an S-tier source for a URL
+        // we did not actually fetch. waybackLookup returns null on miss/failure.
+        const lookupTarget = liveFetchedUrl ?? pricingUrl;
+        waybackAttempted += 1;
+        const snapshot = await waybackLookup(lookupTarget);
+        let waybackSnapshotForHistory: { url: string; iso: string } | null = null;
+        if (snapshot) {
+          waybackFound += 1;
+          const src = waybackSource(
+            snapshot,
+            `Wayback snapshot of ${competitor} pricing page captured ${snapshot.timestamp.slice(0, 8)} — historical anchor for price-change detection`
+          );
+          sources.push(src);
+          waybackSnapshotForHistory = { url: src.url, iso: src.fetched_at };
+        } else {
+          fallbacksUsed.push(`wayback (no snapshots found for ${competitor})`);
+        }
 
         // Step 3: Serper for pricing history
         const historyQuery = `${competitor} pricing history site:web.archive.org`;
@@ -164,6 +178,9 @@ export function registerFindPricingAnchors(server: McpServer): void {
         sources.push(serperSource(historyQuery));
 
         let trend = 'Unknown — insufficient historical data';
+        if (waybackSnapshotForHistory) {
+          trend = `Verified Wayback snapshot available (${waybackSnapshotForHistory.iso.slice(0, 10)}) — compare against live pricing to detect changes`;
+        }
         if (historyResults.length > 0) {
           const snippets = historyResults.map((r) => r.snippet).join(' ');
           if (/pric.{0,20}(increas|higher|went up|raised)/i.test(snippets)) {
@@ -286,7 +303,7 @@ export function registerFindPricingAnchors(server: McpServer): void {
       confidenceParts.push(
         `Pricing pages: ${fetchedCount > 0 ? `${fetchedCount} fetched live (S/conflicted)` : 'none fetched live'}.`
       );
-      confidenceParts.push('Wayback references recorded but not fetched (S/independent).');
+      confidenceParts.push(waybackConfidenceNote(waybackFound, waybackAttempted));
       confidenceParts.push(serperConfidenceNote());
       confidenceParts.push('G2/Capterra data via Serper snippets (B/independent).');
 
