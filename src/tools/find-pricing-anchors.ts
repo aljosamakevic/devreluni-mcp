@@ -4,6 +4,7 @@ import type { ToolResult, ToolSource } from '../types.js';
 import { fetchPage, stripHtml } from '../lib/webfetch.js';
 import { serperSearch, serperSource, serperConfidenceNote, isSerperLive } from '../lib/serper.js';
 import { waybackLookup, waybackSource, waybackConfidenceNote } from '../lib/wayback.js';
+import { effectiveBias } from '../lib/bias.js';
 
 type PricingModel = 'subscription' | 'one-time' | 'freemium' | 'usage-based' | 'unknown';
 
@@ -297,7 +298,10 @@ export function registerFindPricingAnchors(server: McpServer): void {
       const confidenceParts: string[] = [];
       const fetchedCount = current_pricing.filter((_p) =>
         sources.some(
-          (s) => s.tier === 'S' && s.bias === 'conflicted' && s.contribution.includes('Live pricing')
+          // Route through effectiveBias() per spec §4 rule 4: any `unknown`
+          // source counts as `vendor-funded` for math (not `conflicted`), so
+          // we don't accidentally inflate the live-fetched-pricing count.
+          (s) => s.tier === 'S' && effectiveBias(s.bias) === 'conflicted' && s.contribution.includes('Live pricing')
         )
       ).length;
       confidenceParts.push(

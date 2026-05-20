@@ -4,6 +4,7 @@ import type { ToolResult } from '../types.js';
 import { serperSearch, serperSource, serperConfidenceNote, isSerperLive } from '../lib/serper.js';
 import { searchProductHunt, phSource, phConfidenceNote, isPHLive } from '../lib/producthunt.js';
 import { searchHN, hnSource } from '../lib/hn.js';
+import { requiresUpgradeFromUnknown } from '../lib/bias.js';
 
 interface Competitor {
   name: string;
@@ -94,13 +95,25 @@ export function registerFindClosestCompetitor(server: McpServer): void {
       confidenceParts.push(phConfidenceNote());
       confidenceParts.push('HN data is live (no API key required).');
 
+      const builtSources = [
+        serperSource(query),
+        phSource(idea_description),
+        hnSource(query),
+      ];
+      // Spec §4 rule 4 + §11 anti-pattern 6: disclose any `unknown` bias
+      // sources in the confidence note. They are treated as vendor-funded
+      // for downstream math by effectiveBias(), but the conversion must
+      // be visible so the consumer (LLM / user) can audit it.
+      const unknownCount = requiresUpgradeFromUnknown(builtSources);
+      if (unknownCount > 0) {
+        confidenceParts.push(
+          `${unknownCount}/${builtSources.length} sources had unknown bias — treated as vendor-funded for confidence math (spec §4 rule 4).`
+        );
+      }
+
       const result: ToolResult<FindClosestCompetitorData> = {
         data: { competitors, hn_mentions, ph_launches, recommendation },
-        sources: [
-          serperSource(query),
-          phSource(idea_description),
-          hnSource(query),
-        ],
+        sources: builtSources,
         confidence_note: confidenceParts.join(' '),
         fallbacks_used: fallbacksUsed,
       };
