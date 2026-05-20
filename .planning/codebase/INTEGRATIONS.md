@@ -2,192 +2,186 @@
 
 **Analysis Date:** 2026-05-20
 
-## Overview
+This document catalogs every external integration the ProductValidation MCP touches, mapped against the spec's source-tier and bias-flag system (`.planning/spec/build-spec-v1.0.md` §4) and the standard tool result envelope (§7). Tier assignments here are the **tool-layer defaults** — per spec Appendix B §3, tier and bias are assigned at the tool layer, never the prompt layer.
 
-The ProductValidation MCP integrates with five external data sources (one of which is reused as a backdoor for a sixth). Every integration is wrapped in a single file under `src/lib/`, follows an env-var-driven graceful-degradation pattern (missing key → labeled stub data, never a thrown error), and produces a `ToolSource` record that is folded into the `ToolResult<T>` envelope returned by every tool.
+## The `ToolResult<T>` envelope (spec §7)
 
-A sixth integration — GitHub — is declared in `.env.example` but **not yet wired** to any tool code.
+Every tool — regardless of which integrations it calls — returns:
 
-## The `ToolResult<T>` Envelope
-
-Defined in `src/types.ts`. Every tool in `src/tools/*.ts` returns this shape (wrapped as JSON inside an MCP `text` content block):
-
-```ts
-// src/types.ts
-export interface ToolSource {
+```typescript
+// src/types.ts:1-14
+interface ToolSource {
   url: string;
   tier: 'S' | 'A' | 'B' | 'C' | 'D';
   bias: 'independent' | 'vendor-funded' | 'conflicted' | 'unknown';
-  fetched_at: string;       // ISO 8601
-  contribution: string;     // human-readable: what this source contributed
+  fetched_at: string;       // ISO timestamp
+  contribution: string;     // one-line summary of what this source contributed
 }
 
-export interface ToolResult<T> {
-  data: T;                          // tool-specific payload
-  sources: ToolSource[];            // every URL that contributed
-  confidence_note: string;          // "live" vs. "stubbed — set X_API_KEY"
-  fallbacks_used: string[];         // e.g. ["serper_unavailable", "ph_stubbed"]
+interface ToolResult<T> {
+  data: T;                  // tool-specific structured payload
+  sources: ToolSource[];    // every URL that informed `data`
+  confidence_note: string;  // caveats; mentions fallbacks if any
+  fallbacks_used: string[]; // paid APIs that degraded to free sources
 }
 ```
 
-**Tier semantics** (see `src/resources/source-tier-bias.md` for the canonical rubric):
-- `S` — primary, authoritative (e.g. SEC filings, official changelog HTML).
-- `A` — first-party API (HN Algolia, Product Hunt GraphQL, live Serper SERP).
-- `B` — aggregated snippet / proxy (Reddit-via-Serper falls here).
-- `C` — secondary commentary.
-- `D` — stubbed / placeholder / unknown.
+Per spec §7, "If a paid API key isn't configured, tool falls back to free sources and lowers confidence rating in `confidence_note`. Never fail silently." This is implemented uniformly: each integration wrapper exposes `isXxxLive()` and stub generators; each tool pushes a human-readable string into `fallbacks_used[]` when a paid path drops to a stub.
 
-The tier downgrades automatically when an integration is in stub mode (see each section below).
+Per spec §4 source tier definitions (verbatim):
+- **S** — Primary, first-party, immutable (changelogs, SEC filings, Wayback snapshots, ToS, GitHub commits, live pricing pages for price only)
+- **A** — Strong secondary, user-generated at scale (IndieHackers, Reddit subscriber counts, Product Hunt metrics, founder MRR tweets, SimilarWeb, Ahrefs)
+- **B** — Aggregated user feedback, pattern-rich, individually weak (G2/Capterra reviews of 50+, App Store review patterns, HN comment themes)
+- **C** — Vendor-funded research (Gartner, Forrester, IDC, "State of X" reports)
+- **D** — Marketing material, anonymous opinion (vendor landing-page claims, anonymous forum comments, single Reddit posts with no engagement)
+
+Per §4 bias flags:
+- **independent** — no financial/organizational stake
+- **vendor-funded** — paid by category participant
+- **conflicted** — direct stake (competitor, partner, investor, employee) — positioning evidence only
+- **unknown** — couldn't determine, **treated as `vendor-funded` for confidence math** (§4 rule 4 + §11 anti-pattern)
 
 ## APIs & External Services
 
-### 1. Serper (Google Search)
+### Serper (Google Search) — paid, live-or-stub
 
 - **Wrapper:** `src/lib/serper.ts`
-- **Env var:** `SERPER_API_KEY` (sent as `X-API-KEY` header)
-- **Endpoint:** `POST https://google.serper.dev/search` with body `{ q, num }`
-- **Live / stubbed:** Live iff `SERPER_API_KEY` is set; otherwise `getSerperStub()` returns 2 results with titles prefixed `[STUB]`.
-- **Source tier:** `A` (independent) when live → `D` (unknown) when stubbed. See `serperSource()`.
-- **Rate limits:** 2,500 free searches/month (per `.env.example`). No client-side throttling or caching in `serper.ts`.
-- **Used by tools:**
-  - `src/tools/find-closest-competitor.ts`
-  - `src/tools/map-competitive-weaknesses.ts`
-  - `src/tools/read-competitor-changelog.ts` (changelog discovery)
-  - `src/tools/find-pricing-anchors.ts` (price history + reviews)
-  - `src/tools/get-category-failure-modes.ts`
-  - `src/tools/check-big-tech-encroachment.ts` (multiple sub-queries per call)
-- **Failure mode:** Non-2xx response or thrown error → logs to stderr (`[serper.ts] serperSearch error:`) and falls back to stub. Tools should add `"serper_unavailable"` or `"serper_stubbed"` to `fallbacks_used`.
+- **Public surface:** `serperSearch(query, num)` → `SerperOrganicResult[]`; `isSerperLive()`; `serperSource(query)` → `ToolSource`; `serperConfidenceNote()` → string; `getSerperStub(query)` → marked stub results.
+- **Env var:** `SERPER_API_KEY`
+- **Endpoint:** `POST https://google.serper.dev/search` (`src/lib/serper.ts:15`)
+- **Live/stubbed status:** Live when key is present. Without key, returns two `[STUB]`-prefixed results and the calling tool pushes `'serper (stub — set SERPER_API_KEY)'` into `fallbacks_used` (e.g., `src/tools/find-pricing-anchors.ts:126`, `src/tools/check-big-tech-encroachment.ts:254`).
+- **Rate limits:** 2,500 free searches/mo on the free Serper tier (per `.env.example` comment). No retry/backoff implemented — failures degrade to stub via try/catch (`src/lib/serper.ts:39-42`).
+- **Source tier classification per spec §4:**
+  - Live: **tier A, bias `independent`** (`src/lib/serper.ts:71-72`). Justification: Serper indexes the open web; the *aggregate* of Google results is not first-party (so not S) but is a strong secondary signal at scale.
+  - Stub: **tier D, bias `unknown`** (`src/lib/serper.ts:71-72`). Justification: per §4 row D ("Marketing material, anonymous opinion") and rule "default to more cautious labels when uncertain" (§4 bottom). `unknown` bias per §4 rule 4 = treated as vendor-funded downstream.
+  - Note: when Serper is used to scope a `site:reddit.com` or `site:g2.com` query, the *consuming wrapper* (e.g., `redditSource()`) overrides tier per the domain being indexed, not the Serper default.
 
-### 2. Reddit (via Serper, no Reddit credentials)
-
-- **Wrapper:** `src/lib/reddit.ts`
-- **Env var:** None directly. **Inherits `SERPER_API_KEY`** — `isRedditLive()` just returns `isSerperLive()`.
-- **Endpoint:** Same as Serper. The wrapper appends `site:reddit.com` to the user's query and filters results to `link.includes('reddit.com')`.
-- **Live / stubbed:** Live iff Serper is live.
-- **Source tier:** **Hardcoded `B`** (independent) — explicit acknowledgement in the file header that snippets are aggregated, not first-party. Tier does **not** drop to `D` when stubbed (only the `contribution` text reflects stub state).
-- **Rate limits:** Same Serper quota (one Serper call per Reddit search).
-- **Why this design** (from comments in `src/lib/reddit.ts`):
-  - Reddit gates OAuth app creation aggressively (Responsible Builder Policy).
-  - The use case is pain-point quote surfacing — snippets are sufficient.
-  - One less integration to maintain.
-- **Tradeoffs (called out in code):**
-  - ✓ Zero Reddit credentials.
-  - ✗ Snippets only (no full comment threads).
-  - ✗ `score`, `num_comments`, `created_utc` always `0`; `author` always `'unknown'`.
-  - ✗ Subreddit is regex-extracted from the URL (`reddit.com/r/<name>`); falls back to `'unknown'`.
-- **Used by tools:**
-  - `src/tools/map-competitive-weaknesses.ts` (competitor complaints, switching language)
-  - `src/tools/get-category-failure-modes.ts`
-
-### 3. HN Algolia (Hacker News Search)
-
-- **Wrapper:** `src/lib/hn.ts`
-- **Env var:** **None** — public API, no auth.
-- **Endpoint:** `GET https://hn.algolia.com/api/v1/search?query=...&hitsPerPage=...&tags=story`
-- **Live / stubbed:** Always live. No stub path — failures return `[]` and log to stderr.
-- **Source tier:** Hardcoded `A` (independent). See `hnSource()`.
-- **Caching:** Uses the in-process cache from `src/lib/cache.ts` with `TTL.MEDIUM` (1 hour) — the only integration that caches.
-- **Rate limits:** No published hard limit; HN Algolia is generous but not unlimited. No client-side throttling beyond cache.
-- **Headers sent:** `User-Agent: product-validation-mcp/0.1.0`.
-- **Used by tools:**
-  - `src/tools/find-closest-competitor.ts`
-  - `src/tools/map-competitive-weaknesses.ts`
-  - `src/tools/get-category-failure-modes.ts`
-
-### 4. Product Hunt (GraphQL v2)
+### Product Hunt v2 GraphQL — paid, live-or-stub
 
 - **Wrapper:** `src/lib/producthunt.ts`
-- **Env var:** `PRODUCTHUNT_API_KEY` (sent as `Authorization: Bearer <key>`)
-- **Endpoint:** `POST https://api.producthunt.com/v2/api/graphql`
-- **Query:** Inline GraphQL `SearchPosts($query, $first)` selecting `id`, `name`, `tagline`, `url`, `votesCount`, `commentsCount`, `createdAt`, `topics`, `thumbnail`. Ordered by `VOTES`.
-- **Live / stubbed:** Live iff `PRODUCTHUNT_API_KEY` is set; otherwise `getPHStub()` returns 1 labeled placeholder post. Any non-2xx or thrown error also falls back to stub.
-- **Source tier:** Hardcoded `A` (independent) in `phSource()` — does **not** downgrade to `D` on stub; only the `contribution` text reflects stub state. (Inconsistent with `serperSource` behavior — see CONCERNS.)
-- **Rate limits:** Per-application quota set by Product Hunt OAuth app; no client-side throttling.
-- **Used by tools:**
-  - `src/tools/find-closest-competitor.ts`
-  - `src/tools/scan-producthunt-launches.ts`
+- **Public surface:** `searchProductHunt(query, first)` → `PHPost[]`; `isPHLive()`; `phSource(query)` → `ToolSource`; `phConfidenceNote()`.
+- **Env var:** `PRODUCTHUNT_API_KEY`
+- **Endpoint:** `POST https://api.producthunt.com/v2/api/graphql` with `Authorization: Bearer <key>` (`src/lib/producthunt.ts:16, 47-49`)
+- **Live/stubbed status:** Live when key is present. Without key (or on any non-2xx / parse failure), returns a single `[STUB]` post and downstream tools push fallback. No retry/backoff; failure modes silently degrade to stub via catch (`src/lib/producthunt.ts:89-91`).
+- **Rate limits:** Not enforced in code. Product Hunt's documented limits apply at the API.
+- **Source tier classification per spec §4:**
+  - **Tier A, bias `independent`** (`src/lib/producthunt.ts:119-120`). Justification: §4 row A explicitly lists "Product Hunt metrics" — upvotes/comments are user-generated at scale.
+  - Bias remains `independent` even though the *posts themselves* are submissions by founders (which would be conflicted), because the **metrics** (`votesCount`, `commentsCount`) are the signal — and those are aggregated independent behavior. If a tool extracts a tagline as a *claim*, the tool must re-tag that fact as `conflicted` at its own layer per §4 bias-flag rule 6.
 
-### 5. Generic Web Fetch
+### Hacker News (Algolia search index) — free, always-live
+
+- **Wrapper:** `src/lib/hn.ts`
+- **Public surface:** `searchHN(query, hitsPerPage)` → `HNHit[]`; `hnSource(query)` → `ToolSource`. No `isHNLive()` because the endpoint is free and unauthenticated.
+- **Endpoint:** `GET https://hn.algolia.com/api/v1/search?query=...&tags=story` (`src/lib/hn.ts:28, 41`)
+- **Live/stubbed status:** Always live (no key needed). On any error, returns `[]` and logs to stderr (`src/lib/hn.ts:51-55`); no stub — empty array is honest because HN is free and a failure means a real outage.
+- **Caching:** TTL.MEDIUM (1 hr) in-memory via `src/lib/cache.ts` (`src/lib/hn.ts:32-34, 51`). HN data is slow-moving relative to a workflow run.
+- **Rate limits:** Algolia's public limit (~10k req/hour per IP). No enforcement in code.
+- **Source tier classification per spec §4:**
+  - **Tier A, bias `independent`** (`src/lib/hn.ts:60-62`). Justification: §4 row A ("user-generated at scale"). HN threads aggregate practitioner discussion; story-level metadata is high-signal. Individual comment *themes* would be tier B (pattern-rich aggregated themes) — when a tool extracts comment themes vs. story metadata, the consuming tool should re-tier accordingly.
+
+### Reddit (via Serper `site:reddit.com`) — divergence from spec
+
+- **Wrapper:** `src/lib/reddit.ts`
+- **Public surface:** `searchReddit(query, limit)` → `RedditSearchResult`; `isRedditLive()` (delegates to `isSerperLive()`); `redditSource(query)`; `redditConfidenceNote()`.
+- **Env var:** `SERPER_API_KEY` (same as Serper — no separate Reddit credential).
+- **Endpoint:** Routed through `serperSearch(\`${query} site:reddit.com\`)` at `src/lib/reddit.ts:60-62`.
+- **Live/stubbed status:** Live iff Serper is live. Reddit-domain results are filtered, IDs and permalinks are extracted heuristically from URLs (`src/lib/reddit.ts:36-56`).
+- **Source tier classification per spec §4:**
+  - **Tier B, bias `independent`** (`src/lib/reddit.ts:90-93`). The wrapper file's header comment (`src/lib/reddit.ts:1-15`) is explicit and honest about this being a deliberate downgrade.
+- **Used by:** `src/tools/map-competitive-weaknesses.ts`, `src/tools/get-category-failure-modes.ts`.
+
+#### Reddit refactor divergence from spec
+
+**Spec implies tier A Reddit data via official API.** Per spec §4 row A: "Reddit subscriber counts" are an A-tier signal. The build spec was written assuming OAuth Reddit API access — subscriber counts, posting activity, comment threads, scores, vote counts. That data is tier A because it's first-party-at-scale platform metrics.
+
+**Reality routes through Serper `site:reddit.com`.** The implementation chose not to integrate Reddit OAuth. The header comment at `src/lib/reddit.ts:1-15` documents the trade-off explicitly:
+
+> *"Reddit gates app creation aggressively (Responsible Builder Policy); for our use case (surfacing pain-point quotes from competitor discussions), Google's index of Reddit captures the signal we need without auth."*
+
+**What we lose vs. spec (per file header):**
+- Snippets only — no full comment threads
+- `score` / `num_comments` not available — hard-coded to `0` (`src/lib/reddit.ts:71-73`)
+- Subreddit name extracted heuristically from URL (`src/lib/reddit.ts:38-41`); `created_utc` and `author` set to `0` / `'unknown'`
+- **No subscriber counts** — the specific evidence type spec §4 cites as A-tier
+
+**What we gain:**
+- Zero Reddit credentials to manage
+- One less integration in the stack (Serper already required)
+- Honest tier downgrade rather than mis-labeled A-tier data
+
+**Tier impact: A → B.** Per spec §4 row B ("aggregated user feedback, pattern-rich, individually weak — HN comment threads (themes)"), Reddit-via-SERP fits B better than A: we get *themes from snippets*, not first-party metrics. The wrapper correctly assigns tier B at `src/lib/reddit.ts:90-93`.
+
+**Downstream consequence per spec §3 / §6.1 verdict math:** Spec §6.1 OPERATING RULE 4 requires "PASS requires ≥2 tier-B-or-higher sources". B still qualifies, so Reddit evidence can still *validate* a gate — but it can no longer **anchor** a gate's demand-signal evidence (e.g., spec §9 Gate 2's "subreddit 10k+ subs (B2B) or 100k+ (B2C)" — an A-tier signal in spec) because the subscriber count is unavailable through SERP snippets. Tools currently using Reddit (`src/tools/map-competitive-weaknesses.ts`, `src/tools/get-category-failure-modes.ts`) compensate by sourcing demand-volume signals from HN (tier A) and Product Hunt (tier A).
+
+**If a future tool needs A-tier Reddit data** — notably the planned `estimate_demand_signals` (spec §7 P0), which explicitly calls out "Reddit subscriber counts" as A-tier output — the choice is either (a) integrate OAuth Reddit properly and upgrade `redditSource()` tier, or (b) document the gap in `confidence_note` and downgrade the gate's confidence per §4 rule 2 (>30% conflicted/uncertain → downgrade one level).
+
+### Direct web fetch (pricing pages, Wayback references) — free, always-live
 
 - **Wrapper:** `src/lib/webfetch.ts`
-- **Env var:** None.
-- **Endpoint:** Any URL — uses platform `fetch` with `User-Agent: Mozilla/5.0 (compatible; product-validation-mcp/0.1.0)`, `Accept: text/html,application/xhtml+xml,text/plain`, `redirect: 'follow'`.
-- **Live / stubbed:** Always live. Failures return `{ ok: false, status: 0, text: 'Fetch error: ...' }` rather than throwing.
-- **Source tier:** Not assigned by `webfetch.ts` itself — each calling tool tags the fetched URL with its own tier (typically `S` for first-party changelog/pricing pages).
-- **Helpers:**
-  - `stripHtml(html)` — naive `<script>`/`<style>`/comment removal + entity decode + whitespace collapse.
-  - `guessChangelogUrls(domain)` — yields `/changelog`, `/releases`, `/whats-new`, `/updates`, `/blog/changelog`, `/blog/releases`.
-- **Used by tools:**
-  - `src/tools/read-competitor-changelog.ts` (probes guessed URLs, then falls back to Serper-discovered URLs)
-  - `src/tools/find-pricing-anchors.ts` (fetches `/pricing` and similar paths)
-- **No robots.txt check, no rate limiting, no per-host throttle.**
-
-### 6. GitHub (declared, not wired)
-
-- **Wrapper:** None — there is no `src/lib/github.ts` file.
-- **Env var:** `GITHUB_TOKEN` declared in `.env.example` with note: *"Needed by upcoming estimate_demand_signals tool."*
-- **Status:** Documented intent only. `grep -rn "GITHUB_TOKEN\|api.github.com" src/` returns no hits. Treat as a future integration when implementing `estimate_demand_signals`.
-- **Planned source tier:** Expected `A` (first-party API).
+- **Public surface:** `fetchPage(url)` → `{ url, status, text, ok }`; `stripHtml(html)`; `guessChangelogUrls(domain)` → string[].
+- **Endpoint:** `fetch(url)` with a polite UA `Mozilla/5.0 (compatible; product-validation-mcp/0.1.0)` (`src/lib/webfetch.ts:11`)
+- **Used by:** `src/tools/find-pricing-anchors.ts` (live pricing pages), `src/tools/read-competitor-changelog.ts` (changelogs)
+- **Source tier classification per spec §4:**
+  - Live competitor pricing page → **tier S, bias `conflicted`** (`src/tools/find-pricing-anchors.ts:140-147`). Justification: §4 row S explicitly lists "live pricing pages (for price only)"; §4 bias rule 6 says "competitor sources are valid only as positioning evidence — what they CLAIM, not what is TRUE" → bias `conflicted`.
+  - Wayback Machine reference URL → **tier S, bias `independent`** (`src/tools/find-pricing-anchors.ts:152-159`). Wayback is an immutable third-party archive; the snapshot is first-party content but the archive itself is independent.
+  - Changelogs fetched from competitor domain → tier S, bias `conflicted` (same logic as pricing — first-party self-report, used as positioning/velocity evidence).
 
 ## Data Storage
 
-**Databases:** None. The server is stateless.
+**Databases:** None.
 
-**File Storage:** None. Static markdown under `src/resources/` is read at request time (per MCP spec — see comment in `src/index.ts` `loadResource()`).
+**File Storage:** Local filesystem only — the three static resource markdown files under `src/resources/` are read fresh per request (`src/index.ts:41-43`, per spec Appendix B §1).
 
-**Caching:** In-process `Map` with TTL (`src/lib/cache.ts`). Currently only consumed by `src/lib/hn.ts`. TTLs: `SHORT` 5 min, `MEDIUM` 1 h, `LONG` 24 h. Cache is lost on every process restart.
+**Caching:**
+- In-memory `Map` cache at `src/lib/cache.ts` with TTL constants `SHORT` (5 min), `MEDIUM` (1 hr), `LONG` (24 hr).
+- Currently used only by `src/lib/hn.ts` for HN Algolia query dedup. Per spec Appendix B §2, "Cache is fine for tool results within a single workflow run" — the cache lives in-process and is wiped on server restart, which aligns.
 
 ## Authentication & Identity
 
-**Auth provider:** None. The MCP server itself is unauthenticated — security model is "host spawns subprocess locally."
-
-**Outbound auth:**
-- Serper: `X-API-KEY` header.
-- Product Hunt: `Authorization: Bearer <token>` header.
-- HN Algolia: none.
-- Web fetch: none.
-- GitHub (planned): `Authorization: Bearer <token>` header expected.
+None. The MCP server has no users — it's a single-tenant subprocess spawned by an MCP host. All "auth" is API keys to outbound integrations, loaded from `.env` at startup (`src/index.ts:13-16`).
 
 ## Monitoring & Observability
 
-**Error tracking:** None (no Sentry, no Datadog).
+**Error Tracking:** None. Errors are logged to `stderr` (`console.error`) — critically, **never to stdout**, because stdio is the JSON-RPC channel (see `src/index.ts:13-16` comment and `src/lib/serper.ts:39-42`).
 
-**Logs:** `console.error` only (stderr) — see `src/index.ts` startup banners and per-integration error logs (e.g. `[serper.ts] serperSearch error:`, `[hn.ts] searchHN error:`). **Never `console.log`** — stdout is the JSON-RPC channel.
-
-**Metrics:** None.
+**Logs:** `console.error` to stderr. The MCP host (Claude Desktop, etc.) typically captures stderr to a log file.
 
 ## CI/CD & Deployment
 
-**Hosting:** Local subprocess only (stdio transport).
+**Hosting:** None. The server runs as a subprocess of the MCP host (Claude Desktop / Cursor / Claude Code). The host launches `build/index.js` directly.
 
-**CI pipeline:** None detected — no `.github/workflows/`, no `.gitlab-ci.yml`, no `circle`/`travis` config.
+**CI Pipeline:** None configured.
 
-**Release:** `npm run build` produces `build/index.js` (chmod 755). No publish script.
+**Distribution:** `bin: "weather"` in `package.json:8` (legacy name from the project's scaffolding origin — should be renamed; see CONCERNS.md). Intended to be `npx`-able.
 
 ## Environment Configuration
 
-**Required env vars (all optional at runtime — server gracefully degrades):**
-- `SERPER_API_KEY` — Serper + Reddit-via-Serper.
-- `PRODUCTHUNT_API_KEY` — Product Hunt GraphQL.
-- `GITHUB_TOKEN` — reserved for future `estimate_demand_signals` tool; currently unread.
+**Required env vars (all optional — server runs with stubs):**
 
-**Loading:** `dotenv.config({ path: <pkg-root>/.env, quiet: true })` in `src/index.ts` (lines 13–16). `quiet: true` is critical — without it, dotenv v17+ writes `"injected env (N)"` to stdout and breaks JSON-RPC framing.
+| Var | Required? | Used by | Tier when live | Tier when stubbed |
+|---|---|---|---|---|
+| `SERPER_API_KEY` | optional (degrades to stub) | `src/lib/serper.ts`, `src/lib/reddit.ts` (indirectly) | A (web) / B (Reddit) | D / N/A |
+| `PRODUCTHUNT_API_KEY` | optional (degrades to stub) | `src/lib/producthunt.ts` | A | N/A (single stub post) |
+| `GITHUB_TOKEN` | optional (not yet consumed) | reserved for upcoming `estimate_demand_signals` (spec §7 P0) | S (commits, stars) | — |
 
-**Secrets location:** `.env` at package root, gitignored. `.env.example` is the contract; do not read or echo `.env` contents.
+**Secrets location:** `.env` at project root, gitignored. `.env.example` committed as template.
+
+**Critical implementation note:** `dotenv` is loaded with `quiet: true` (`src/index.ts:13-16`) because dotenv v17+ logs to stdout by default, which **corrupts the MCP stdio JSON-RPC channel**. Any future dotenv-equivalent must respect the same constraint.
 
 ## Webhooks & Callbacks
 
-**Incoming:** None — stdio transport, no HTTP listener.
+None. The MCP server is purely request-response over stdio.
 
-**Outgoing:** None.
+## Spec-to-integration alignment summary
 
-## Cross-Integration Notes & Caveats
-
-- **`isRedditLive() === isSerperLive()`** — exhausting Serper quota silently degrades Reddit search to stub. Tools that use both should attribute fallbacks to Serper, not Reddit.
-- **HN is the only no-key integration that genuinely "works empty"** — useful as a sanity-check signal even when other keys are missing.
-- **Stub-tier downgrade is inconsistent:** `serperSource` drops tier `A → D` when stubbed, but `phSource` and `redditSource` keep their nominal tier and only reflect stub state in `contribution`. Consumers should rely on `confidence_note` and `fallbacks_used` rather than tier alone to detect stubbed runs.
-- **Cache scope:** Only `hn.ts` uses the cache. Adding `cacheGet`/`cacheSet` around Serper and Product Hunt would directly reduce monthly quota burn.
-- **Per-tool composition:** Tools fan out across 2–4 of these integrations and concatenate their `ToolSource[]` into the final `ToolResult<T>.sources`. See `src/tools/map-competitive-weaknesses.ts` (Serper + Reddit + HN) and `src/tools/find-closest-competitor.ts` (Serper + PH + HN) for canonical multi-source patterns.
+| Spec requirement (§) | Integration enforcement |
+|---|---|
+| §4 every fact has tier + bias | `ToolSource` interface (`src/types.ts:1-7`) makes both required; per-integration `*Source()` helpers assign them at the wrapper layer |
+| §4 rule 4 — `unknown` bias treated as vendor-funded | Stub Serper sources use `bias: 'unknown'` and rely on §4 rule 4 at the prompt layer; never silently upgraded to `independent` (per §11 anti-pattern) |
+| §7 standard `{ data, sources, confidence_note, fallbacks_used }` shape | `ToolResult<T>` (`src/types.ts:9-14`); every tool returns this exact shape |
+| §7 "never fail silently" | Every wrapper has try/catch → stub fallback + explicit `fallbacks_used` entry + degraded `confidence_note` |
+| §11 anti-pattern "Soft-failing tool calls (returning made-up data when the API fails)" | All stubs are `[STUB]`-prefixed; never indistinguishable from real data |
+| Appendix B §3 "Tier and bias must be assigned at tool layer, not prompt layer" | All `*Source()` helpers in `src/lib/` — prompts only consume, never construct sources |
 
 ---
 

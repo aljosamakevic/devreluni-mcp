@@ -5,199 +5,309 @@
 
 ## System Overview
 
+Per spec §2, this is an MCP (Model Context Protocol) server that orchestrates an unbiased, source-grounded product idea validation across 5 structured gates. The user invokes a prompt inside their AI assistant (Claude Desktop, Cursor, Claude Code), the prompt orchestrates tool calls that fetch live signal with tier+bias labels, and the model assembles a DOK-layered Idea Validation Report.
+
 ```text
-┌──────────────────────────────────────────────────────────────────────┐
-│                        MCP CLIENT (Claude Desktop)                   │
-│           User invokes a prompt — e.g. validate_idea(idea, ...)      │
-└──────────────────────────────────┬───────────────────────────────────┘
-                                   │  JSON-RPC over stdio
-                                   ▼
-┌──────────────────────────────────────────────────────────────────────┐
-│                ProductValidation MCP Server (`src/index.ts`)         │
-│            McpServer instance + StdioServerTransport                 │
-└──────┬────────────────────┬──────────────────────┬──────────────────┘
-       │                    │                       │
-       ▼                    ▼                       ▼
-┌─────────────┐    ┌──────────────────┐   ┌──────────────────────┐
-│  PROMPTS    │    │     TOOLS        │   │     RESOURCES        │
-│ `src/prompts/`   │  `src/tools/`    │   │  `src/resources/`    │
-│             │    │                  │   │                      │
-│ Framework   │    │ Live data        │   │ Static markdown:     │
-│ workflows;  │───▶│ fetchers;        │   │ tier/bias reference, │
-│ orchestrate │    │ return           │   │ tool→gate map,       │
-│ tool calls  │    │ `ToolResult<T>`  │   │ lens matrix.         │
-│             │    │ with sources +   │   │ Loaded fresh on      │
-│             │    │ tier + bias      │   │ each invocation      │
-└─────────────┘    └────────┬─────────┘   └──────────────────────┘
-                            │
-                            ▼
-                  ┌────────────────────┐
-                  │      LIB layer     │
-                  │     `src/lib/`     │
-                  │  API clients +     │
-                  │  cache + webfetch  │
-                  └────────┬───────────┘
-                           │
-                           ▼
-        ┌─────────────────────────────────────────┐
-        │  External APIs: Serper (Google),        │
-        │  Hacker News (Algolia), Product Hunt,   │
-        │  Reddit (via Serper), raw web fetch     │
-        └─────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────┐
+│  USER (Claude Desktop / Cursor / Claude Code over stdio)    │
+│  invokes an MCP prompt with an idea + framing               │
+└──────────────────────┬──────────────────────────────────────┘
+                       │
+                       ▼
+┌─────────────────────────────────────────────────────────────┐
+│  PROMPTS — 5 user-facing workflows                          │
+│  `src/prompts/validate-idea.ts`     (master, 5-gate report) │
+│  `src/prompts/quick-kill-check.ts`  (60-sec triage)         │
+│  `src/prompts/steelman-against.ts`  (red-team)              │
+│  `src/prompts/run-single-gate.ts`   (one gate deep dive)    │
+│  `src/prompts/generate-test-cards.ts` (hypotheses)          │
+└──────────────────────┬──────────────────────────────────────┘
+                       │ orchestrate (LLM-driven, sequential per gate)
+                       ▼
+┌─────────────────────────────────────────────────────────────┐
+│  TOOLS — live-signal fetchers (return ToolResult<T>)        │
+│  `src/tools/*.ts` — 8 built, 4 remaining                    │
+│  All return `{ data, sources[], confidence_note,            │
+│                fallbacks_used[] }` per `src/types.ts`       │
+└──────────────────────┬──────────────────────────────────────┘
+                       │ use
+                       ▼
+┌─────────────────────────────────────────────────────────────┐
+│  LIB — shared infrastructure (HTTP, search, cache)          │
+│  `src/lib/serper.ts`       Google search (Serper API)       │
+│  `src/lib/reddit.ts`       Reddit signals via Serper        │
+│  `src/lib/hn.ts`           Hacker News (Algolia API)        │
+│  `src/lib/producthunt.ts`  Product Hunt search              │
+│  `src/lib/webfetch.ts`     Raw HTTP fetch + HTML strip      │
+│  `src/lib/cache.ts`        In-memory TTL cache              │
+└──────────────────────┬──────────────────────────────────────┘
+                       │ reference (loaded fresh per invocation)
+                       ▼
+┌─────────────────────────────────────────────────────────────┐
+│  RESOURCES — 3 static markdown docs                         │
+│  `src/resources/source-tier-bias.md`                        │
+│  `src/resources/tool-to-gate-map.md`                        │
+│  `src/resources/evaluation-lens-matrix.md`                  │
+└──────────────────────┬──────────────────────────────────────┘
+                       │ produce
+                       ▼
+┌─────────────────────────────────────────────────────────────┐
+│  OUTPUT: Idea Validation Report (markdown, DOK-layered)     │
+│  Verdict + 5 gate blocks + 3 validation checks +            │
+│  test cards + BLANK Spiky POV + source appendix             │
+└─────────────────────────────────────────────────────────────┘
 ```
 
 ## Component Responsibilities
 
 | Component | Responsibility | File |
 |-----------|----------------|------|
-| Server entrypoint | Wire MCP server, register tools/prompts/resources, run stdio transport | `src/index.ts` |
-| Type contracts | `ToolSource`, `ToolResult<T>` shared shape | `src/types.ts` |
-| Tools (8) | Fetch live evidence, attach tier + bias + URL to every fact | `src/tools/*.ts` |
-| Prompts (5) | Framework workflows that instruct the client which tools to call and how to format output | `src/prompts/*.ts` |
-| Resources (3) | Static markdown reference docs loaded fresh per invocation | `src/resources/*.md` |
-| Lib clients | Thin wrappers around Serper, HN Algolia, Product Hunt GraphQL, Reddit-via-Serper, raw fetch | `src/lib/*.ts` |
-| Cache | In-process TTL Map shared across lib clients | `src/lib/cache.ts` |
+| MCP server bootstrap | Load `.env`, create `McpServer`, register resources/tools/prompts, connect stdio transport | `src/index.ts` |
+| Tool result contract | Standard `{ data, sources, confidence_note, fallbacks_used }` shape with `ToolSource` carrying url/tier/bias/fetched_at/contribution | `src/types.ts` |
+| Search infrastructure | Serper-backed Google search with graceful stub fallback when `SERPER_API_KEY` absent | `src/lib/serper.ts` |
+| Reddit signals | Reddit search via Serper site-restricted queries | `src/lib/reddit.ts` |
+| HN signals | Algolia HN Search API client | `src/lib/hn.ts` |
+| Product Hunt signals | PH GraphQL / search client | `src/lib/producthunt.ts` |
+| Raw web fetch | Pricing-page and changelog scraping with HTML strip | `src/lib/webfetch.ts` |
+| In-memory cache | TTL-keyed cache (SHORT 5m / MEDIUM 1h / LONG 24h) used by tools to avoid re-fetching within a workflow run | `src/lib/cache.ts` |
+| MCP prompts | User-invoked workflow templates that emit instructions for the model | `src/prompts/*.ts` |
+| MCP tools | Live-data fetchers that attach tier+bias at the data layer | `src/tools/*.ts` |
+| Static resources | Tier/bias reference, tool-to-gate map, framing-conditional evaluation lens — re-read by the model per invocation | `src/resources/*.md` |
 
 ## Pattern Overview
 
-**Overall:** MCP three-surface server (Tools + Prompts + Resources) on top of a thin client/cache lib layer.
+**Overall:** Three-primitive MCP server (Prompts + Tools + Resources) with a thin layered architecture: prompts orchestrate tools, tools use shared lib clients, all data carries provenance.
 
 **Key Characteristics:**
-- **Three orthogonal surfaces.** Tools are atomic, side-effect-free data fetchers. Prompts are *orchestration scripts* the LLM follows. Resources are *reference text* the LLM loads to understand grading rubrics. The three never reach into each other — the client (Claude) is the orchestrator.
-- **Structural anti-confirmation-bias.** Every tool returns `ToolResult<T>` with explicit `sources[]` carrying tier `S/A/B/C/D` and bias `independent / vendor-funded / conflicted / unknown`. Prompts forbid issuing a verdict without searching for contradicting evidence and require ≥2 tier-B-or-higher sources for a PASS.
-- **Fresh resource loads.** Resources are read from disk in the handler (`readFileSync` inside `loadResource`), not cached at startup — per MCP spec and so they can change between invocations without restart.
-- **Graceful degradation.** Every external client returns a clearly-labelled stub when its API key is missing (e.g. `[STUB DATA — set SERPER_API_KEY]`) and downgrades its source tier from `A` to `D` so the LLM cannot mistake stubs for real data.
+- **LLM is the orchestrator.** Prompts emit instructions; the model decides tool call order per gate (per spec §6.1 workflow). No JS-side state machine.
+- **Provenance at the data layer, not the prompt layer.** Per Appendix B(3), tier and bias are assigned inside tools (`src/types.ts` `ToolSource`), never fabricated by prompts.
+- **Graceful degradation.** Every external API check `isSerperLive() / isPHLive()` and returns stub data + lowered `confidence_note` when keys absent (per spec §7 contract).
+- **Stateless stdio transport.** No persistent server state across invocations; cache is in-process only.
 
 ## Layers
 
-**Prompts layer (`src/prompts/`):**
-- Purpose: encode the Pre-Build Checklist methodology as LLM workflows; turn parameters into a long instruction string returned as a `messages[]` array.
-- Location: `src/prompts/*.ts`
-- Contains: one `registerX` export per prompt; uses `server.prompt()` with a Zod schema for arguments.
-- Depends on: nothing in `src/` — prompts are pure text builders.
-- Used by: `src/index.ts` (registration) and the MCP client at runtime.
+**Server bootstrap (`src/index.ts`):**
+- Purpose: wire dotenv → MCP server → register all primitives → connect stdio
+- Depends on: every tool/prompt/resource module
+- Used by: the `weather` bin entry (`build/index.js`) launched by the AI assistant
 
-**Tools layer (`src/tools/`):**
-- Purpose: fetch and shape evidence into `ToolResult<T>` blobs the LLM can quote with citations.
-- Location: `src/tools/*.ts`
-- Contains: one `registerX` export per tool; uses `server.registerTool()` with a Zod input schema.
-- Depends on: `src/lib/*` (clients) and `src/types.ts` (`ToolResult`, `ToolSource`).
-- Used by: `src/index.ts` (registration) and the client (invoked while running a prompt).
+**Prompt layer (`src/prompts/*.ts`):**
+- Purpose: define 5 workflow templates (zod-typed args → string instructions)
+- Pattern: each file exports `registerXyzPrompt(server)`; calls `server.prompt(name, schema, factory)`
+- Depends on: nothing at runtime (pure text generation)
+- Used by: `src/index.ts`
 
-**Resources layer (`src/resources/`):**
-- Purpose: hold the grading rubrics that prompts tell the LLM to load.
-- Location: `src/resources/*.md`
-- Contains: pure markdown — no code.
-- Loaded by: `loadResource()` in `src/index.ts`, on each `server.resource(...)` handler invocation.
+**Tool layer (`src/tools/*.ts`):**
+- Purpose: fetch live signal, label provenance, return `ToolResult<T>`
+- Pattern: each file exports `registerXyz(server)`; calls `server.registerTool(name, {description, inputSchema}, handler)`
+- Depends on: `src/lib/*` for external IO, `src/types.ts` for result shape
+- Used by: `src/index.ts` (registration) and the LLM (invocation at runtime)
 
-**Lib layer (`src/lib/`):**
-- Purpose: encapsulate external APIs behind a uniform `search* / fetch*` + `*Source()` + `is*Live()` + `*ConfidenceNote()` interface so tools don't repeat key/stub/error logic.
-- Location: `src/lib/*.ts`
-- Depends on: `src/types.ts` for `ToolSource`, `src/lib/cache.ts` for TTL caching, `process.env` for keys.
-- Used by: every file under `src/tools/`.
+**Library layer (`src/lib/*.ts`):**
+- Purpose: encapsulate external API clients, fetch helpers, and the in-memory cache
+- Depends on: `process.env` for API keys, `fetch` (Node 18+ global)
+- Used by: tool layer
+
+**Resource layer (`src/resources/*.md`):**
+- Purpose: framing-conditional reference docs the model re-reads per workflow
+- Loaded by: `loadResource()` in `src/index.ts` — fresh per request (not at import time) per Appendix B(1)
 
 ## Data Flow
 
-### Primary Request Path — `validate_idea`
+### Primary Request Path (`validate_idea`)
 
-1. Client calls prompt `validate_idea(idea, audience, builder)` (`src/prompts/validate-idea.ts:5`).
-2. Server returns one user message containing the full Pre-Build Checklist workflow string (5 gates, DOK layering rules, fail-2 rule, output template).
-3. The LLM (running on the client side) loads three resources: `resource://source-tier-bias`, `resource://tool-to-gate-map`, `resource://evaluation-lens-matrix` (`src/index.ts:51-79`).
-4. The LLM walks Gates G1–G5, calling tools per-gate (e.g. for G1: `find_closest_competitor` → `read_competitor_changelog` → `map_competitive_weaknesses`).
-5. Each tool fans out to lib clients (e.g. `find_closest_competitor` → `serperSearch` + `searchProductHunt` + `searchHN` in `src/tools/find-closest-competitor.ts:45-53`), assembles a `ToolResult<T>` with sources, and returns it as JSON text content.
-6. The LLM lays evidence into DOK 1 (facts + tier/bias), DOK 2 (summary), DOK 3 (insights, model-judgment-tagged), DOK 4 (gate verdict), per `src/prompts/validate-idea.ts:146-163`.
-7. After all 5 gates, the LLM runs three Validation Checks (source quality / counterargument / logic coherence) and applies the **Fail-2 rule**: 2+ FAILs → NO-GO, 1 FAIL or 2+ INCONCLUSIVE → CONDITIONAL GO, 0 FAIL + ≤1 INCONCLUSIVE → GO (`src/prompts/validate-idea.ts:101-106`).
-8. Final artifact emitted in the 8-section Idea Validation Report format.
+1. User invokes `validate_idea` prompt with `{ idea, audience?, builder? }` (`src/prompts/validate-idea.ts:5`)
+2. MCP returns prompt text containing OPERATING RULES, RESOURCES TO LOAD, WORKFLOW steps
+3. Model reads the 3 resources (`resource://source-tier-bias`, `resource://tool-to-gate-map`, `resource://evaluation-lens-matrix`) — served fresh by callbacks in `src/index.ts:51-79`
+4. For each of Gates 1–5: model selects tools from Tool-to-Gate Map, calls them
+5. Each tool (e.g. `src/tools/find-closest-competitor.ts`) calls lib clients (Serper, HN, PH), assembles `ToolResult<T>` with per-source tier+bias
+6. Model writes DOK 1 (sourced facts) → DOK 2 (summary) → DOK 3 (insights, labeled ⚠️) → searches contradicting evidence → DOK 4 (verdict)
+7. Model runs the 3 Validation Checks (Source Quality / Counterargument / Logic & Coherence)
+8. Model applies fail-2 verdict math, then Validation Check overrides (per spec §3)
+9. Model emits final Idea Validation Report markdown with BLANK Spiky POV section
 
-### Secondary Flow — `run_single_gate`
+### Secondary Flows
 
-1. Client calls `run_single_gate(idea, gate, ...)` (`src/prompts/run-single-gate.ts:5`).
-2. Gate identifier maps to a primary tool list (`src/prompts/run-single-gate.ts:22-48`).
-3. LLM loads the same three resources, runs DOK-layered analysis for one gate only, skips the three Validation Checks.
-
-### Secondary Flow — `quick_kill_check`
-
-1. Client calls `quick_kill_check(idea, ...)`.
-2. LLM calls at most 4 tools (`find_closest_competitor` → `read_competitor_changelog` → `find_pricing_anchors`) and scans for 4 hard kill conditions.
-3. Verdict is constrained to **SUSPECTED NO-GO** or **NO OBVIOUS KILL FOUND** — GO is structurally forbidden (`src/prompts/quick-kill-check.ts:34-36`).
-
-### Secondary Flow — `steelman_against`
-
-1. Red-team prompt: surface only disconfirming evidence. Tools called in a fixed order: `get_category_failure_modes` → `map_competitive_weaknesses` → `find_pricing_anchors` → `find_closest_competitor` (`src/prompts/steelman-against.ts:28`).
+- **`quick_kill_check`**: budget ≤4 tool calls — `find_closest_competitor`, `read_competitor_changelog` (top 1), `check_big_tech_encroachment`, `find_pricing_anchors` (top 2). Never issues GO.
+- **`steelman_against`**: skips 5-gate structure, fires only disconfirming tools (`get_category_failure_modes`, `map_competitive_weaknesses`, `check_big_tech_encroachment`, `assess_platform_dependency` once built).
+- **`run_single_gate`**: runs one gate; does NOT run the 3 Validation Checks (spec §6.3).
+- **`generate_test_cards`**: pure hypothesis generation in Strategyzer Test Card format; no tools required.
 
 **State Management:**
-- No per-session state on the server.
-- In-process TTL cache (`src/lib/cache.ts`) shared across lib calls inside a single Node process; cleared at restart.
+- No persistent state. Stdio transport is request/response only.
+- In-process cache (`src/lib/cache.ts`) is the only mutable state; lives for the lifetime of the spawned MCP process.
+
+## The 5 Gates
+
+Per spec §3, the Pre-Build Checklist. Fail-2 rule: 2+ failed gates = NO-GO.
+
+| # | Name | Question |
+|---|------|----------|
+| **G1** | Direct Competitor Scan | Who's the closest existing thing, what have they shipped, where are they weak? |
+| **G2** | Market Structure | Is the market shaped such that this idea can win meaningful share? (solo: niche reachability ~1k customers; funded: plausibly $1B+ TAM) |
+| **G3** | Platform & Big-Tech Risk | Will a platform change or hyperscaler shipping this as a system primitive kill it in 24 months? |
+| **G4** | Willingness to Pay | Will the target customer actually pay enough? (auto-flag: comp prices dropped >25% over 24mo; all-free category) |
+| **G5** | Why Now | What changed in last 24mo making this possible/necessary NOW? (auto-Inconclusive if no non-obvious why-now) |
+
+### Verdict math (per spec §3)
+
+| Gate verdicts | Overall |
+|---|---|
+| 0 fails, ≤1 inconclusive | **GO** |
+| 1 fail OR 2+ inconclusive | **CONDITIONAL GO** |
+| 2+ fails | **NO-GO** |
+
+Validation Checks (in `validate_idea` only) can override:
+- Major issues → downgrade overall confidence to Low
+- Fundamental flaws → override verdict to "Inconclusive — re-run with better sources"
+
+PASS additionally requires ≥2 tier-B-or-higher sources; C/D-only = automatic Inconclusive; if >30% deciding-tier sources are `conflicted`, confidence is downgraded one level.
+
+## The 5 Prompts
+
+Per spec §6. All implemented.
+
+| Prompt | File | One-line purpose |
+|--------|------|------------------|
+| `validate_idea` | `src/prompts/validate-idea.ts` | Master workflow — 5 gates, DOK layering, 3 Validation Checks, full Idea Validation Report |
+| `quick_kill_check` | `src/prompts/quick-kill-check.ts` | 60-second triage; surfaces strongest single kill reason if S/A evidence exists; never issues GO |
+| `steelman_against` | `src/prompts/steelman-against.ts` | Red-team mode; surfaces only disconfirming evidence; ends with strongest single reason to walk away |
+| `run_single_gate` | `src/prompts/run-single-gate.ts` | Deep dive on one gate (competitor / market / platform / wtp / why_now); no Validation Checks |
+| `generate_test_cards` | `src/prompts/generate-test-cards.ts` | 3–7 Strategyzer Test Cards tied to riskiest assumptions; cheapest-test only (never "build the MVP") |
+
+## The 12 Tools Status
+
+Per spec §7. Built status as of 2026-05-20:
+
+| # | Tool | File | G1 | G2 | G3 | G4 | G5 | Status |
+|---|------|------|:--:|:--:|:--:|:--:|:--:|:------:|
+| 1 | `find_closest_competitor` | `src/tools/find-closest-competitor.ts` | **P** | s | | | | ✅ Built |
+| 2 | `read_competitor_changelog` | `src/tools/read-competitor-changelog.ts` | **P** | | s | s | | ✅ Built |
+| 3 | `scan_producthunt_launches` | `src/tools/scan-producthunt-launches.ts` | s | s | | | s | ✅ Built |
+| 4 | `map_competitive_weaknesses` | `src/tools/map-competitive-weaknesses.ts` | **P** | s | | s | | ✅ Built |
+| 5 | `get_category_failure_modes` | `src/tools/get-category-failure-modes.ts` | s | s | s | s | s | ✅ Built |
+| 6 | `find_yc_rfs_alignment` | `src/tools/find-yc-rfs-alignment.ts` | | s | | | **P** | ✅ Built |
+| 7 | `find_pricing_anchors` | `src/tools/find-pricing-anchors.ts` | s | | | **P** | | ✅ Built (P0) |
+| 8 | `check_big_tech_encroachment` | `src/tools/check-big-tech-encroachment.ts` | | | **P** | | s | ✅ Built (P0) |
+| 9 | `find_why_now_signals` | _not yet_ | | | | | **P** | ❌ Not built (P0) |
+| 10 | `estimate_demand_signals` | _not yet_ | | **P** | | | s | ❌ Not built (P0) |
+| 11 | `find_public_revenue_signals` | _not yet_ | s | **P** | | **P** | | ❌ Not built (P1) |
+| 12 | `assess_platform_dependency` | _not yet_ | | | **P** | | | ❌ Not built (P1) |
+
+**P** = primary (must call for that gate); **s** = secondary.
+
+**Built:** 8 of 12. **Remaining P0:** `find_why_now_signals`, `estimate_demand_signals`. **Remaining P1:** `find_public_revenue_signals`, `assess_platform_dependency`. Until P0 tools land, Gates 2 and 5 lack a primary tool and will be evidence-thin (forced toward Inconclusive).
+
+### Tool reuse rule (spec §7)
+
+Multi-gate tools are called once and referenced across gates. Methodology Notes lists each call once with the gates it informed.
+
+- `find_closest_competitor` — fired in G1, referenced in G2/G4
+- `read_competitor_changelog` — fired in G1, referenced in G3/G4
+- `get_category_failure_modes` — fired once early, referenced across all 5
+- `find_public_revenue_signals` — will fire in G2, referenced in G4
+- `check_big_tech_encroachment` — fired in G3, referenced in G5
+
+## Anti-Bias Mechanisms
+
+Per spec §1, five mechanisms make confirmation bias structurally impossible. Each must be enforced somewhere in the code path:
+
+1. **Tier (S/A/B/C/D) + bias flag (independent/vendor-funded/conflicted/unknown) on every fact.** Enforced at the tool layer via the `ToolSource` interface in `src/types.ts:1-7`. Every tool's `sources[]` array carries both labels per source URL. Prompts cannot fabricate or override these (Appendix B(3)).
+2. **DOK 1→4 layering.** Enforced in prompt instructions — see `src/prompts/validate-idea.ts:35-43` OPERATING RULES #2. The model is required to separate Facts (DOK 1) from Summary (DOK 2) from Insights labeled ⚠️ (DOK 3) from Verdict (DOK 4).
+3. **Contradicting evidence search required before any gate verdict.** Enforced in prompt instructions: `src/prompts/validate-idea.ts` Step 1(e) ("Search for contradicting evidence (separate tool calls if needed)") and OPERATING RULES #3 ("No contradicting evidence surfaced — treat as a gap, not confirmation.").
+4. **Three Validation Checks audit the verdict.** Enforced in `src/prompts/validate-idea.ts` Step 2 — Source Quality / Counterargument / Logic & Coherence. Major issues → confidence downgrade; Fundamental flaws → verdict override to Inconclusive.
+5. **Blank "Your Spiky POV" section in the final report.** Enforced in `src/prompts/validate-idea.ts` Step 6 — model is explicitly told to LEAVE IT BLANK. Per Appendix B(4), implementation must not "helpfully" fill it in.
+
+## Critical Implementation Rules (Appendix B)
+
+1. **Resources are loaded fresh per invocation.** `loadResource()` in `src/index.ts:41-43` calls `readFileSync` inside the resource callback (not at import). The model re-reads them each time the prompt fires. Do NOT hoist resource reads to module scope.
+2. **Tool calls may be batched within a gate; never aggressively parallelized across gates.** The master prompt's workflow is sequential per gate — later gates can depend on earlier gate findings. Per-gate parallel tool fan-out (e.g. 3 changelogs at once) is fine.
+3. **Tier and bias flag are assigned at the tool layer, never the prompt layer.** Tools own `ToolSource.tier` and `ToolSource.bias`. Prompts reason about labeled data only; they cannot upgrade an `unknown` flag to `independent`.
+4. **"Your Spiky POV" must remain blank.** The prompt instructs this explicitly. No post-processing step may fill it.
+5. **Verdict math runs before Validation Check overrides.** Step 4 of master workflow runs fail-2 math; Step 3's Validation Checks can then override. The order is mechanical-then-override; do not shortcut.
+6. **Confidence ratings are conservative.** Default `unknown` bias to `vendor-funded` for confidence math (spec §4). Lower-tier-when-uncertain.
+7. **`dotenv` must load with `quiet: true`.** `src/index.ts:13-16` — dotenv v17+ logs to stdout by default, which corrupts the JSON-RPC stdio channel.
+8. **Never soft-fail tool calls.** Spec §11 anti-pattern: tools must surface failures in `confidence_note` and log them in the report's Methodology Notes. Made-up data is forbidden.
 
 ## Key Abstractions
 
-**`ToolResult<T>` (`src/types.ts:9`):**
-- Purpose: uniform return envelope so the LLM can always rely on `.data`, `.sources[]`, `.confidence_note`, `.fallbacks_used[]` being present.
-- Pattern: data + sources + confidence are co-located, making it structurally hard to surface facts without their provenance.
+**`ToolResult<T>` (`src/types.ts:9-14`):**
+- Purpose: standard envelope for every tool. Forces every fact-producing call site to attach provenance.
+- Fields: `data: T`, `sources: ToolSource[]`, `confidence_note: string`, `fallbacks_used: string[]`
+- Pattern: every tool in `src/tools/*.ts` returns this shape; the MCP serializes it as JSON in the tool response.
 
-**`ToolSource` (`src/types.ts:1`):**
-- Purpose: forces every URL the LLM will cite to also carry tier `S/A/B/C/D`, bias label, fetch timestamp, and a `contribution` string explaining what this source contributed.
-- Pattern: live-vs-stub branches in lib files (e.g. `serperSource` in `src/lib/serper.ts:66`) downgrade tier+bias when keys are missing.
+**`ToolSource` (`src/types.ts:1-7`):**
+- Purpose: per-URL provenance record. The DOK 1 contract from spec §4 in code form.
+- Fields: `url`, `tier` (S–D), `bias` (independent/vendor-funded/conflicted/unknown), `fetched_at` ISO timestamp, `contribution` one-line summary.
 
-**Tool registration (`registerX(server)`):**
-- Each tool/prompt file exports exactly one function `register<Name>(server: McpServer): void` that calls `server.registerTool(...)` or `server.prompt(...)`.
-- `src/index.ts` is the single wiring point that imports and invokes every register function.
+**Lib client convention (e.g. `src/lib/serper.ts`):**
+- Each external API client exports: a `search`/`fetch` function, an `isXyzLive()` boolean (key configured?), a `xyzSource()` helper that builds a `ToolSource`, and a `xyzConfidenceNote()` helper for the standardized fallback message.
+- Pattern: tools compose these helpers rather than reimplementing tier/bias assignment per call site.
 
 ## Entry Points
 
-**Stdio server (`src/index.ts:98`):**
-- Location: `src/index.ts`
-- Triggers: spawned by the MCP client (Claude Desktop) as a subprocess.
-- Responsibilities: load `.env` (with `quiet: true` to avoid corrupting stdio JSON-RPC), construct `McpServer`, register 3 resources + 8 tools + 5 prompts, connect `StdioServerTransport`.
+**`src/index.ts` (stdio MCP server):**
+- Triggered by: AI assistant spawning the `weather` bin from `package.json` (`./build/index.js`)
+- Responsibilities: load `.env`, instantiate `McpServer({name: 'product-validation', version: '0.1.0'})`, register 3 resources + 8 tools + 5 prompts, connect `StdioServerTransport`
+- Logs go to stderr only (stdout reserved for JSON-RPC)
 
 ## Architectural Constraints
 
-- **Stdio purity.** Anything written to stdout corrupts the JSON-RPC stream. Logging goes to `console.error` (stderr). `dotenv` is loaded with `quiet: true` (`src/index.ts:13-16`) because v17+ otherwise prints to stdout.
-- **No persistent state.** No DB, no disk writes from tools, no per-session memory. The TTL cache in `src/lib/cache.ts` is process-local and lost on restart.
-- **Stub-when-no-key, never throw.** Lib clients must return a stub on missing env vars (e.g. `getSerperStub` in `src/lib/serper.ts:45`) and downgrade source tier accordingly. Tools must list missing keys in `fallbacks_used[]`.
-- **Resources must reload per invocation.** `loadResource` in `src/index.ts:41` is called inside each handler, not at module top — the comment at line 38-40 makes this explicit ("per MCP spec").
+- **Single-threaded Node event loop.** No worker threads; all IO is async/await over `fetch`.
+- **Stdio JSON-RPC channel is sacred.** Anything writing to stdout corrupts the protocol — hence `dotenv` `quiet: true` and `console.error` for logs.
+- **Module-level state:** the cache `Map` in `src/lib/cache.ts:6` is the only shared mutable state. Lives for the process lifetime.
+- **No persistent storage.** No database, no filesystem writes (resources are read-only).
+- **Node 18+ required** for global `fetch`.
+- **ESM-only.** `"type": "module"` in `package.json`; all imports use `.js` extensions even from `.ts` source.
 
 ## Anti-Patterns
 
-### Verdict without contradicting evidence
+### Caching resources at startup
 
-**What happens:** LLM concludes a gate PASS from one-sided evidence.
-**Why it's wrong:** Defeats the "structurally impossible confirmation bias" design goal — facts alone don't validate; a search for disconfirming evidence must happen first.
-**Do this instead:** Prompts force an explicit Contradicting Evidence block before DOK 4. If none found, the prompt template requires the literal string `"No contradicting evidence surfaced — treat as a gap, not confirmation."` (`src/prompts/validate-idea.ts:160`).
+**What happens:** Reading resource markdown files once at module load, then serving the cached string forever.
+**Why it's wrong:** Appendix B(1) requires fresh loads per invocation so the model re-grounds. Also breaks hot-editing during dev.
+**Do this instead:** Read inside the resource callback as `src/index.ts:41-43` does (`loadResource()` called from inside each `server.resource(...)` handler).
 
-### Citing a fact without tier + bias
+### Letting the prompt assign tier/bias
 
-**What happens:** LLM lists a URL without `Tier: [X] | Bias: [X]`.
-**Why it's wrong:** Drops the bias signal the framework is built to surface; a vendor-funded report and an independent study become indistinguishable.
-**Do this instead:** Tools always emit fully-populated `ToolSource` objects; prompts mandate the format `[Fact] — Source: [URL] | Tier: [X] | Bias: [X] | Fetched: [date]` (`src/prompts/validate-idea.ts:151`).
+**What happens:** A prompt tells the model "rate this Reddit post as A-tier independent."
+**Why it's wrong:** Appendix B(3) — provenance must be assigned at the tool layer where the source's funding/affiliation is known. Prompt-layer assignment lets the model rationalize.
+**Do this instead:** Tools attach `ToolSource` records with tier+bias decided from source-type heuristics (see `src/lib/serper.ts` `serperSource()`).
 
-### Treating stub data as real
+### Soft-failing a tool call
 
-**What happens:** A tool runs without its API key, returns placeholder text, and the LLM cites it as evidence.
-**Why it's wrong:** Stubs are demo strings, not facts.
-**Do this instead:** Lib stub paths downgrade tier to `D` and bias to `unknown` (e.g. `src/lib/serper.ts:66-77`); the prompt rule "C/D-only evidence = automatic Inconclusive" (`src/prompts/validate-idea.ts:41`) prevents stubs from validating anything.
+**What happens:** API returns an error and the tool returns plausible-looking synthesized data so the workflow doesn't break.
+**Why it's wrong:** Spec §11 explicit anti-pattern; pollutes the audit trail.
+**Do this instead:** Return empty `data` with a descriptive `confidence_note` and a non-empty `fallbacks_used`. The prompt logs it in Methodology Notes.
 
-### Issuing GO from `quick_kill_check`
+### Auto-filling "Your Spiky POV"
 
-**What happens:** Shallow triage gets confused with full validation.
-**Why it's wrong:** quick_kill_check only looks for 4 hard kill conditions; absence of a red flag is not validation.
-**Do this instead:** The prompt structurally forbids GO and constrains the verdict to SUSPECTED NO-GO or NO OBVIOUS KILL FOUND (`src/prompts/quick-kill-check.ts:34-36`).
+**What happens:** The model summarizes its own opinion in the user's section.
+**Why it's wrong:** Defeats the whole anti-bias property — the section exists so the user does their own DOK 4. Appendix B(4).
+**Do this instead:** Leave it blank with the disclaimer block shown in spec §5 / `src/prompts/validate-idea.ts` Step 6.
+
+### Defaulting `unknown` bias to `independent`
+
+**What happens:** Source whose funding can't be determined gets treated as neutral.
+**Why it's wrong:** Spec §11 — must default to `vendor-funded` for confidence math.
+**Do this instead:** Lib helpers tag uncertain sources `unknown` and the prompt math treats them as `vendor-funded` (per spec §4 rule 4).
 
 ## Error Handling
 
-**Strategy:** Soft-fail with explicit signalling. No exceptions are propagated to the client.
+**Strategy:** Tool layer catches errors from lib clients, downgrades confidence, returns a `ToolResult<T>` with explanatory `confidence_note`. The MCP server itself only catches in `main().catch(...)` (`src/index.ts:109-112`).
 
 **Patterns:**
-- Lib clients catch fetch errors and return stubs (`src/lib/serper.ts:39-42`).
-- Tools accumulate `fallbacks_used[]` and `confidence_note` strings rather than throwing.
-- The `quiet: true` dotenv load (`src/index.ts:15`) protects the JSON-RPC channel from incidental stdout writes.
+- API key absent → lib client returns stub data, tool records the fallback in `fallbacks_used` (`src/lib/serper.ts:17-21`)
+- HTTP non-2xx → logged via `console.error` (stderr-safe), tool returns empty data + caveat note
+- The prompt instructs the model: "If a tool call fails or returns nothing, log it in Methodology Notes. Never fabricate." (`src/prompts/validate-idea.ts:44`)
 
 ## Cross-Cutting Concerns
 
-**Logging:** `console.error` only — stdout is reserved for JSON-RPC.
-**Validation:** Zod schemas at the tool/prompt registration boundary; no internal re-validation.
-**Caching:** In-process Map with TTL constants `SHORT` (5 min), `MEDIUM` (1 h), `LONG` (24 h) in `src/lib/cache.ts:26-30`.
-**Source provenance:** Every fact carries tier + bias through the `ToolSource` shape — enforced at the type level.
+**Logging:** `console.error` only (stdout reserved for JSON-RPC). Every lib client prefixes log lines with `[<file>.ts]`.
+**Validation:** zod schemas at MCP boundaries — every tool's `inputSchema` and every prompt's args are zod-typed.
+**Provenance:** uniform `ToolSource` shape across all tools; tier+bias are first-class fields of the contract.
+**Caching:** module-level `Map` in `src/lib/cache.ts` with TTL tiers (SHORT 5m / MEDIUM 1h / LONG 24h). Used by tools to dedupe within a workflow.
+**Configuration:** all secrets (`SERPER_API_KEY`, `PRODUCTHUNT_TOKEN`, etc.) via `process.env`; `.env` loaded once at startup with `quiet: true`.
 
 ---
 

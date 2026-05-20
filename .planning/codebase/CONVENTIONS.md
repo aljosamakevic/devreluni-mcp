@@ -1,269 +1,241 @@
 # Coding Conventions
 
 **Analysis Date:** 2026-05-20
-**Scope:** ProductValidation MCP server — TypeScript ESM, MCP SDK v1.29
+
+Conventions in this codebase split into two groups:
+
+1. **Spec-mandated conventions** — encoded in `.planning/spec/build-spec-v1.0.md` (v1.0). Deviation breaks the core IP of the MCP (structural anti-confirmation-bias). These MUST be preserved.
+2. **Implementation conventions** — chosen by the engineering agent for ergonomics. Internally consistent; safe to evolve as long as consistency is preserved.
+
+Every convention below cites either a spec section or marks itself "implementation convention."
 
 ## Naming Patterns
 
-**Files:** `kebab-case.ts` matching the tool's snake_case identifier.
-- `src/tools/find-closest-competitor.ts` → registers tool `find_closest_competitor`
-- `src/tools/check-big-tech-encroachment.ts` → registers tool `check_big_tech_encroachment`
-- `src/prompts/validate-idea.ts` → registers prompt `validate_idea`
-- `src/lib/serper.ts`, `src/lib/webfetch.ts` — single-word lib modules stay flat
-- `src/resources/source-tier-bias.md` — markdown resources also kebab-case
+**Files (implementation convention):**
+- `kebab-case.ts` for all source files.
+  - Tools: `src/tools/find-pricing-anchors.ts`, `src/tools/check-big-tech-encroachment.ts`
+  - Prompts: `src/prompts/validate-idea.ts`, `src/prompts/quick-kill-check.ts`
+  - Libs: `src/lib/serper.ts`, `src/lib/producthunt.ts`
+  - Resources (markdown): `src/resources/source-tier-bias.md`, `src/resources/evaluation-lens-matrix.md`
 
-**Tool / Prompt identifiers (MCP wire names):** `snake_case`.
-- `find_closest_competitor`, `read_competitor_changelog`, `validate_idea`
+**Tool names registered with MCP (spec §7 + §6):**
+- `snake_case` matching the spec's tool list verbatim. Example: `find_pricing_anchors`, `check_big_tech_encroachment`, `read_competitor_changelog`. These names are part of the public contract — prompts in §6 call tools by exactly these identifiers.
 
-**Exported register functions:** `registerPascalCase`, matching the tool name.
-- `registerFindClosestCompetitor`, `registerReadCompetitorChangelog`, `registerCheckBigTechEncroachment`
-- Prompts follow the same rule with `Prompt` suffix: `registerValidateIdeaPrompt`, `registerQuickKillCheckPrompt`
+**Exported functions (implementation convention):**
+- `camelCase` for plain functions: `serperSearch`, `fetchPage`, `stripHtml`, `isSerperLive`, `cacheGet`.
+- `PascalCase` prefix `register*` for the tool/prompt registration entry-points: `registerFindPricingAnchors`, `registerValidateIdeaPrompt`. One `register*` function per file.
 
-**Types & interfaces:** `PascalCase`.
-- `ToolResult<T>`, `ToolSource`, `SerperResponse`, `FailureSignal`, `AdjacencyScore`
-- Tool-local data types end in `Data` and are used as the `T` in `ToolResult<T>`:
-  `FindClosestCompetitorData`, `CheckBigTechEncroachmentData`, `ReadCompetitorChangelogData`
+**Types & interfaces (implementation convention):**
+- `PascalCase`: `ToolResult<T>`, `ToolSource`, `SerperOrganicResult`, `CurrentPricing`.
+- Generic envelope in `src/types.ts` — see "Standard `ToolResult<T>` Envelope" below.
 
-**Local variables / functions:** `camelCase`.
-- `fallbacksUsed`, `resolvedUrl`, `serperSearch`, `detectFailureSignals`, `scoreAdjacency`
+**Resource URIs (MCP convention):**
+- `resource://<kebab-name>` matching the file stem: `resource://source-tier-bias`, `resource://tool-to-gate-map`, `resource://evaluation-lens-matrix` (see `src/index.ts:51-79`).
 
-**Constants:** `SCREAMING_SNAKE_CASE` for module-level immutables.
-- `FAILURE_PATTERNS`, `HYPERSCALER_CONFERENCES`, `RECENT_YEARS`, `SERPER_BASE`, `TTL`
+## Tool Registration Pattern (implementation convention)
 
-## Module Style — ESM + Node strict resolution
-
-**`tsconfig.json`:** `"module": "NodeNext"`, `"moduleResolution": "NodeNext"`, `"target": "ES2022"`, `"strict": true`.
-**`package.json`:** `"type": "module"`.
-
-**`.js` extensions are mandatory in relative imports** — TypeScript source imports the compiled output path:
+Every tool file exports a single `registerXxx(server: McpServer): void` function called from `src/index.ts`. Inside, it calls `server.registerTool(name, { description, inputSchema }, async handler)`. Pattern visible in `src/tools/find-pricing-anchors.ts:99-119`.
 
 ```ts
-import type { ToolResult, ToolSource } from '../types.js';
-import { serperSearch, isSerperLive } from '../lib/serper.js';
-import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
-```
-
-The SDK is also imported with `.js` suffixes (`@modelcontextprotocol/sdk/server/mcp.js`, `.../stdio.js`) because the published SDK is itself ESM with explicit extensions.
-
-**Type-only imports** use `import type { ... }` — see every tool file.
-
-## Tool Registration Pattern
-
-Every tool module exports exactly one function `registerXxx(server: McpServer): void` that calls `server.registerTool(name, schema, handler)`. The function is imported and invoked from `src/index.ts`.
-
-Skeleton (consistent across all 8 tools):
-
-```ts
-import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
-import { z } from 'zod';
-import type { ToolResult, ToolSource } from '../types.js';
-
-interface XxxData { /* tool-specific payload */ }
-
-export function registerXxx(server: McpServer): void {
+export function registerFindPricingAnchors(server: McpServer): void {
   server.registerTool(
-    'xxx_tool_name',                       // snake_case wire name
+    'find_pricing_anchors',
     {
-      description: '...',                  // one paragraph, plain language
-      inputSchema: {                       // zod shape, NOT z.object(...)
-        idea_description: z.string().describe('...'),
-      },
+      description: '...',
+      inputSchema: { /* zod object */ },
     },
-    async ({ idea_description }) => {
-      const fallbacksUsed: string[] = [];
-      const sources: ToolSource[] = [];
-      // ... fetch, transform, score ...
-      const result: ToolResult<XxxData> = {
-        data,
-        sources,
-        confidence_note: '...',
-        fallbacks_used: fallbacksUsed,
-      };
-      return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
-    },
+    async ({ category, competitors, framing }) => { /* ... */ }
   );
 }
 ```
 
-**Wiring:** Add the import + call in `src/index.ts` after the existing block (`src/index.ts:19-26` for imports, `src/index.ts:82-89` for calls). Prompts mirror the same pattern (`src/index.ts:29-33`, `92-96`).
+Prompts follow the same shape with `server.prompt(name, schema, handler)` — see `src/prompts/validate-idea.ts:5-18`.
 
-## The `ToolResult<T>` Envelope
+## Standard `ToolResult<T>` Envelope (spec §7 — MANDATORY)
 
-Defined in `src/types.ts`. Every tool — without exception — returns this shape serialized as JSON inside an MCP text content block.
+Defined in `src/types.ts`:
 
 ```ts
+export interface ToolResult<T> {
+  data: T;
+  sources: ToolSource[];
+  confidence_note: string;
+  fallbacks_used: string[];
+}
+
 export interface ToolSource {
   url: string;
   tier: 'S' | 'A' | 'B' | 'C' | 'D';
   bias: 'independent' | 'vendor-funded' | 'conflicted' | 'unknown';
-  fetched_at: string;        // ISO 8601 — always `new Date().toISOString()`
-  contribution: string;       // human-readable: what this source contributed
-}
-
-export interface ToolResult<T> {
-  data: T;                    // tool-specific payload
-  sources: ToolSource[];      // every external lookup yields a source
-  confidence_note: string;    // one paragraph: how trustworthy is `data`?
-  fallbacks_used: string[];   // strings naming each degradation that fired
+  fetched_at: string;
+  contribution: string;
 }
 ```
 
-**Return shape from the handler:**
-```ts
-return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
-```
-Always `JSON.stringify(result, null, 2)` — pretty-printed, single text block.
-
-## Source Tiering & Bias
-
-Defined as the union types in `src/types.ts`; rationale documented in `src/resources/source-tier-bias.md` (loaded fresh per MCP request, see `src/index.ts:51-79`).
-
-**Tier (epistemic strength):**
-- `S` — primary / immutable (first-party docs, keynotes, archived pages, fetched competitor changelog)
-- `A` — strong secondary (press of record, Serper live results)
-- `B` — useful secondary (snippets, aggregator pages)
-- `C` — weak / indirect
-- `D` — placeholder / stub (used when an API key is missing)
-
-**Bias flag:**
-- `independent` — third party with no commercial stake
-- `vendor-funded` — analyst paid by the vendor
-- `conflicted` — first-party self-reporting (competitor's own changelog, hyperscaler's own keynote)
-- `unknown` — stubs, search facades
-
-**Convention:** when serper is live the source becomes tier `A` / `independent`; when stubbed it downgrades to tier `D` / `unknown`. See `src/lib/serper.ts:62-77` for the canonical `serperSource()` helper.
-
-## Graceful Degradation — never throw, always degrade
-
-Every external dependency has an `isXxxLive()` check and a stub path. Tools must:
-
-1. Call `isXxxLive()` before or after the fetch.
-2. If not live, push a human-readable string into `fallbacks_used`:
-   `fallbacksUsed.push('serper (stub — set SERPER_API_KEY)');`
-3. Continue executing with stub data — the tool still returns a valid `ToolResult<T>`.
-4. Wrap network calls in `try { ... } catch { /* graceful degradation */ }` (see `src/tools/check-big-tech-encroachment.ts:147-153, 208-211, 249-251`).
-5. Never `throw` from a tool handler. Errors become `fallbacks_used` entries or downgraded source tiers.
-
-Canonical example — Serper:
+Spec §7 (lines 484-499) defines this exact shape. Every tool returns:
 
 ```ts
-// src/lib/serper.ts:17-43
-export async function serperSearch(query: string, num = 10) {
-  const apiKey = process.env['SERPER_API_KEY'];
-  if (!apiKey) return getSerperStub(query);
-  try {
-    const response = await fetch(SERPER_BASE, { ... });
-    if (!response.ok) throw new Error(`Serper returned ${response.status}`);
-    return (await response.json() as SerperResponse).organic ?? [];
-  } catch (err) {
-    console.error('[serper.ts] serperSearch error:', err);
-    return getSerperStub(query);   // degrade, do not throw
-  }
-}
+return {
+  content: [{ type: 'text', text: JSON.stringify(result, null, 2) }],
+};
 ```
 
-Stub data is always **labelled** — titles and snippets are prefixed with `[STUB]` / `[STUB DATA — set SERPER_API_KEY for live results]` so the calling LLM cannot mistake it for real evidence (`src/lib/serper.ts:45-60`).
+where `result` is a `ToolResult<T>`. Verified in `src/tools/find-pricing-anchors.ts:293-310`.
 
-## Zod for Input Schemas
+**Why this matters (spec §4 runtime requirement, lines 202-208):** Every fact entered into a DOK 1 layer must have URL + tier + bias + `fetched_at`. The envelope makes those fields impossible to omit at the tool boundary — so the prompt layer cannot fabricate or strip them.
 
-- Use `zod` for every tool's `inputSchema`.
-- Pass the **shape object directly** (not `z.object({...})`); the MCP SDK wraps it.
-- Always call `.describe('...')` on each field — the description is what the LLM sees when choosing arguments.
-- Use enums to constrain free-text where possible (see `src/prompts/validate-idea.ts:9-16`: `z.enum(['B2B', 'B2C', 'B2B2C', 'dev_tools'])`).
-- Mark optional inputs with `.optional()` and document the fallback in the description.
+## Graceful Degradation — "Never Fail Silently" (spec §7 line 501 — MANDATORY)
+
+Pattern in `src/lib/serper.ts`:
+
+- `isSerperLive(): boolean` — checks `process.env['SERPER_API_KEY']`.
+- `serperSearch(query, num)` — if no key OR fetch throws, returns `getSerperStub(query)` with clearly-labeled `[STUB]` snippets pointing to `example.com`.
+- `serperSource(query)` — when stubbed, returns the source tagged `tier: 'D'`, `bias: 'unknown'` instead of `A`/`independent`. Live data is tagged `A`/`independent`.
+- `serperConfidenceNote()` — emits `'Set SERPER_API_KEY for live search data. Results are stubbed.'` when degraded.
+
+Inside each tool, the degradation is recorded:
 
 ```ts
-inputSchema: {
-  idea_description: z.string().describe('Plain-language description of the product idea'),
-  category: z.string().describe('Product category — e.g. "focus app"'),
-  category_keywords: z.array(z.string()).optional().describe('Optional extra keywords'),
-}
+if (!isSerperLive()) fallbacksUsed.push('serper (stub — set SERPER_API_KEY)');
 ```
 
-## DOK Layering (DOK 1-4) — a prompt-side convention
+(see `src/tools/find-pricing-anchors.ts:126`, `src/tools/find-closest-competitor.ts:46-50`).
 
-The Depth-of-Knowledge layering is **enforced by the prompts**, not the tools. Tools emit raw facts; prompts force the assistant to organise them:
+**Spec rationale:** Anti-pattern #2 in §11 ("Soft-failing tool calls — returning made-up data when the API fails") is rejected by this pattern — stubs are visibly stubbed, downgraded in tier, and listed in `fallbacks_used`.
 
-- **DOK 1 — Facts** — every claim must carry `[Tier S/A/B/C/D] | [bias]` plus URL + fetch date.
-- **DOK 2 — Summary** — plain restatement, no interpretation.
-- **DOK 3 — Insights** — explicitly labelled `⚠️ Model judgment:`.
-- **DOK 4 — Verdict** — PASS / FAIL / INCONCLUSIVE only after contradicting-evidence search.
+**Convention for new external-API libs:** mirror Serper's quartet — `isXxxLive()` / `xxxSearch()` / `xxxSource()` / `xxxConfidenceNote()`. Examples already in `src/lib/producthunt.ts` (`isPHLive`, `phSource`, `phConfidenceNote`).
 
-See `src/prompts/validate-idea.ts:33-46` for the operating rules and `src/prompts/validate-idea.ts:55-65` for the per-gate workflow. New prompts must keep DOK separation strict; tools must keep providing the tier+bias metadata that DOK 1 depends on.
+## Source Tier Assignment (spec §4 — MANDATORY)
 
-## Comments & Inline Rationale
+Tier values `S | A | B | C | D` are assigned **at the tool layer, not the prompt layer** (spec Appendix B, note 3). Mapping observed in code:
 
-Two distinct comment styles are used. Apply the right one to the right surface.
+| Source | Tier | Bias | Where assigned |
+|---|---|---|---|
+| Live competitor pricing page | S | conflicted | `src/tools/find-pricing-anchors.ts:140-148` |
+| Wayback Machine snapshot | S | independent | `src/tools/find-pricing-anchors.ts:152-159` |
+| Serper (live key) | A | independent | `src/lib/serper.ts:66-77` |
+| Serper (stubbed, no key) | D | unknown | `src/lib/serper.ts:66-77` |
+| G2 / Capterra aggregates | B | independent | `src/tools/find-pricing-anchors.ts:191-197` |
 
-**1. File-header rationale block** — for tools whose role in the gate framework or scoring heuristic needs explanation. Plain `//` lines at top of file, no JSDoc. Example, `src/tools/check-big-tech-encroachment.ts:1-9`:
+Spec §4 lines 173-200 is the authoritative tier definition. New tools must consult it before assigning a tier; default to a **lower** tier when uncertain (spec §4 line 208: "Default to more cautious labels when uncertain").
+
+## Bias Flag Assignment (spec §4 — MANDATORY)
+
+Values: `independent | vendor-funded | conflicted | unknown`.
+
+**Critical rule (spec §4 rule 4, line 197 + spec §11 anti-pattern #6, line 767):**
+
+> `unknown` = treat as `vendor-funded` for confidence math
+> ❌ Defaulting `unknown` bias flag to "independent" (must default to "vendor-funded")
+
+This rule lives at both layers:
+- **Tool layer:** prefer `unknown` over guessing `independent` when an unauthenticated/stubbed call cannot determine bias. Serper stub uses `unknown`, not `independent` — see `src/lib/serper.ts:71`.
+- **Prompt layer:** the model performs confidence math treating `unknown` as `vendor-funded` (encoded in `src/prompts/validate-idea.ts:34` operating rule 1 + the anti-pattern checklist at lines 185-195).
+
+Bias selection in practice:
+- A competitor's own site → `conflicted` (they have a direct stake; spec §4 rule 6).
+- Wayback / SEC / GitHub commits → `independent`.
+- Gartner / Forrester / vendor whitepapers → `vendor-funded`.
+- Anything you can't classify → `unknown` (prompt-side math will treat as `vendor-funded`).
+
+## DOK 1→4 Layering in Prompts (spec §5 + §6.1 — MANDATORY)
+
+Prompts must instruct the model to produce 4 strictly-separated layers per gate:
+
+- **DOK 1 — Facts** (raw, sourced with tier+bias+URL+fetched_at)
+- **DOK 2 — Summary** (plain restatement, no interpretation)
+- **DOK 3 — Insights** (explicitly labeled "⚠️ Model judgment")
+- **DOK 4 — Verdict** (Pass/Fail/Inconclusive)
+
+Encoded in `src/prompts/validate-idea.ts:33-46` (operating rules) and `:57-65` (per-gate workflow), matching spec §6.1 lines 346-355.
+
+**Convention for new prompts:** if they involve gate analysis they MUST include the same DOK separation. `run-single-gate.ts` and `steelman-against.ts` follow this. `quick_kill_check` explicitly skips DOK layering per spec §6.5 line 470 — that skip is itself a spec-mandated exception, not freedom.
+
+## Anti-Pattern Checklist Embedded in Prompts (spec §11 — MANDATORY)
+
+Each gate-bearing prompt ends with an explicit checklist enforcing spec §11 anti-patterns (lines 760-768). See `src/prompts/validate-idea.ts:185-195`:
+
+```
+[ ] Every DOK 1 fact has both tier badge AND bias flag
+[ ] DOK 3 insights are visibly labeled as ⚠️ model judgment
+[ ] Every gate has contradicting evidence (or explicit "none found")
+[ ] No D-tier source used to validate (only flag concerns)
+...
+[ ] "Your Spiky POV" is present but BLANK
+```
+
+This list maps 1:1 to spec §6.1 lines 390-400 and §11 anti-patterns. Keep them synced — when the spec adds an anti-pattern, the prompt checklist must mirror it.
+
+## "Your Spiky POV" Stays Blank (spec §5 + Appendix B note 4 — MANDATORY)
+
+`src/prompts/validate-idea.ts:119-121` and `:171-172` instruct: *"Leave this section completely blank. User fills it in."* This is not a TODO — it is the spec's deliberate design (Appendix B, lines 843-844). Do not "helpfully" prefill it in a future change.
+
+## Zod for Input Validation (implementation convention)
+
+Tool/prompt input schemas use `zod` (v3.25.x) `z.object({...})`-shaped definitions passed to `server.registerTool` / `server.prompt`. Every field has `.describe(...)`. Examples:
+
+- `src/prompts/validate-idea.ts:7-17`
+- `src/tools/find-pricing-anchors.ts:106-117`
+
+`zod` is the only runtime validation library. Don't introduce alternatives.
+
+## ESM with `.js` Import Suffixes (Node ESM strict resolution)
+
+`package.json` declares `"type": "module"` and `tsconfig.json` uses `"module": "NodeNext"`. Local imports therefore include the `.js` extension even though the source is `.ts`:
 
 ```ts
-// check_big_tech_encroachment — Gate 3 (Platform/Moat Risk) primary tool, Gate 5 secondary.
-//
-// Surfaces evidence that Apple / Google / Microsoft might ship a feature
-// that obsoletes the user's idea — by scanning their dev conferences,
-// public API/SDK releases, and acquisition history in the category.
-//
-// Per spec: returns adjacency score (1-5) where 5 = hyperscaler is already
-// shipping something in this space. Source tiers: S (dev docs, keynotes),
-// A (acquisition news).
+import { fetchPage, stripHtml } from '../lib/webfetch.js';
+import type { ToolResult, ToolSource } from '../types.js';
+import { registerFindClosestCompetitor } from './tools/find-closest-competitor.js';
 ```
 
-**2. Section banners + inline why** — break long handlers into phases with horizontal-rule banners, and explain *why* a constant or filter exists (not what it does):
+This is a Node ESM resolver requirement, not stylistic. The TypeScript compiler resolves the `.js` to the `.ts` source at build time and emits the same `.js` import path. All new files must follow this.
 
-```ts
-// Conferences are the highest-signal place to find "what hyperscalers
-// will ship in the next 12-24mo". The official site:domain filters keep
-// us anchored to first-party material (tier S).
-const HYPERSCALER_CONFERENCES = [ ... ];
+## Comment Style — Inline Rationale (implementation convention)
 
-// ───────────────────────────────────────────────────────────
-// Phase 1: Conference mentions across all hyperscalers
-// ───────────────────────────────────────────────────────────
-```
+Comments explain *why*, not *what*. Where a non-obvious behaviour exists, it carries a short comment citing the constraint. Examples:
 
-**3. JSDoc** — sparingly, only on exported helpers whose contract is non-obvious. See `src/index.ts:37-43` (`loadResource`) — explains the spec requirement to load resources fresh per request, not at startup.
+- `src/index.ts:9-16` — explains why `dotenv` is loaded with `quiet: true` (stdout corruption of the JSON-RPC channel).
+- `src/index.ts:37-43` — `loadResource` is fresh-per-invocation, citing the MCP spec / Appendix B note 1.
 
-**4. `dotenv` quirk** — critical inline comment at `src/index.ts:9-16` documents why `quiet: true` matters (stdout pollution corrupts JSON-RPC over stdio). Pattern: surface non-obvious operational gotchas right above the code that handles them.
+Pattern to follow: when a line exists for spec compliance, cite the spec section in a one-line comment.
 
-**Anti-pattern:** do not comment what the code already says. Comment the *why*, the *spec rule*, or the *failure mode being prevented*.
+## Module Design
 
-## Resource Loading (fresh per invocation)
+- One concern per file. Tools live in `src/tools/`, prompts in `src/prompts/`, shared HTTP/search clients in `src/lib/`, types in `src/types.ts`.
+- Default to named exports. The only side-effecting file is `src/index.ts` (server bootstrap).
+- No barrel (`index.ts` re-export) files inside subfolders — each call site imports directly from the leaf module.
 
-Resources are markdown files in `src/resources/` and are read from disk inside the resource handler — never cached at module import time. See `src/index.ts:37-79`. New resources follow the same pattern: add the `.md` file, register with `server.resource(name, uri, async () => ({ contents: [...] }))`.
+## Function Design
 
-## Cache Helper
+- Tool handlers are async, destructure their validated input, and return the standard MCP `{ content: [{ type: 'text', text: ... }] }` shape with a JSON-stringified `ToolResult<T>` inside.
+- Helpers (`detectPricingModel`, `extractPriceTiers`, `extractChurnLanguage` in `src/tools/find-pricing-anchors.ts:53-97`) are pure, synchronous, and live in the same file as their single caller until reused.
+- Regex-heavy parsing logic is split into named helpers rather than inlined — improves readability and unit-testability when tests are added.
 
-`src/lib/cache.ts` provides a tiny in-process TTL map (`cacheGet`, `cacheSet`, `makeCacheKey`, `TTL.SHORT/MEDIUM/LONG`). Use it for repeat lookups within a session; do not assume persistence across server restarts.
+## Logging
 
-## Environment Variables
+- All diagnostic output goes to `console.error` (stderr) — never `console.log`. Reason: stdout is the JSON-RPC channel for the MCP stdio transport. See `src/index.ts:101-106` and `src/lib/serper.ts:40`.
 
-- Loaded once in `src/index.ts:13-16` via `dotenv` with `quiet: true` from a path relative to the compiled `build/` directory.
-- Access via bracket syntax `process.env['SERPER_API_KEY']` (required by `noPropertyAccessFromIndexSignature` semantics under strict mode).
-- Every key has a fallback path; missing keys are not fatal.
-- Documented in `.env.example`; never commit `.env`.
+## Error Handling
 
-## Error Handling Summary
+- External HTTP calls are wrapped in `try/catch` and fall back to stub data on failure (e.g., `src/lib/serper.ts:23-43`). Errors are logged to stderr and a `[STUB]` result is returned so the tool envelope is never broken.
+- Inside tool handlers, partial failure is recorded in `fallbacks_used[]` and `confidence_note`, not thrown. This implements spec §7's "Never fail silently" requirement while still always returning a valid `ToolResult<T>`.
 
-| Surface | Convention |
-|---------|-----------|
-| External fetch | `try/catch` → return stub / empty array, log to `console.error` |
-| Missing API key | `isXxxLive()` returns false → push to `fallbacks_used`, use stub |
-| Tool handler | Must always return a valid `ToolResult<T>`; never throw |
-| Fatal startup error | `main().catch(...)` → `console.error` + `process.exit(1)` (`src/index.ts:109-112`) |
-| All logging | `console.error` only — `console.log` is reserved for the JSON-RPC channel on stdio |
+## Configuration
 
-## File Layout Recap
+- Secrets via `.env` at the package root, loaded with `dotenv` (`quiet: true` mandatory — see comment above).
+- Env vars referenced via `process.env['KEY_NAME']` (bracket form preserves TS strict-mode safety).
+- Known keys: `SERPER_API_KEY`, `PRODUCTHUNT_API_KEY`. Absence is graceful, not fatal.
 
-```
-src/
-├── index.ts            # entrypoint, dotenv, server bootstrap, registrations
-├── types.ts            # ToolResult<T>, ToolSource — shared envelope
-├── lib/                # external clients (serper, hn, producthunt, reddit, webfetch, cache)
-├── tools/              # one file per MCP tool, exports registerXxx()
-├── prompts/            # one file per MCP prompt, exports registerXxxPrompt()
-└── resources/          # markdown loaded fresh per request
-```
+## Caching
+
+- In-memory `Map`-based cache in `src/lib/cache.ts` with TTL constants `SHORT` / `MEDIUM` / `LONG`. Used inside tool runs for repeated lookups.
+- Per spec Appendix B note 1: caching tool *results* within a single workflow run is allowed; caching *resource files* at startup is forbidden — they must be re-read per invocation (enforced by `loadResource()` in `src/index.ts:41-43`).
+
+## Linting / Formatting
+
+- No ESLint or Prettier config present in the repo. TypeScript `strict: true` in `tsconfig.json` is the only enforced check.
+- Consistency is maintained by convention, not tooling. A future addition of ESLint + Prettier would not change any of the spec-mandated conventions above — it would only formalize the implementation conventions.
 
 ---
 
