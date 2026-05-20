@@ -24,6 +24,7 @@ import { registerGetCategoryFailureModes } from './tools/get-category-failure-mo
 import { registerFindYCRFSAlignment } from './tools/find-yc-rfs-alignment.js';
 import { registerFindPricingAnchors } from './tools/find-pricing-anchors.js';
 import { registerCheckBigTechEncroachment } from './tools/check-big-tech-encroachment.js';
+import { registerFinalizeValidationReport } from './tools/finalize-validation-report.js';
 
 // Prompts
 import { registerValidateIdeaPrompt } from './prompts/validate-idea.js';
@@ -87,6 +88,7 @@ registerGetCategoryFailureModes(server);
 registerFindYCRFSAlignment(server);
 registerFindPricingAnchors(server);
 registerCheckBigTechEncroachment(server);
+registerFinalizeValidationReport(server);
 
 // Register prompts
 registerValidateIdeaPrompt(server);
@@ -100,7 +102,7 @@ async function main(): Promise<void> {
   await server.connect(transport);
   console.error('ProductValidation MCP Server running on stdio');
   console.error(
-    'Tools: find_closest_competitor, read_competitor_changelog, map_competitive_weaknesses, scan_producthunt_launches, get_category_failure_modes, find_yc_rfs_alignment, find_pricing_anchors, check_big_tech_encroachment'
+    'Tools: find_closest_competitor, read_competitor_changelog, map_competitive_weaknesses, scan_producthunt_launches, get_category_failure_modes, find_yc_rfs_alignment, find_pricing_anchors, check_big_tech_encroachment, finalize_validation_report'
   );
   console.error('Prompts: validate_idea, steelman_against, run_single_gate, generate_test_cards, quick_kill_check');
   console.error('Resources: source-tier-bias, tool-to-gate-map, evaluation-lens-matrix');
