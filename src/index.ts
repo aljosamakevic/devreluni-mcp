@@ -25,6 +25,7 @@ import { registerFindYCRFSAlignment } from './tools/find-yc-rfs-alignment.js';
 import { registerFindPricingAnchors } from './tools/find-pricing-anchors.js';
 import { registerCheckBigTechEncroachment } from './tools/check-big-tech-encroachment.js';
 import { registerFindWhyNowSignals } from './tools/find-why-now-signals.js';
+import { registerEstimateDemandSignals } from './tools/estimate-demand-signals.js';
 import { registerFinalizeValidationReport } from './tools/finalize-validation-report.js';
 
 // Prompts
@@ -90,6 +91,7 @@ registerFindYCRFSAlignment(server);
 registerFindPricingAnchors(server);
 registerCheckBigTechEncroachment(server);
 registerFindWhyNowSignals(server);
+registerEstimateDemandSignals(server);
 registerFinalizeValidationReport(server);
 
 // Register prompts
