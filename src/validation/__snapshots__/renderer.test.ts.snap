@@ -1,0 +1,242 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`renderReport > renders the synthetic valid report deterministically 1`] = `
+"## Section 1: Header
+
+Idea: A synthetic idea for testing.
+Framing: audience=B2B, builder=solo
+Generated: 2026-05-20T12:00:00Z
+MCP version: 0.2.0
+Total sources consulted: 10
+Source quality mix: S:0 A:0 B:10 C:0 D:0
+Bias mix: independent:10 vendor-funded:0 conflicted:0 unknown:0
+
+## Section 2: Verdict
+
+**GO**
+
+| Gate | Name | Status | Reason |
+| --- | --- | --- | --- |
+| 1 | Gate 1 | ✅ PASS | placeholder |
+| 2 | Gate 2 | ✅ PASS | placeholder |
+| 3 | Gate 3 | ✅ PASS | placeholder |
+| 4 | Gate 4 | ✅ PASS | placeholder |
+| 5 | Gate 5 | ✅ PASS | placeholder |
+
+Overall confidence: Medium
+
+## Section 3: Evidence Report
+
+### Gate 1: Direct Competitor Scan
+
+Status: PASS
+Confidence: Medium
+
+#### DOK 1 — Facts (raw, sourced)
+
+- Fact A for gate 1. — Source: https://example.com/g1/a | Tier: B | Bias: independent | Fetched: 2026-05-20T12:00:00Z
+- Fact B for gate 1. — Source: https://example.com/g1/b | Tier: B | Bias: independent | Fetched: 2026-05-20T12:00:00Z
+
+#### DOK 2 — Summary (synthesis, no interpretation)
+
+Plain restatement of the facts above for gate 1.
+
+#### DOK 3 — Insights (interpretation — MODEL JUDGMENT, NOT FACT) ⚠️
+
+- ⚠️ Cross-fact insight for gate 1.
+
+#### Contradicting Evidence
+
+No contradicting evidence surfaced — treat as a gap, not confirmation.
+
+#### DOK 4 — Gate Verdict
+
+PASS (confidence: Medium) because Gate 1 passes because the cited B-tier evidence aligns with the criteria.
+
+#### Source meta
+
+Consulted: 2 | Tiers: S:0 A:0 B:2 C:0 D:0 | Bias: indep:2 vendor:0 conflicted:0 unknown:0
+
+### Gate 2: Market Structure
+
+Status: PASS
+Confidence: Medium
+
+#### DOK 1 — Facts (raw, sourced)
+
+- Fact A for gate 2. — Source: https://example.com/g2/a | Tier: B | Bias: independent | Fetched: 2026-05-20T12:00:00Z
+- Fact B for gate 2. — Source: https://example.com/g2/b | Tier: B | Bias: independent | Fetched: 2026-05-20T12:00:00Z
+
+#### DOK 2 — Summary (synthesis, no interpretation)
+
+Plain restatement of the facts above for gate 2.
+
+#### DOK 3 — Insights (interpretation — MODEL JUDGMENT, NOT FACT) ⚠️
+
+- ⚠️ Cross-fact insight for gate 2.
+
+#### Contradicting Evidence
+
+No contradicting evidence surfaced — treat as a gap, not confirmation.
+
+#### DOK 4 — Gate Verdict
+
+PASS (confidence: Medium) because Gate 2 passes because the cited B-tier evidence aligns with the criteria.
+
+#### Source meta
+
+Consulted: 2 | Tiers: S:0 A:0 B:2 C:0 D:0 | Bias: indep:2 vendor:0 conflicted:0 unknown:0
+
+### Gate 3: Platform & Big-Tech Risk
+
+Status: PASS
+Confidence: Medium
+
+#### DOK 1 — Facts (raw, sourced)
+
+- Fact A for gate 3. — Source: https://example.com/g3/a | Tier: B | Bias: independent | Fetched: 2026-05-20T12:00:00Z
+- Fact B for gate 3. — Source: https://example.com/g3/b | Tier: B | Bias: independent | Fetched: 2026-05-20T12:00:00Z
+
+#### DOK 2 — Summary (synthesis, no interpretation)
+
+Plain restatement of the facts above for gate 3.
+
+#### DOK 3 — Insights (interpretation — MODEL JUDGMENT, NOT FACT) ⚠️
+
+- ⚠️ Cross-fact insight for gate 3.
+
+#### Contradicting Evidence
+
+No contradicting evidence surfaced — treat as a gap, not confirmation.
+
+#### DOK 4 — Gate Verdict
+
+PASS (confidence: Medium) because Gate 3 passes because the cited B-tier evidence aligns with the criteria.
+
+#### Source meta
+
+Consulted: 2 | Tiers: S:0 A:0 B:2 C:0 D:0 | Bias: indep:2 vendor:0 conflicted:0 unknown:0
+
+### Gate 4: Willingness to Pay
+
+Status: PASS
+Confidence: Medium
+
+#### DOK 1 — Facts (raw, sourced)
+
+- Fact A for gate 4. — Source: https://example.com/g4/a | Tier: B | Bias: independent | Fetched: 2026-05-20T12:00:00Z
+- Fact B for gate 4. — Source: https://example.com/g4/b | Tier: B | Bias: independent | Fetched: 2026-05-20T12:00:00Z
+
+#### DOK 2 — Summary (synthesis, no interpretation)
+
+Plain restatement of the facts above for gate 4.
+
+#### DOK 3 — Insights (interpretation — MODEL JUDGMENT, NOT FACT) ⚠️
+
+- ⚠️ Cross-fact insight for gate 4.
+
+#### Contradicting Evidence
+
+No contradicting evidence surfaced — treat as a gap, not confirmation.
+
+#### DOK 4 — Gate Verdict
+
+PASS (confidence: Medium) because Gate 4 passes because the cited B-tier evidence aligns with the criteria.
+
+#### Source meta
+
+Consulted: 2 | Tiers: S:0 A:0 B:2 C:0 D:0 | Bias: indep:2 vendor:0 conflicted:0 unknown:0
+
+### Gate 5: Why Now
+
+Status: PASS
+Confidence: Medium
+
+#### DOK 1 — Facts (raw, sourced)
+
+- Fact A for gate 5. — Source: https://example.com/g5/a | Tier: B | Bias: independent | Fetched: 2026-05-20T12:00:00Z
+- Fact B for gate 5. — Source: https://example.com/g5/b | Tier: B | Bias: independent | Fetched: 2026-05-20T12:00:00Z
+
+#### DOK 2 — Summary (synthesis, no interpretation)
+
+Plain restatement of the facts above for gate 5.
+
+#### DOK 3 — Insights (interpretation — MODEL JUDGMENT, NOT FACT) ⚠️
+
+- ⚠️ Cross-fact insight for gate 5.
+
+#### Contradicting Evidence
+
+No contradicting evidence surfaced — treat as a gap, not confirmation.
+
+#### DOK 4 — Gate Verdict
+
+PASS (confidence: Medium) because Gate 5 passes because the cited B-tier evidence aligns with the criteria.
+
+#### Source meta
+
+Consulted: 2 | Tiers: S:0 A:0 B:2 C:0 D:0 | Bias: indep:2 vendor:0 conflicted:0 unknown:0
+
+## Section 4: Validation Checks
+
+### Source Quality Audit
+
+| Dimension | Finding |
+| --- | --- |
+| Authority | mixed B/A tier |
+
+Outcome: No issues
+
+### Counterargument Search
+
+| Dimension | Finding |
+| --- | --- |
+| Critics | standard objections found |
+
+Outcome: No issues
+
+### Logic & Coherence Review
+
+| Dimension | Finding |
+| --- | --- |
+| Consistency | internally consistent |
+
+Outcome: No issues
+
+## Section 5: What Would Change This
+
+_No test cards recorded._
+
+## Section 6: Your Spiky POV
+
+> ⚠️ The verdict above is a model-generated recommendation. The decision is yours.
+
+My take: [user fills in]
+What I disagree with in the report: [user fills in]
+What I'm going to do: [user fills in]
+
+## Section 7: Source Appendix
+
+_No sources recorded._
+
+## Section 8: Methodology Notes
+
+Tool calls fired: 0
+
+### Tools fired
+
+- (no tool calls recorded)
+
+### Tools that failed or returned no results
+
+- None.
+
+### Validation rules in force
+
+spec v1.0
+
+### Disclaimer
+
+_This is a decision aid, not a verdict — final call is yours._
+"
+`;
