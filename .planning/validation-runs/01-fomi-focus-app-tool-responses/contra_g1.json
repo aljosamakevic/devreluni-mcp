@@ -1,0 +1,59 @@
+{
+  "data": {
+    "competitors": [
+      {
+        "name": "9 New Productivity Apps I'm Obsessed With (2025)",
+        "url": "https://www.youtube.com/watch?v=1m-fG4yQ1Ec",
+        "description": "Try Jace AI - your 24/7 personal AI assistant: https://jace.ai/ Use my code: SHUOMI for discount! We're halfway through 2025 so here are the ..."
+      },
+      {
+        "name": "AI tool that keeps you on track by literally watching your screen?",
+        "url": "https://www.reddit.com/r/ADHD_Programmers/comments/1l2qo6f/ai_tool_that_keeps_you_on_track_by_literally/",
+        "description": "It watches your screen, and it uses AI to work out what you're actually doing (privacy note below). If you're off track, it pings and helps you get back on ..."
+      },
+      {
+        "name": "Easily distracted? This AI focus tool will scold you into staying on task",
+        "url": "https://thehustle.co/news/easily-distracted-this-ai-focus-tool-will-scold-you-into-staying-on-task",
+        "description": "Instead of outright blocking websites and apps, it asks what you're working on, then monitors and analyzes your screen to determine whether what ..."
+      },
+      {
+        "name": "I spent 40000 dollars on an AI experiment",
+        "url": "https://www.instagram.com/reel/DPeD0f0DlfJ/",
+        "description": "And they built incredible products too. One of them built a zero-effort journaling app. AI does the writing based on your activity. It's called ..."
+      },
+      {
+        "name": "48 Top AI Apps to Know in 2026 | Built In",
+        "url": "https://builtin.com/artificial-intelligence/ai-apps",
+        "description": "AI apps like ChatGPT, Google Gemini, Claude and more put the power of artificial intelligence right in the user's hand."
+      }
+    ],
+    "hn_mentions": 0,
+    "ph_launches": 0,
+    "recommendation": "Found 5 competitors — crowded space. Focus on structural weaknesses via map_competitive_weaknesses before proceeding."
+  },
+  "sources": [
+    {
+      "url": "https://google.serper.dev/search?q=AI-native%20focus%20app%20that%20monitors%20screens%20to%20keep%20users%20on-task.%20Uses%20cloud%20screenshot%20analysis.%20profitable%20indie%20AI%20focus%20app%20success%20story%202025%20competitor%20alternatives",
+      "tier": "A",
+      "bias": "independent",
+      "fetched_at": "2026-05-25T12:29:41.145Z",
+      "contribution": "Google search results for: AI-native focus app that monitors screens to keep users on-task. Uses cloud screenshot analysis. profitable indie AI focus app success story 2025 competitor alternatives"
+    },
+    {
+      "url": "https://www.producthunt.com/search?q=AI-native%20focus%20app%20that%20monitors%20screens%20to%20keep%20users%20on-task.%20Uses%20cloud%20screenshot%20analysis.",
+      "tier": "A",
+      "bias": "independent",
+      "fetched_at": "2026-05-25T12:29:41.145Z",
+      "contribution": "Product Hunt launches for: AI-native focus app that monitors screens to keep users on-task. Uses cloud screenshot analysis."
+    },
+    {
+      "url": "https://hn.algolia.com/api/v1/search?query=AI-native%20focus%20app%20that%20monitors%20screens%20to%20keep%20users%20on-task.%20Uses%20cloud%20screenshot%20analysis.%20profitable%20indie%20AI%20focus%20app%20success%20story%202025%20competitor%20alternatives&tags=story",
+      "tier": "A",
+      "bias": "independent",
+      "fetched_at": "2026-05-25T12:29:41.145Z",
+      "contribution": "HN discussion search for: AI-native focus app that monitors screens to keep users on-task. Uses cloud screenshot analysis. profitable indie AI focus app success story 2025 competitor alternatives"
+    }
+  ],
+  "confidence_note": "Serper search data is live. Product Hunt data is live. HN data is live (no API key required).",
+  "fallbacks_used": []
+}

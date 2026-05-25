@@ -1,0 +1,249 @@
+{
+  "data": {
+    "detected_platforms": [
+      {
+        "name": "Apple Screen Time API",
+        "evidence": "Provided in explicit_platforms input: \"Apple Screen Time API\"",
+        "detection_source": "explicit_input",
+        "restrictive_history": true
+      },
+      {
+        "name": "Android platform APIs",
+        "evidence": "Provided in explicit_platforms input: \"Android Digital Wellbeing\"",
+        "detection_source": "explicit_input",
+        "restrictive_history": true
+      },
+      {
+        "name": "App Store",
+        "evidence": "Provided in explicit_platforms input: \"macOS\"",
+        "detection_source": "explicit_input",
+        "restrictive_history": true
+      }
+    ],
+    "tos_history_signals": [
+      {
+        "platform": "Apple Screen Time API",
+        "finding": "Apple Makes Screen Time API Available to Third-Party Developers",
+        "url": "https://www.macrumors.com/2021/06/07/apple-screen-time-api-third-party-developers/",
+        "snippet": "The API provides developers with key features like core restrictions and device activity monitoring, all in a way that puts privacy first. Ahead ..."
+      },
+      {
+        "platform": "Apple Screen Time API",
+        "finding": "Locked: Less Screen Time - App Store - Apple",
+        "url": "https://apps.apple.com/si/app/locked-less-screen-time/id6742744610",
+        "snippet": "All blocking is handled locally using Apple's Screen Time API. Privacy Policy: https://nowlocked.com/policies/privacy-policy Terms of Service ... Copyright © 2026 ..."
+      },
+      {
+        "platform": "Apple Screen Time API",
+        "finding": "Brainrot: Screen Time Control - App Store",
+        "url": "https://apps.apple.com/py/app/brainrot-screen-time-control/id6744338972?l=en-GB",
+        "snippet": "... Apple's Screen Time API; all monitoring and blocking run *entirely* on your ... *All features described above require a subscription.* Terms of Service ..."
+      },
+      {
+        "platform": "Apple Screen Time API",
+        "finding": "Parental Control App Developers Urge Apple to 'Put Kids First' by ...",
+        "url": "https://www.macrumors.com/2019/05/31/apple-screen-time-api-campaign/",
+        "snippet": "Apple has yet to indicate whether it will release a public API for Screen Time. While it is certainly possible that Apple could announce that it ..."
+      },
+      {
+        "platform": "Apple Screen Time API",
+        "finding": "Regain: Screen time control - App Store - Apple",
+        "url": "https://apps.apple.com/jm/app/regain-screen-time-control/id6749575953",
+        "snippet": "==> PRIVATE & SECURE Regain uses Apple's Screen Time API to safely block apps and track usage. ... Terms of Service: https://sponge-tugboat-107.notion.site ..."
+      },
+      {
+        "platform": "Android platform APIs",
+        "finding": "API reference - Android Developers",
+        "url": "https://developer.android.com/reference",
+        "snippet": "Deprecated Libraries. Start building your Android app with the Android Platform APIs. They are available in Kotlin and Java. Note: Many ..."
+      },
+      {
+        "platform": "Android platform APIs",
+        "finding": "Android API guidelines | Android Open Source Project",
+        "url": "https://source.android.com/docs/setup/contribute/api-guidelines",
+        "snippet": "Evolution of Android platform APIs ... Discouraged APIs differ from deprecated APIs in that there exists a narrow critical use case that prevents ..."
+      },
+      {
+        "platform": "Android platform APIs",
+        "finding": "Configure your build | Android Studio",
+        "url": "https://developer.android.com/build",
+        "snippet": "Some Android platform APIs might not be available in older API levels. You can conditionally guard use of newer features or use AndroidX compatibility ..."
+      },
+      {
+        "platform": "Android platform APIs",
+        "finding": "Handle edge-to-edge enforcements in Android 15",
+        "url": "https://developer.android.com/codelabs/edge-to-edge",
+        "snippet": "SociaLite demonstrates how to use various Android platform APIs to implement features that are commonly seen in social-network apps ..."
+      },
+      {
+        "platform": "Android platform APIs",
+        "finding": "How can I access/import Android Platform APIs with Typescript?",
+        "url": "https://stackoverflow.com/questions/64120226/how-can-i-access-import-android-platform-apis-with-typescript",
+        "snippet": "The Problem is that I am working with Typescript files and I don't know how to import the Android Platform APIs that I need. ... terms of service ..."
+      },
+      {
+        "platform": "App Store",
+        "finding": "Upcoming Requirements - Apple Developer",
+        "url": "https://developer.apple.com/news/upcoming-requirements/",
+        "snippet": "Apps uploaded to App Store Connect must be built with Xcode 15 for iOS 17, iPadOS 17, tvOS 17, or watchOS 10 starting April 29, 2024."
+      },
+      {
+        "platform": "App Store",
+        "finding": "Legal - Apple Media Services",
+        "url": "https://www.apple.com/legal/internet-services/itunes/",
+        "snippet": "... App Store, and the popularity of the Apps in the App Store. These ... Terms of Service · TestFlight Terms and Conditions · Privacy Policy ..."
+      },
+      {
+        "platform": "App Store",
+        "finding": "App Review Guidelines - Apple Developer",
+        "url": "https://developer.apple.com/app-store/review/guidelines/",
+        "snippet": "(viii) Apps should run on the currently shipping OS and may not use deprecated or optionally installed technologies (e.g. Java) ... App Store, App Store Connect, ..."
+      },
+      {
+        "platform": "App Store",
+        "finding": "Latest News - Apple Developer",
+        "url": "https://developer.apple.com/news/",
+        "snippet": "Starting April 28, 2026, apps and games uploaded to App Store Connect need to meet the following minimum requirements: iOS and iPadOS apps must ..."
+      },
+      {
+        "platform": "App Store",
+        "finding": "Legal - App Store Transparency Report - Apple",
+        "url": "https://www.apple.com/legal/app-store/transparency/2025/",
+        "snippet": "2025 App Store Transparency Report. Since it launched in 2008, the App Store ... Terms of Service · TestFlight Terms and Conditions · Privacy Policy · Website ..."
+      }
+    ],
+    "deplatforming_retros": [
+      {
+        "platform": "Apple Screen Time API",
+        "founder_or_company": "Anyone familiar with ScreenTime or DeviceActivity API? I want to just ...",
+        "url": "https://www.reddit.com/r/iOSProgramming/comments/1d9linf/anyone_familiar_with_screentime_or_deviceactivity/",
+        "snippet": "I've managed to publish an app with Apple screen time API. Can ... r/iOSProgramming - My app has been rejected for the third time and I am."
+      },
+      {
+        "platform": "Apple Screen Time API",
+        "founder_or_company": "Parental Control App Developers Urge Apple to 'Put Kids First' by ...",
+        "url": "https://www.macrumors.com/2019/05/31/apple-screen-time-api-campaign/",
+        "snippet": "Over a dozen parental control app developers have come together with a shared message for Apple: it's time to put kids first."
+      },
+      {
+        "platform": "Apple Screen Time API",
+        "founder_or_company": "Apple Makes Screen Time API Available to Third",
+        "url": "https://www.macrumors.com/2021/06/07/apple-screen-time-api-third-party-developers/",
+        "snippet": "Apple is making its Screen Time API available to third-party developers, which will let official Screen Time data be used in parental control apps."
+      },
+      {
+        "platform": "Apple Screen Time API",
+        "founder_or_company": "How to use Apple's Screen Time API in React Native?",
+        "url": "https://stackoverflow.com/questions/77606015/how-to-use-apples-screen-time-api-in-react-native",
+        "snippet": "How to use Apple's Screen Time API in React Native? Ask ... banned. Community activity. Last 1 hr. Users online activity. 2985 users ..."
+      },
+      {
+        "platform": "Android platform APIs",
+        "founder_or_company": "Discord Is Threatening to Shutdown BotGhost",
+        "url": "https://news.ycombinator.com/item?id=44359619",
+        "snippet": "Offering unrestricted API access means that third parties will store and sell this data. ... > If BotGhost is forced to shut down, your bot will stop working."
+      },
+      {
+        "platform": "App Store",
+        "founder_or_company": "17",
+        "url": "https://www.reddit.com/r/TheFounders/comments/1rpuzzu/17yearold_founder_my_first_product_took_9_app/",
+        "snippet": "It was actually getting it through the App Store review process — it was rejected 9 times before finally getting approved. Right now I'm ..."
+      },
+      {
+        "platform": "App Store",
+        "founder_or_company": "Apple's App Store Loss, AI Persuasion, and an Interview with Tyler ...",
+        "url": "https://www.youtube.com/watch?v=xOWI4TI72-A",
+        "snippet": "Today's show: Jason, Lon, and Alex break down a loaded week in tech: Apple's 27% App Store “link-out” fee gets shut down by a ..."
+      },
+      {
+        "platform": "App Store",
+        "founder_or_company": "How Apple lost control of the App Store",
+        "url": "https://www.youtube.com/watch?v=o_h8xn8Jaso",
+        "snippet": "... App Store in a way Apple likely never saw coming. The way we pay for apps is about to change, and fast. After that, it's time for an update ..."
+      },
+      {
+        "platform": "App Store",
+        "founder_or_company": "Wow. I am the author of this email. I have no idea how it resurfaced ...",
+        "url": "https://news.ycombinator.com/item?id=24190694",
+        "snippet": "... App Store. He said \"Your app drove download volume. Apple doesn't want ... banned/rejected ... Since 2011 I had 4 startups that where killed by either ..."
+      },
+      {
+        "platform": "App Store",
+        "founder_or_company": "@samuel.q.yang",
+        "url": "https://medium.com/@samuel.q.yang/apple-rejected-approved-removed-and-rejected-my-app-a317235e1ffd",
+        "snippet": "Here's a quick history of Doppel and the App Store: In late February, I submitted v1.0 to the App Store. In early March, Doppel was rejected."
+      }
+    ],
+    "single_platform_dependency_ratio": 0.3333333333333333,
+    "gate3_platform_risk_score": 4,
+    "gate3_platform_risk_label": "Heavy dependency on a restrictive platform with documented enforcement history",
+    "verdict": "Gate 3 platform-dependency risk: 4/5 — Heavy dependency on a restrictive platform with documented enforcement history. Detected 3 platform deps: Apple Screen Time API, Android platform APIs, App Store. Restrictive history: Apple Screen Time API, Android platform APIs, App Store. 15 recent ToS / policy signal(s) surfaced. 10 founder retro(s) surfaced — read before committing. Treat Gate 3 as likely FAIL on dependency risk alone unless a credible multi-platform fallback exists."
+  },
+  "sources": [
+    {
+      "url": "https://google.serper.dev/search?q=site%3Adeveloper.apple.com%20terms%20of%20service",
+      "tier": "S",
+      "bias": "conflicted",
+      "fetched_at": "2026-05-25T12:29:26.801Z",
+      "contribution": "Official ToS / dev-docs domain for Apple Screen Time API (developer.apple.com) — platform self-published"
+    },
+    {
+      "url": "https://google.serper.dev/search?q=%22Apple%20Screen%20Time%20API%22%20(ToS%20OR%20%22terms%20of%20service%22%20OR%20%22policy%20change%22%20OR%20deprecation)%202026%20OR%202025%20OR%20site%3Adeveloper.apple.com",
+      "tier": "A",
+      "bias": "independent",
+      "fetched_at": "2026-05-25T12:29:26.801Z",
+      "contribution": "Press / dev-docs ToS-change scan for Apple Screen Time API (5 hits)"
+    },
+    {
+      "url": "https://google.serper.dev/search?q=%22Apple%20Screen%20Time%20API%22%20(%22lost%20access%22%20OR%20%22deplatformed%22%20OR%20%22shut%20down%22%20OR%20%22kicked%20off%22%20OR%20%22banned%22%20OR%20%22rejected%22)%20founder%20OR%20retro%20OR%20postmortem%20site%3Amedium.com%20OR%20site%3Anews.ycombinator.com%20OR%20site%3Aindiehackers.com",
+      "tier": "A",
+      "bias": "conflicted",
+      "fetched_at": "2026-05-25T12:29:26.801Z",
+      "contribution": "Founder retro scan for Apple Screen Time API (4 retros) — bias 'conflicted' per spec §4 rule 6 (founder stake against platform)"
+    },
+    {
+      "url": "https://google.serper.dev/search?q=site%3Adeveloper.android.com%20terms%20of%20service",
+      "tier": "S",
+      "bias": "conflicted",
+      "fetched_at": "2026-05-25T12:29:26.801Z",
+      "contribution": "Official ToS / dev-docs domain for Android platform APIs (developer.android.com) — platform self-published"
+    },
+    {
+      "url": "https://google.serper.dev/search?q=%22Android%20platform%20APIs%22%20(ToS%20OR%20%22terms%20of%20service%22%20OR%20%22policy%20change%22%20OR%20deprecation)%202026%20OR%202025%20OR%20site%3Adeveloper.android.com",
+      "tier": "A",
+      "bias": "independent",
+      "fetched_at": "2026-05-25T12:29:26.801Z",
+      "contribution": "Press / dev-docs ToS-change scan for Android platform APIs (5 hits)"
+    },
+    {
+      "url": "https://google.serper.dev/search?q=%22Android%20platform%20APIs%22%20(%22lost%20access%22%20OR%20%22deplatformed%22%20OR%20%22shut%20down%22%20OR%20%22kicked%20off%22%20OR%20%22banned%22%20OR%20%22rejected%22)%20founder%20OR%20retro%20OR%20postmortem%20site%3Amedium.com%20OR%20site%3Anews.ycombinator.com%20OR%20site%3Aindiehackers.com",
+      "tier": "A",
+      "bias": "conflicted",
+      "fetched_at": "2026-05-25T12:29:26.801Z",
+      "contribution": "Founder retro scan for Android platform APIs (1 retro) — bias 'conflicted' per spec §4 rule 6 (founder stake against platform)"
+    },
+    {
+      "url": "https://google.serper.dev/search?q=site%3Adeveloper.apple.com%20terms%20of%20service",
+      "tier": "S",
+      "bias": "conflicted",
+      "fetched_at": "2026-05-25T12:29:26.801Z",
+      "contribution": "Official ToS / dev-docs domain for App Store (developer.apple.com) — platform self-published"
+    },
+    {
+      "url": "https://google.serper.dev/search?q=%22App%20Store%22%20(ToS%20OR%20%22terms%20of%20service%22%20OR%20%22policy%20change%22%20OR%20deprecation)%202026%20OR%202025%20OR%20site%3Adeveloper.apple.com",
+      "tier": "A",
+      "bias": "independent",
+      "fetched_at": "2026-05-25T12:29:26.801Z",
+      "contribution": "Press / dev-docs ToS-change scan for App Store (5 hits)"
+    },
+    {
+      "url": "https://google.serper.dev/search?q=%22App%20Store%22%20(%22lost%20access%22%20OR%20%22deplatformed%22%20OR%20%22shut%20down%22%20OR%20%22kicked%20off%22%20OR%20%22banned%22%20OR%20%22rejected%22)%20founder%20OR%20retro%20OR%20postmortem%20site%3Amedium.com%20OR%20site%3Anews.ycombinator.com%20OR%20site%3Aindiehackers.com",
+      "tier": "A",
+      "bias": "conflicted",
+      "fetched_at": "2026-05-25T12:29:26.801Z",
+      "contribution": "Founder retro scan for App Store (5 retros) — bias 'conflicted' per spec §4 rule 6 (founder stake against platform)"
+    }
+  ],
+  "confidence_note": "Detection: explicit_input → 3 platform(s). Serper: live; 6 fan-out calls fired (3 platforms × 2 families: ToS + retros). Source mix: 3 independent, 6 conflicted. Single-platform dependency ratio: 0.33 (rough proxy — 1.0 = all eggs in one basket). Risk score 4/5 base. No deplatforming stories are fabricated — empty retros[] means search returned no matches, not that the platform is safe.",
+  "fallbacks_used": []
+}

@@ -1,0 +1,127 @@
+{
+  "data": {
+    "adjacency_score": 2,
+    "adjacency_label": "Weak signal — some adjacent activity, not directly competing",
+    "conference_mentions": [],
+    "platform_api_signals": [],
+    "acquisitions": [
+      {
+        "hyperscaler": "Apple",
+        "target_company": "This Week in Apps, Apple WWDC review: blurred lines, new API",
+        "url": "https://techcrunch.com/2022/06/11/this-week-in-apps-apple-wwdc-review-blurred-lines-new-apis-and-a-brand-new-lock-screen/",
+        "snippet": "The app also added a new screen time dashboard as well as reminders for minors (13-17) to enable TikTok's screen time tools if they've used ..."
+      },
+      {
+        "hyperscaler": "Apple",
+        "target_company": "Apple unveils iOS 15 with new features for FaceTime and bett",
+        "url": "https://techcrunch.com/2021/06/07/apple-unveils-ios-15-with-new-features-for-facetime-and-better-notifications/",
+        "snippet": "But there are new settings. Apple calls this Focus mode. You can choose apps and people you want notifications from and change your focus ..."
+      },
+      {
+        "hyperscaler": "Apple",
+        "target_company": "Apple puts its next generation of AI into sharper focus as i",
+        "url": "https://techcrunch.com/2018/11/21/apple-silk-labs/",
+        "snippet": "That means it's not clear if this is a full acquisition or an acqui-hire — as we learn more we will update this post — but bringing on the team ..."
+      },
+      {
+        "hyperscaler": "Apple",
+        "target_company": "Apple Acquires Web App Startup Particle, Retains Several ...",
+        "url": "https://techcrunch.com/2012/10/17/apple-acquires-web-app-startup-particle-retains-several-developers-to-work-at-cupertino/",
+        "snippet": "It looks like Apple acquired Justin Timberlake-backed web apps company Particle last month — maker of social video service robo.to, and a design ..."
+      }
+    ],
+    "hyperscalers_active": [
+      "Apple"
+    ],
+    "verdict": "Gate 3 likely PASS on encroachment alone. Adjacency 2/5: Weak signal — some adjacent activity, not directly competing. Still verify with assess_platform_dependency for ToS/integration risks.",
+    "killshot_risk": null
+  },
+  "sources": [
+    {
+      "url": "https://www.google.com/search?q=focus%20app%20screen%20time%20deep%20work%20focus%20modes%20site%3Adeveloper.apple.com",
+      "tier": "S",
+      "bias": "conflicted",
+      "fetched_at": "2026-05-25T12:29:22.769Z",
+      "contribution": "Apple WWDC mentions of \"focus app screen time deep work focus modes\""
+    },
+    {
+      "url": "https://www.google.com/search?q=focus%20app%20screen%20time%20deep%20work%20focus%20modes%20site%3Aapple.com",
+      "tier": "S",
+      "bias": "conflicted",
+      "fetched_at": "2026-05-25T12:29:22.770Z",
+      "contribution": "Apple WWDC mentions of \"focus app screen time deep work focus modes\""
+    },
+    {
+      "url": "https://www.google.com/search?q=focus%20app%20screen%20time%20deep%20work%20focus%20modes%20site%3Aio.google",
+      "tier": "S",
+      "bias": "conflicted",
+      "fetched_at": "2026-05-25T12:29:22.770Z",
+      "contribution": "Google Google I/O mentions of \"focus app screen time deep work focus modes\""
+    },
+    {
+      "url": "https://www.google.com/search?q=focus%20app%20screen%20time%20deep%20work%20focus%20modes%20site%3Adevelopers.google.com",
+      "tier": "S",
+      "bias": "conflicted",
+      "fetched_at": "2026-05-25T12:29:22.770Z",
+      "contribution": "Google Google I/O mentions of \"focus app screen time deep work focus modes\""
+    },
+    {
+      "url": "https://www.google.com/search?q=focus%20app%20screen%20time%20deep%20work%20focus%20modes%20site%3Abuild.microsoft.com",
+      "tier": "S",
+      "bias": "conflicted",
+      "fetched_at": "2026-05-25T12:29:22.770Z",
+      "contribution": "Microsoft Microsoft Build mentions of \"focus app screen time deep work focus modes\""
+    },
+    {
+      "url": "https://www.google.com/search?q=focus%20app%20screen%20time%20deep%20work%20focus%20modes%20site%3Alearn.microsoft.com",
+      "tier": "S",
+      "bias": "conflicted",
+      "fetched_at": "2026-05-25T12:29:22.770Z",
+      "contribution": "Microsoft Microsoft Build mentions of \"focus app screen time deep work focus modes\""
+    },
+    {
+      "url": "https://www.google.com/search?q=focus%20app%20screen%20time%20deep%20work%20focus%20modes%20site%3Adevelopers.meta.com",
+      "tier": "S",
+      "bias": "conflicted",
+      "fetched_at": "2026-05-25T12:29:22.770Z",
+      "contribution": "Meta Meta Connect mentions of \"focus app screen time deep work focus modes\""
+    },
+    {
+      "url": "https://www.google.com/search?q=focus%20app%20screen%20time%20deep%20work%20focus%20modes%20site%3Aaws.amazon.com",
+      "tier": "S",
+      "bias": "conflicted",
+      "fetched_at": "2026-05-25T12:29:22.770Z",
+      "contribution": "Amazon AWS re:Invent mentions of \"focus app screen time deep work focus modes\""
+    },
+    {
+      "url": "https://www.google.com/search?q=focus%20app%20screen%20time%20deep%20work%20focus%20modes%20%22iOS%22%20OR%20%22macOS%22%20API%20SDK%20new%20framework",
+      "tier": "S",
+      "bias": "conflicted",
+      "fetched_at": "2026-05-25T12:29:23.760Z",
+      "contribution": "Apple platform API/SDK announcements"
+    },
+    {
+      "url": "https://www.google.com/search?q=focus%20app%20screen%20time%20deep%20work%20focus%20modes%20%22Android%22%20OR%20%22Chrome%22%20API%20new",
+      "tier": "S",
+      "bias": "conflicted",
+      "fetched_at": "2026-05-25T12:29:24.677Z",
+      "contribution": "Google platform API/SDK announcements"
+    },
+    {
+      "url": "https://www.google.com/search?q=focus%20app%20screen%20time%20deep%20work%20focus%20modes%20%22Windows%22%20OR%20%22Copilot%22%20API%20new",
+      "tier": "S",
+      "bias": "conflicted",
+      "fetched_at": "2026-05-25T12:29:25.543Z",
+      "contribution": "Microsoft platform API/SDK announcements"
+    },
+    {
+      "url": "https://www.google.com/search?q=focus%20app%20screen%20time%20deep%20work%20focus%20modes%20acquired%20OR%20acquisition%20(Apple%20OR%20Google%20OR%20Microsoft%20OR%20Meta)%20site%3Atechcrunch.com%20OR%20site%3Atheverge.com%20OR%20site%3Abloomberg.com",
+      "tier": "A",
+      "bias": "independent",
+      "fetched_at": "2026-05-25T12:29:26.278Z",
+      "contribution": "Press coverage of acquisitions in \"focus app\" space"
+    }
+  ],
+  "confidence_note": "Searched 8 conference site filters across 5 hyperscalers + 3 API queries + 1 acquisition query. Adjacency score is heuristic from signal counts — review the raw mentions before treating verdict as final. Recency detection relies on year strings in titles/snippets and can miss recent dateless pages.",
+  "fallbacks_used": []
+}
