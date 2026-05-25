@@ -38,6 +38,7 @@ import {
   type SerperOrganicResult,
 } from '../lib/serper.js';
 import { effectiveBias, requiresUpgradeFromUnknown } from '../lib/bias.js';
+import { cacheGet, cacheSet, makeCacheKey, TTL } from '../lib/cache.js';
 
 type SignalStrength = 'strong' | 'moderate' | 'weak' | 'none';
 
@@ -308,6 +309,28 @@ export function registerEstimateDemandSignals(server: McpServer): void {
       candidate_repos,
     }) => {
       void _idea_description; // currently context-only; reserved for future query shaping
+      // Tool-layer cache: TTL.SHORT (5min). Composes GitHub (LIB-CACHED) +
+      // Reddit (LIB-CACHED) + Serper (NOT-CACHED). The outer wrap is the
+      // ONLY cache that protects the Serper fan-out from refiring on repeat
+      // invocations within a session. Inner lib caches persist beyond the
+      // 5-minute outer TTL (GitHub/Reddit memoize at their own TTLs), so
+      // when the outer expires re-runs still avoid GitHub API rate-limit
+      // burns — only Serper retries.
+      const keywordsForKey = (category_keywords ?? []).map((k) => k.trim().toLowerCase()).sort();
+      const subsForKey = (candidate_subreddits ?? []).map((s) => s.trim().toLowerCase()).sort();
+      const reposForKey = (candidate_repos ?? []).map((r) => r.trim().toLowerCase()).sort();
+      const cacheKey = makeCacheKey(
+        'estimate_demand_signals',
+        category.trim().toLowerCase(),
+        keywordsForKey.join(','),
+        subsForKey.join(','),
+        reposForKey.join(','),
+      );
+      const cached = cacheGet<ToolResult<EstimateDemandSignalsData>>(cacheKey);
+      if (cached) {
+        return { content: [{ type: 'text', text: JSON.stringify(cached, null, 2) }] };
+      }
+
       const sources: ToolSource[] = [];
       const fallbacksUsed: string[] = [];
       const keywords = category_keywords ?? [];
@@ -455,6 +478,7 @@ export function registerEstimateDemandSignals(server: McpServer): void {
         fallbacks_used: fallbacksUsed,
       };
 
+      cacheSet(cacheKey, result, TTL.SHORT);
       return {
         content: [{ type: 'text', text: JSON.stringify(result, null, 2) }],
       };

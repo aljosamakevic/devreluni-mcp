@@ -5,6 +5,7 @@ import { fetchPage, stripHtml } from '../lib/webfetch.js';
 import { serperSearch, serperSource, serperConfidenceNote, isSerperLive } from '../lib/serper.js';
 import { waybackLookup, waybackSource, waybackConfidenceNote } from '../lib/wayback.js';
 import { resolveCompetitorDomain } from '../lib/competitor-domain.js';
+import { cacheGet, cacheSet, makeCacheKey, TTL } from '../lib/cache.js';
 
 type PricingModel = 'subscription' | 'one-time' | 'freemium' | 'usage-based' | 'unknown';
 
@@ -82,7 +83,7 @@ function detectPricingModel(text: string): PricingModel {
   return 'unknown';
 }
 
-function extractPriceTiers(text: string): string[] {
+export function extractPriceTiers(text: string): string[] {
   const tiers: string[] = [];
   // Per CONCERNS.md M1: REQUIRE a currency anchor — bare digits like "8217" (HTML
   // entity remnants) or "474" (CSS class fragments) must not reach tiers[].
@@ -147,6 +148,29 @@ export function registerFindPricingAnchors(server: McpServer): void {
       },
     },
     async ({ category, competitors, framing }) => {
+      // Tool-layer cache: TTL.SHORT (5min). For find_pricing_anchors specifically,
+      // T02's inner cache for `competitor → hostname` is TTL.LONG (24h) — when
+      // the outer cache expires after 5 minutes, the inner cache still serves
+      // the domain resolution from a single Serper call, so re-runs within 24h
+      // cost zero Serper quota for domain lookups regardless of outer cache
+      // state. The inner cache is the long-term quota saver; the outer cache
+      // is the fast-path for iterative back-to-back runs.
+      // `framing` is intentionally omitted from the key per PLAN §T12 — it
+      // only nudges `auto_flags` text downstream (lines ~358+) and does not
+      // change the fetched pricing evidence itself, so a cross-framing cache
+      // hit is safe (the cached auto_flags reflect whichever framing was
+      // first to populate the cache; acceptable per spec).
+      const competitorsForKey = [...competitors].map((c) => c.trim().toLowerCase()).sort();
+      const cacheKey = makeCacheKey(
+        'find_pricing_anchors',
+        category.trim().toLowerCase(),
+        competitorsForKey.join(','),
+      );
+      const cached = cacheGet<ToolResult<FindPricingAnchorsData>>(cacheKey);
+      if (cached) {
+        return { content: [{ type: 'text', text: JSON.stringify(cached, null, 2) }] };
+      }
+
       const fallbacksUsed: string[] = [];
       const sources: ToolSource[] = [];
       const current_pricing: CurrentPricing[] = [];
@@ -384,6 +408,7 @@ export function registerFindPricingAnchors(server: McpServer): void {
         fallbacks_used: fallbacksUsed,
       };
 
+      cacheSet(cacheKey, result, TTL.SHORT);
       return {
         content: [{ type: 'text', text: JSON.stringify(result, null, 2) }],
       };

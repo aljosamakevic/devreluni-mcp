@@ -22,6 +22,7 @@ import {
 } from '../lib/serper.js';
 import { effectiveBias, requiresUpgradeFromUnknown } from '../lib/bias.js';
 import { detectRecency, CURRENT_YEAR } from '../lib/recency.js';
+import { cacheGet, cacheSet, makeCacheKey, TTL } from '../lib/cache.js';
 
 type EnablerType =
   | 'api'
@@ -235,6 +236,24 @@ export function registerFindWhyNowSignals(server: McpServer): void {
       },
     },
     async ({ idea_description, category, category_keywords }) => {
+      // Tool-layer cache: TTL.SHORT (5min). This handler fans out hyperscaler
+      // doc searches + regulatory site searches through Serper, which has NO
+      // internal cache (src/lib/serper.ts). Without this wrap each re-run
+      // within the same session refires ~8 Serper queries identically. The
+      // inner detectRecency / CURRENT_YEAR data is pure-static, so cache
+      // determinism is preserved across the 5-minute TTL.
+      const keywordsForKey = (category_keywords ?? []).map((k) => k.trim().toLowerCase()).sort();
+      const cacheKey = makeCacheKey(
+        'find_why_now_signals',
+        category.trim().toLowerCase(),
+        keywordsForKey.join(','),
+        idea_description.trim().toLowerCase(),
+      );
+      const cached = cacheGet<ToolResult<FindWhyNowSignalsData>>(cacheKey);
+      if (cached) {
+        return { content: [{ type: 'text', text: JSON.stringify(cached, null, 2) }] };
+      }
+
       const sources: ToolSource[] = [];
       const fallbacksUsed: string[] = [];
       const keywords = category_keywords ?? [];
@@ -447,6 +466,7 @@ export function registerFindWhyNowSignals(server: McpServer): void {
         fallbacks_used: fallbacksUsed,
       };
 
+      cacheSet(cacheKey, result, TTL.SHORT);
       return {
         content: [{ type: 'text', text: JSON.stringify(result, null, 2) }],
       };

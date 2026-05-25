@@ -39,6 +39,7 @@ import {
 } from '../lib/serper.js';
 import { effectiveBias, requiresUpgradeFromUnknown } from '../lib/bias.js';
 import { PLATFORM_KEYWORDS, getMatchingPlatforms, type PlatformEntry } from '../lib/platform-keywords.js';
+import { cacheGet, cacheSet, makeCacheKey, TTL } from '../lib/cache.js';
 
 type DetectionSource = 'explicit_input' | 'inferred_from_idea';
 type RiskScore = 1 | 2 | 3 | 4 | 5;
@@ -373,6 +374,23 @@ export function registerAssessPlatformDependency(server: McpServer): void {
       },
     },
     async ({ idea_description, category, explicit_platforms, framing }) => {
+      // Tool-layer cache: TTL.SHORT (5min). Fans out platform ToS searches
+      // + deplatforming retrospective searches via Serper (NOT-CACHED) and
+      // webfetch (NOT-CACHED) — up to ~6 queries per detected platform. The
+      // `framing` object is omitted from the cache key per PLAN §T12 (it
+      // only nudges the gate3 risk threshold, not the fetched evidence).
+      const platformsForKey = (explicit_platforms ?? []).map((p) => p.trim().toLowerCase()).sort();
+      const cacheKey = makeCacheKey(
+        'assess_platform_dependency',
+        category.trim().toLowerCase(),
+        idea_description.trim().toLowerCase(),
+        platformsForKey.join(','),
+      );
+      const cached = cacheGet<ToolResult<AssessPlatformDependencyData>>(cacheKey);
+      if (cached) {
+        return { content: [{ type: 'text', text: JSON.stringify(cached, null, 2) }] };
+      }
+
       const sources: ToolSource[] = [];
       const fallbacksUsed: string[] = [];
 
@@ -399,6 +417,7 @@ export function registerAssessPlatformDependency(server: McpServer): void {
           confidence_note: `Substring-matched ${PLATFORM_KEYWORDS.length} known platforms against idea+category text — zero hits. No Serper calls fired (no platforms to investigate). Pass explicit_platforms to force a scan.`,
           fallbacks_used: ['no_platforms_detected (heuristic miss — pass explicit_platforms to override)'],
         };
+        cacheSet(cacheKey, result, TTL.SHORT);
         return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
       }
 
@@ -542,6 +561,7 @@ export function registerAssessPlatformDependency(server: McpServer): void {
         fallbacks_used: fallbacksUsed,
       };
 
+      cacheSet(cacheKey, result, TTL.SHORT);
       return {
         content: [{ type: 'text', text: JSON.stringify(result, null, 2) }],
       };

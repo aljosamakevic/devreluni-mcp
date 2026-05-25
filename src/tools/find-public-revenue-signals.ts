@@ -29,6 +29,7 @@ import {
   type SerperOrganicResult,
 } from '../lib/serper.js';
 import { effectiveBias, requiresUpgradeFromUnknown } from '../lib/bias.js';
+import { cacheGet, cacheSet, makeCacheKey, TTL } from '../lib/cache.js';
 
 type SignalStrength = 'strong' | 'moderate' | 'weak' | 'none';
 
@@ -413,6 +414,24 @@ export function registerFindPublicRevenueSignals(server: McpServer): void {
       },
     },
     async ({ category, competitors, framing }) => {
+      // Tool-layer cache: TTL.SHORT (5min). Runs 4 Serper site-filter fan-outs
+      // (TechCrunch / Crunchbase / SEC / IndieHackers) per competitor; Serper
+      // has NO internal cache. The `framing` object is deliberately omitted
+      // from the cache key — per PLAN §T12, framing only adjusts auto_flags
+      // downstream and does not influence the fetched evidence, so a cache
+      // hit across framings is safe. (framing is still used downstream for
+      // verdict text formatting.)
+      const competitorsForKey = [...competitors].map((c) => c.trim().toLowerCase()).sort();
+      const cacheKey = makeCacheKey(
+        'find_public_revenue_signals',
+        category.trim().toLowerCase(),
+        competitorsForKey.join(','),
+      );
+      const cached = cacheGet<ToolResult<FindPublicRevenueSignalsData>>(cacheKey);
+      if (cached) {
+        return { content: [{ type: 'text', text: JSON.stringify(cached, null, 2) }] };
+      }
+
       const sources: ToolSource[] = [];
       const fallbacksUsed: string[] = [];
 
@@ -583,6 +602,7 @@ export function registerFindPublicRevenueSignals(server: McpServer): void {
         fallbacks_used: fallbacksUsed,
       };
 
+      cacheSet(cacheKey, result, TTL.SHORT);
       return {
         content: [{ type: 'text', text: JSON.stringify(result, null, 2) }],
       };
