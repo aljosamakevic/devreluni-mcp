@@ -38,7 +38,7 @@ import {
   type SerperOrganicResult,
 } from '../lib/serper.js';
 import { effectiveBias, requiresUpgradeFromUnknown } from '../lib/bias.js';
-import { PLATFORM_KEYWORDS, type PlatformEntry } from '../lib/platform-keywords.js';
+import { PLATFORM_KEYWORDS, getMatchingPlatforms, type PlatformEntry } from '../lib/platform-keywords.js';
 
 type DetectionSource = 'explicit_input' | 'inferred_from_idea';
 type RiskScore = 1 | 2 | 3 | 4 | 5;
@@ -84,14 +84,16 @@ function detectFromExplicit(explicit: string[]): DetectedPlatform[] {
   // Try to map each explicit string back to a known entry for restrictive_history;
   // if no match, still surface the raw name (user knows their stack better than
   // our static table).
+  //
+  // D-T16-1: must apply longest-trigger-first here too. If user types
+  // "Android Digital Wellbeing", a naive scan would match the broader
+  // "Android platform APIs" (trigger "android") first in declaration order.
+  // Prefer exact-canonical match → then getMatchingPlatforms (specificity-sorted).
   const out: DetectedPlatform[] = [];
   for (const raw of explicit) {
     const needle = raw.toLowerCase();
-    const matched = PLATFORM_KEYWORDS.find(
-      (p) =>
-        p.platform.toLowerCase() === needle ||
-        p.triggers.some((t) => needle.includes(t) || t.includes(needle)),
-    );
+    const exact = PLATFORM_KEYWORDS.find((p) => p.platform.toLowerCase() === needle);
+    const matched = exact ?? getMatchingPlatforms(needle)[0];
     out.push({
       name: matched?.platform ?? raw,
       evidence: `Provided in explicit_platforms input: "${raw}"`,
@@ -110,25 +112,18 @@ function detectFromExplicit(explicit: string[]): DetectedPlatform[] {
 
 function detectFromIdea(ideaText: string): DetectedPlatform[] {
   const haystack = ideaText.toLowerCase();
-  const hits: DetectedPlatform[] = [];
-  for (const entry of PLATFORM_KEYWORDS) {
-    const trigger = entry.triggers.find((t) => haystack.includes(t));
-    if (trigger) {
-      hits.push({
-        name: entry.platform,
-        evidence: `Inferred from substring match: "${trigger}" in idea/category text`,
-        detection_source: 'inferred_from_idea',
-        restrictive_history: entry.restrictive,
-      });
-    }
-  }
-  // De-dupe (same trigger can appear across multiple entries' triggers[] —
-  // unlikely but safe).
-  const seen = new Set<string>();
-  return hits.filter((p) => {
-    if (seen.has(p.name)) return false;
-    seen.add(p.name);
-    return true;
+  // Use getMatchingPlatforms (D-T16-1): longest-trigger-first ordering so
+  // specific entries (e.g. "Android Digital Wellbeing") beat broader ones
+  // (e.g. "android" triggering "Android platform APIs") when both match.
+  const matched = getMatchingPlatforms(haystack);
+  return matched.map((entry) => {
+    const trigger = entry.triggers.find((t) => haystack.includes(t)) ?? entry.triggers[0]!;
+    return {
+      name: entry.platform,
+      evidence: `Inferred from substring match: "${trigger}" in idea/category text`,
+      detection_source: 'inferred_from_idea',
+      restrictive_history: entry.restrictive,
+    };
   });
 }
 

@@ -215,3 +215,58 @@ export const PLATFORM_KEYWORDS: PlatformEntry[] = [
     restrictive: false,
   },
 ];
+
+// ─── Longest-trigger-first match helper (D-T16-1) ──────────────────────────
+//
+// The PLATFORM_KEYWORDS array above is ordered by ECOSYSTEM (Apple → Google →
+// Social → SaaS → LLM) for human reviewability — that order is load-bearing
+// for audits and MUST NOT be mutated. But for substring matching we want the
+// MOST SPECIFIC trigger to win: e.g. "Android Digital Wellbeing" must match
+// its dedicated entry, not the broader "Android platform APIs" (which has the
+// trigger "android" — a substring of the haystack).
+//
+// Solution: build a sorted VIEW at module-init time (separate array, original
+// untouched), sorted by descending max(trigger.length). At match time, iterate
+// the sorted view and collect every entry whose trigger appears in the
+// lowercased haystack. Tie-break on equal max-trigger-length: original
+// declaration order (stable sort).
+
+interface SortedView {
+  entry: PlatformEntry;
+  maxTriggerLen: number;
+  declOrder: number;
+}
+
+const PLATFORM_KEYWORDS_BY_SPECIFICITY: SortedView[] = PLATFORM_KEYWORDS
+  .map((entry, declOrder) => ({
+    entry,
+    maxTriggerLen: entry.triggers.reduce((m, t) => Math.max(m, t.length), 0),
+    declOrder,
+  }))
+  .slice()
+  .sort((a, b) => {
+    if (b.maxTriggerLen !== a.maxTriggerLen) return b.maxTriggerLen - a.maxTriggerLen;
+    return a.declOrder - b.declOrder;
+  });
+
+/**
+ * Return every PLATFORM_KEYWORDS entry whose trigger appears in `haystack`,
+ * ordered by descending max-trigger-length (most specific first). Tie-break:
+ * original declaration order. Case-insensitive.
+ *
+ * Fixes D-T16-1: ensures "Android Digital Wellbeing" beats "android" when the
+ * haystack mentions both.
+ */
+export function getMatchingPlatforms(haystack: string): PlatformEntry[] {
+  const lower = haystack.toLowerCase();
+  const hits: PlatformEntry[] = [];
+  const seen = new Set<string>();
+  for (const { entry } of PLATFORM_KEYWORDS_BY_SPECIFICITY) {
+    if (seen.has(entry.platform)) continue;
+    if (entry.triggers.some((t) => lower.includes(t))) {
+      hits.push(entry);
+      seen.add(entry.platform);
+    }
+  }
+  return hits;
+}
