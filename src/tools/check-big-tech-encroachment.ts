@@ -230,11 +230,20 @@ export function registerCheckBigTechEncroachment(server: McpServer): void {
           else if (/amazon|aws/i.test(text)) hyperscaler = 'Amazon';
           if (!hyperscaler) continue;
 
-          // Try to extract the target company name from the title
-          const acqMatch = r.title.match(/acquir(?:es?|ed)\s+([A-Z][A-Za-z0-9.&\- ]+?)(?:\s+for|\s+in|[,.])/);
+          // Extract the target company name from the title. End-anchored:
+          // requires an explicit deal marker ("for $X", "in a $X deal", "$<digits>",
+          // or the literal word "deal") to follow the candidate name. Per CONCERNS.md
+          // M4, the previous regex over-matched ("Pixelmator hints at") and the
+          // fallthrough to a 60-char title slice fabricated phantom acquisitions
+          // from headlines like "This Week in Apps". Better to drop a real
+          // acquisition than fabricate one — on no-match, skip the entry.
+          const acqMatch = r.title.match(
+            /[Aa]cqui(?:res?|red)\s+([A-Z][A-Za-z0-9.&\- ]{1,40}?)(?=\s+(?:for\s+\$|in\s+a\s+\$|deal\b|\$\d))/,
+          );
+          if (!acqMatch) continue;
           acquisitions.push({
             hyperscaler,
-            target_company: acqMatch ? acqMatch[1].trim() : r.title.slice(0, 60),
+            target_company: acqMatch[1].trim(),
             url: r.link,
             snippet: r.snippet,
           });
