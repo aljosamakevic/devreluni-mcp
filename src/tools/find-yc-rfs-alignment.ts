@@ -167,9 +167,10 @@ export function registerFindYCRFSAlignment(server: McpServer): void {
       const source: ToolSource = {
         url: RFS_SOURCE_URL,
         tier: 'A',
-        bias: 'independent',
+        // YC RFS reflects YC's strategic priorities — conflicted per spec §4 rule 6 (positioning evidence)
+        bias: 'conflicted',
         fetched_at: new Date().toISOString(),
-        contribution: `YC ${RFS_VINTAGE} Request for Startups — strategic signal for timing alignment. Not a funding commitment.`,
+        contribution: `YC ${RFS_VINTAGE} Request for Startups — YC's strategic priorities (positioning signal, not endorsement). Not a funding commitment.`,
       };
 
       const result: ToolResult<FindYCRFSAlignmentData> = {
