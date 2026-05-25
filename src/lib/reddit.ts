@@ -36,13 +36,13 @@ export interface RedditSearchResult {
 }
 
 /** Extract subreddit name from a reddit.com URL. Returns 'unknown' if not parseable. */
-function extractSubreddit(url: string): string {
+export function extractSubreddit(url: string): string {
   const match = url.match(/reddit\.com\/r\/([^/]+)/i);
   return match ? match[1] : 'unknown';
 }
 
 /** Convert a full reddit.com URL into a permalink (path-only). */
-function urlToPermalink(url: string): string {
+export function urlToPermalink(url: string): string {
   try {
     return new URL(url).pathname;
   } catch {
@@ -51,7 +51,7 @@ function urlToPermalink(url: string): string {
 }
 
 /** Stable-ish post id derived from the URL (last path segment). */
-function urlToId(url: string): string {
+export function urlToId(url: string): string {
   const segments = urlToPermalink(url).split('/').filter(Boolean);
   return segments[segments.length - 1] ?? 'unknown';
 }
