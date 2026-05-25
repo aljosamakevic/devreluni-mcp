@@ -184,9 +184,9 @@ export function registerReadCompetitorChangelog(server: McpServer): void {
           sources.push({
             url: waybackUrl,
             tier: 'S',
-            bias: 'independent',
+            bias: 'conflicted',
             fetched_at: new Date().toISOString(),
-            contribution: `Wayback Machine snapshot reference (not fetched live — use for historical pricing/feature changes)`,
+            contribution: `Wayback Machine snapshot of competitor-authored changelog for ${product} — content is conflicted (competitor's words), URL host is independent. Positioning evidence per spec §4 rule 6 (not independent).`,
           });
           break;
         }
@@ -219,9 +219,9 @@ export function registerReadCompetitorChangelog(server: McpServer): void {
             sources.push({
               url: topResult.link,
               tier: 'B',
-              bias: 'independent',
+              bias: 'conflicted',
               fetched_at: new Date().toISOString(),
-              contribution: `Search snippet for changelog (full page not fetched): ${topResult.snippet}`,
+              contribution: `Competitor self-hosted/published content for ${product} — positioning evidence per spec §4 rule 6 (not independent). Search snippet only (full page not fetched): ${topResult.snippet}`,
             });
           }
         } else {
