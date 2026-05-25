@@ -4,7 +4,6 @@ import type { ToolResult, ToolSource } from '../types.js';
 import { fetchPage, stripHtml } from '../lib/webfetch.js';
 import { serperSearch, serperSource, serperConfidenceNote, isSerperLive } from '../lib/serper.js';
 import { waybackLookup, waybackSource, waybackConfidenceNote } from '../lib/wayback.js';
-import { effectiveBias } from '../lib/bias.js';
 import { resolveCompetitorDomain } from '../lib/competitor-domain.js';
 
 type PricingModel = 'subscription' | 'one-time' | 'freemium' | 'usage-based' | 'unknown';
@@ -164,6 +163,10 @@ export function registerFindPricingAnchors(server: McpServer): void {
       // confidence_note audit trail.
       let domainsResolvedViaSerper = 0;
       let domainsResolvedViaFallback = 0;
+      // Per CONCERNS.md M9: track live-fetched pricing pages per-competitor so the
+      // confidence_note reports the true numerator (was previously a boolean
+      // expanded across the entire `sources` array, double-counting all rows).
+      let liveFetchCount = 0;
 
       for (const competitor of competitors) {
         const resolvedHost = await resolveCompetitorDomain(competitor);
@@ -189,6 +192,7 @@ export function registerFindPricingAnchors(server: McpServer): void {
           if (result.ok && result.text.length > 300) {
             fetchedText = stripHtml(result.text).slice(0, 5000);
             fetchedSuccessfully = true;
+            liveFetchCount += 1;
             liveFetchedUrl = path;
             sources.push({
               url: path,
@@ -347,16 +351,14 @@ export function registerFindPricingAnchors(server: McpServer): void {
       }
 
       const confidenceParts: string[] = [];
-      const fetchedCount = current_pricing.filter((_p) =>
-        sources.some(
-          // Route through effectiveBias() per spec §4 rule 4: any `unknown`
-          // source counts as `vendor-funded` for math (not `conflicted`), so
-          // we don't accidentally inflate the live-fetched-pricing count.
-          (s) => s.tier === 'S' && effectiveBias(s.bias) === 'conflicted' && s.contribution.includes('Live pricing')
-        )
-      ).length;
+      // Per CONCERNS.md M9: use the per-competitor liveFetchCount accumulator
+      // directly. The prior `sources.some(...)` filter expanded a boolean across
+      // every competitor in `current_pricing`, so 1-of-N success was reported as
+      // N-of-N. effectiveBias() still governs bias math elsewhere; the live-fetch
+      // numerator is now strictly the count of competitors whose pricing page
+      // actually returned a usable body inside the loop.
       confidenceParts.push(
-        `Pricing pages: ${fetchedCount > 0 ? `${fetchedCount} fetched live (S/conflicted)` : 'none fetched live'}.`
+        `Pricing pages: ${liveFetchCount > 0 ? `${liveFetchCount} of ${competitors.length} fetched live (S/conflicted)` : `none fetched live (0 of ${competitors.length})`}.`
       );
       const totalCompetitors = domainsResolvedViaSerper + domainsResolvedViaFallback;
       if (totalCompetitors > 0) {
