@@ -1,0 +1,262 @@
+{
+  "data": {
+    "current_pricing": [
+      {
+        "competitor": "RescueTime",
+        "model": "subscription",
+        "price": "$7 /month / $84 / $9 /month / $12 /month / $144 / $15 /month",
+        "tiers": [
+          "$7 /month",
+          "$84",
+          "$9 /month",
+          "$12 /month",
+          "$144",
+          "$15 /month"
+        ]
+      },
+      {
+        "competitor": "Freedom",
+        "model": "freemium",
+        "price": "Free tier / $ 0 / $ 3.33 / month / $ 8.99 / month / $199 / $ 99.50",
+        "tiers": [
+          "Free tier",
+          "$ 0",
+          "$ 3.33 / month",
+          "$ 8.99 / month",
+          "$199",
+          "$ 99.50"
+        ]
+      },
+      {
+        "competitor": "Forest",
+        "model": "unknown",
+        "price": "Not found — check manually",
+        "tiers": []
+      },
+      {
+        "competitor": "Rize",
+        "model": "subscription",
+        "price": "$9.99/mo / $12.99 /mo / $18.99 /mo / $29.99 /mo / $3.1 / $9.99/month",
+        "tiers": [
+          "$9.99/mo",
+          "$12.99 /mo",
+          "$18.99 /mo",
+          "$29.99 /mo",
+          "$3.1",
+          "$9.99/month"
+        ]
+      },
+      {
+        "competitor": "Cold Turkey",
+        "model": "one-time",
+        "price": "Not found — check manually",
+        "tiers": []
+      },
+      {
+        "competitor": "Opal",
+        "model": "one-time",
+        "price": "$ 0 /month / $ 8.29 /month / $ 99.99 / $ 19.99 /month / $ 239 / $ 399",
+        "tiers": [
+          "$ 0 /month",
+          "$ 8.29 /month",
+          "$ 99.99",
+          "$ 19.99 /month",
+          "$ 239",
+          "$ 399"
+        ]
+      },
+      {
+        "competitor": "Focus Bear",
+        "model": "subscription",
+        "price": "Free / $9 / $9.99 /month / $4.99/month / $ 50 / $ 100",
+        "tiers": [
+          "Free",
+          "$9",
+          "$9.99 /month",
+          "$4.99/month",
+          "$ 50",
+          "$ 100"
+        ]
+      }
+    ],
+    "pricing_history": [
+      {
+        "competitor": "RescueTime",
+        "trend": "Unknown — insufficient historical data"
+      },
+      {
+        "competitor": "Freedom",
+        "trend": "Historical pricing snapshots found in Wayback Machine — manual comparison recommended"
+      },
+      {
+        "competitor": "Forest",
+        "trend": "Historical pricing snapshots found in Wayback Machine — manual comparison recommended"
+      },
+      {
+        "competitor": "Rize",
+        "trend": "Historical pricing snapshots found in Wayback Machine — manual comparison recommended"
+      },
+      {
+        "competitor": "Cold Turkey",
+        "trend": "Historical pricing snapshots found in Wayback Machine — manual comparison recommended"
+      },
+      {
+        "competitor": "Opal",
+        "trend": "Historical pricing snapshots found in Wayback Machine — manual comparison recommended"
+      },
+      {
+        "competitor": "Focus Bear",
+        "trend": "Historical pricing snapshots found in Wayback Machine — manual comparison recommended"
+      }
+    ],
+    "category_pricing_pattern": "Of 7 competitor(s) analyzed: 1 freemium, 3 subscription, 2 one-time, 1 unknown (pricing page not fetched).",
+    "freemium_distribution": "14% use freemium — primarily paid category",
+    "churn_signals": [
+      "refund policy, so since I was within the 14 day window, I followed their steps to request a refund.",
+      "refund the overpayment or save the overpayment as a credit.",
+      "RefundCat is a SaaS to helping iOS developers and vendors save more their revenue from unreasonable refund requests.",
+      "refund the MONEY for all deleted reviews.",
+      "cancelled they didn't even bother to respond."
+    ],
+    "auto_flags": [
+      "High churn language in reviews (5 signals) — category has a retention problem. Build in churn-prevention features from day one.",
+      "B2C framing + churn signals: consumer WTP is especially fragile. Freemium + upgrade path must be extremely clear."
+    ]
+  },
+  "sources": [
+    {
+      "url": "https://rescuetime.com/pricing",
+      "tier": "S",
+      "bias": "conflicted",
+      "fetched_at": "2026-05-25T15:38:15.063Z",
+      "contribution": "Live pricing page for RescueTime — self-reported pricing, immutable at fetch time"
+    },
+    {
+      "url": "https://google.serper.dev/search?q=RescueTime%20pricing%20history%20site%3Aweb.archive.org",
+      "tier": "A",
+      "bias": "independent",
+      "fetched_at": "2026-05-25T15:38:18.866Z",
+      "contribution": "Google search results for: RescueTime pricing history site:web.archive.org"
+    },
+    {
+      "url": "https://freedom.to/pricing",
+      "tier": "S",
+      "bias": "conflicted",
+      "fetched_at": "2026-05-25T15:38:20.228Z",
+      "contribution": "Live pricing page for Freedom — self-reported pricing, immutable at fetch time"
+    },
+    {
+      "url": "https://google.serper.dev/search?q=Freedom%20pricing%20history%20site%3Aweb.archive.org",
+      "tier": "A",
+      "bias": "independent",
+      "fetched_at": "2026-05-25T15:38:23.928Z",
+      "contribution": "Google search results for: Freedom pricing history site:web.archive.org"
+    },
+    {
+      "url": "https://www.instagram.com/pricing",
+      "tier": "S",
+      "bias": "conflicted",
+      "fetched_at": "2026-05-25T15:38:25.316Z",
+      "contribution": "Live pricing page for Forest — self-reported pricing, immutable at fetch time"
+    },
+    {
+      "url": "https://google.serper.dev/search?q=Forest%20pricing%20history%20site%3Aweb.archive.org",
+      "tier": "A",
+      "bias": "independent",
+      "fetched_at": "2026-05-25T15:38:29.006Z",
+      "contribution": "Google search results for: Forest pricing history site:web.archive.org"
+    },
+    {
+      "url": "https://rize.io/pricing",
+      "tier": "S",
+      "bias": "conflicted",
+      "fetched_at": "2026-05-25T15:38:30.549Z",
+      "contribution": "Live pricing page for Rize — self-reported pricing, immutable at fetch time"
+    },
+    {
+      "url": "https://google.serper.dev/search?q=Rize%20pricing%20history%20site%3Aweb.archive.org",
+      "tier": "A",
+      "bias": "independent",
+      "fetched_at": "2026-05-25T15:38:34.269Z",
+      "contribution": "Google search results for: Rize pricing history site:web.archive.org"
+    },
+    {
+      "url": "https://getcoldturkey.com/pricing",
+      "tier": "S",
+      "bias": "conflicted",
+      "fetched_at": "2026-05-25T15:38:35.757Z",
+      "contribution": "Live pricing page for Cold Turkey — self-reported pricing, immutable at fetch time"
+    },
+    {
+      "url": "http://web.archive.org/web/20260425005242/https://getcoldturkey.com/pricing/",
+      "tier": "S",
+      "bias": "independent",
+      "fetched_at": "2026-04-25T00:52:42.000Z",
+      "contribution": "Wayback snapshot of Cold Turkey pricing page captured 20260425 — historical anchor for price-change detection"
+    },
+    {
+      "url": "https://google.serper.dev/search?q=Cold%20Turkey%20pricing%20history%20site%3Aweb.archive.org",
+      "tier": "A",
+      "bias": "independent",
+      "fetched_at": "2026-05-25T15:38:37.046Z",
+      "contribution": "Google search results for: Cold Turkey pricing history site:web.archive.org"
+    },
+    {
+      "url": "https://www.opal.so/pricing",
+      "tier": "S",
+      "bias": "conflicted",
+      "fetched_at": "2026-05-25T15:38:38.300Z",
+      "contribution": "Live pricing page for Opal — self-reported pricing, immutable at fetch time"
+    },
+    {
+      "url": "http://web.archive.org/web/20260316045854/https://www.opal.so/pricing",
+      "tier": "S",
+      "bias": "independent",
+      "fetched_at": "2026-03-16T04:58:54.000Z",
+      "contribution": "Wayback snapshot of Opal pricing page captured 20260316 — historical anchor for price-change detection"
+    },
+    {
+      "url": "https://google.serper.dev/search?q=Opal%20pricing%20history%20site%3Aweb.archive.org",
+      "tier": "A",
+      "bias": "independent",
+      "fetched_at": "2026-05-25T15:38:39.349Z",
+      "contribution": "Google search results for: Opal pricing history site:web.archive.org"
+    },
+    {
+      "url": "https://www.focusbear.io/pricing",
+      "tier": "S",
+      "bias": "conflicted",
+      "fetched_at": "2026-05-25T15:38:40.207Z",
+      "contribution": "Live pricing page for Focus Bear — self-reported pricing, immutable at fetch time"
+    },
+    {
+      "url": "http://web.archive.org/web/20260503225259/https://www.focusbear.io/pricing",
+      "tier": "S",
+      "bias": "independent",
+      "fetched_at": "2026-05-03T22:52:59.000Z",
+      "contribution": "Wayback snapshot of Focus Bear pricing page captured 20260503 — historical anchor for price-change detection"
+    },
+    {
+      "url": "https://google.serper.dev/search?q=Focus%20Bear%20pricing%20history%20site%3Aweb.archive.org",
+      "tier": "A",
+      "bias": "independent",
+      "fetched_at": "2026-05-25T15:38:41.373Z",
+      "contribution": "Google search results for: Focus Bear pricing history site:web.archive.org"
+    },
+    {
+      "url": "https://www.g2.com/search?query=focus%20app",
+      "tier": "B",
+      "bias": "independent",
+      "fetched_at": "2026-05-25T15:38:42.006Z",
+      "contribution": "G2/Capterra review aggregation for focus app — churn and cancellation language"
+    }
+  ],
+  "confidence_note": "Pricing pages: 7 of 7 fetched live (S/conflicted). Domain resolution: 6/7 via Serper top-result, 1/7 via legacy <slug>.com guess. Wayback: 3/7 URLs had verified snapshots; 4 had no archive. Serper search data is live. G2/Capterra data via Serper snippets (B/independent).",
+  "fallbacks_used": [
+    "domain-resolution for RescueTime (Serper unavailable — guessed rescuetime.com)",
+    "wayback (no snapshots found for RescueTime)",
+    "wayback (no snapshots found for Freedom)",
+    "wayback (no snapshots found for Forest)",
+    "wayback (no snapshots found for Rize)"
+  ]
+}

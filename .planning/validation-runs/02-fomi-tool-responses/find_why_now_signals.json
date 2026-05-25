@@ -1,0 +1,223 @@
+{
+  "data": {
+    "recent_enablers": [
+      {
+        "title": "App Review Guidelines - Apple Developer",
+        "url": "https://developer.apple.com/app-store/review/guidelines/",
+        "type": "platform_change",
+        "recency_signal": "unknown",
+        "snippet": "The App Review Guidelines provide guidance and examples across a range of development topics, including user interface design, functionality, content, ...",
+        "hyperscaler_or_body": "Apple"
+      },
+      {
+        "title": "Managed Settings | Apple Developer Forums",
+        "url": "https://developer.apple.com/forums/tags/managed-settings?page=3",
+        "type": "api",
+        "recency_signal": "unknown",
+        "snippet": "We are developing a parental control application in SwiftUI with features like app blocking and screen time management. We are using the Family Control API ...",
+        "hyperscaler_or_body": "Apple"
+      },
+      {
+        "title": "General | Apple Developer Forums",
+        "url": "https://developer.apple.com/forums/topics/app-and-system-services/app-and-system-services-general?sortBy=created&sortOrder=desc&open-dropdown=true",
+        "type": "platform_change",
+        "recency_signal": "unknown",
+        "snippet": "Steps to Reproduce 1. Set a Screen Time passcode on iOS 26.4. 2. Open Settings > Apps > [Our App]. 3. Turn off Screen Time Access for the ...",
+        "hyperscaler_or_body": "Apple"
+      },
+      {
+        "title": "Rules of Machine Learning: | Google for Developers",
+        "url": "https://developers.google.com/machine-learning/guides/rules-of-ml",
+        "type": "platform_change",
+        "recency_signal": "unknown",
+        "snippet": "Martin Zinkevich introduces 10 of his favorite rules of machine learning. Read on to learn all 43 rules!",
+        "hyperscaler_or_body": "Google"
+      },
+      {
+        "title": "Visual Studio 2026 release notes | Microsoft Learn",
+        "url": "https://learn.microsoft.com/en-us/visualstudio/releases/2026/release-notes",
+        "type": "platform_change",
+        "recency_signal": "last_24mo",
+        "snippet": "Learn about the latest features, bug fixes, and support for Visual Studio 2026. Download today.",
+        "hyperscaler_or_body": "Microsoft"
+      },
+      {
+        "title": "Surface Pro 9 heat/fan issues - Microsoft Q&A",
+        "url": "https://learn.microsoft.com/en-my/answers/questions/2334176/surface-pro-9-heat-fan-issues",
+        "type": "platform_change",
+        "recency_signal": "unknown",
+        "snippet": "I was issued a SP9 for work and the fan noise is very distracting. Basic tasks that I perform where the fan kicks in like we're taking off a jet ...",
+        "hyperscaler_or_body": "Microsoft"
+      },
+      {
+        "title": "Archived Release Notes for Current Channel - Microsoft Learn",
+        "url": "https://learn.microsoft.com/en-us/officeupdates/monthly-channel-archived",
+        "type": "platform_change",
+        "recency_signal": "unknown",
+        "snippet": "Say goodbye to distractions: A favorite Mac feature comes to Windows. Switch to Focus on the View menu to remove distractions and concentrate on your work.",
+        "hyperscaler_or_body": "Microsoft"
+      },
+      {
+        "title": "Meta Quest Developer Hub for Windows",
+        "url": "https://developers.meta.com/horizon/downloads/package/oculus-developer-hub-win/6.0.0/",
+        "type": "platform_change",
+        "recency_signal": "unknown",
+        "snippet": "Streamline app development for Meta Quest devices with the essential Meta Quest Developer Hub (MQDH) desktop companion tool for Windows.",
+        "hyperscaler_or_body": "Meta"
+      },
+      {
+        "title": "AI Act | Shaping Europe's digital future - European Union",
+        "url": "https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai",
+        "type": "regulatory",
+        "recency_signal": "last_24mo",
+        "snippet": "The AI Act entered into force on 1 August 2024, and will be fully applicable 2 years later on 2 August 2026, with some exceptions: prohibited AI practices and ...",
+        "hyperscaler_or_body": "European Commission"
+      },
+      {
+        "title": "Sixth meeting of the Digital Markets Act High-Level Group",
+        "url": "https://digital-markets-act.ec.europa.eu/sixth-meeting-digital-markets-act-high-level-group-2026-03-20_en",
+        "type": "regulatory",
+        "recency_signal": "last_24mo",
+        "snippet": "Sixth meeting of the Digital Markets Act High-Level Group. News announcement; 20 March 2026; Directorate-General for Competition, Directorate- ...",
+        "hyperscaler_or_body": "European Commission"
+      },
+      {
+        "title": "Mobile Health App Interactive Tool | Federal Trade Commission",
+        "url": "https://www.ftc.gov/business-guidance/resources/mobile-health-apps-interactive-tool",
+        "type": "regulatory",
+        "recency_signal": "unknown",
+        "snippet": "This tool is meant to help you figure out the federal regulatory, privacy, and security laws and regulations that may apply.",
+        "hyperscaler_or_body": "US FTC"
+      },
+      {
+        "title": "Children's Online Privacy Protection Rule (\"COPPA\")",
+        "url": "https://www.ftc.gov/legal-library/browse/rules/childrens-online-privacy-protection-rule-coppa",
+        "type": "regulatory",
+        "recency_signal": "unknown",
+        "snippet": "COPPA imposes certain requirements on operators of websites or online services directed to children under 13 years of age.",
+        "hyperscaler_or_body": "US FTC"
+      }
+    ],
+    "yc_rfs_touchpoints": [],
+    "macro_demand_shifts": [
+      {
+        "title": "The best distraction blockers to jump-start your focus in the new year",
+        "url": "https://techcrunch.com/2025/12/25/the-best-distraction-blockers-to-jumpstart-your-focus-in-the-new-year/",
+        "source_site": "techcrunch.com",
+        "snippet": "Opal is a focus and screen-time app that blocks distracting apps and websites on iPhone, Android, and desktop. You can create “focus blocks” — ...",
+        "recency_signal": "unknown"
+      },
+      {
+        "title": "My Productivity Apps for 2026 - YouTube",
+        "url": "https://www.youtube.com/watch?v=H1-BLfejL5Q",
+        "source_site": "other",
+        "snippet": "Sponsor: Learn faster and retain more with Recall. Get started for free today: https://www.getrecall.ai/?t=ChristopherLawley or use my code: ...",
+        "recency_signal": "last_24mo"
+      },
+      {
+        "title": "r/apps on Reddit: I want to start breaking my screen time habit in ...",
+        "url": "https://www.reddit.com/r/apps/comments/1hr0jxj/i_want_to_start_breaking_my_screen_time_habit_in/",
+        "source_site": "other",
+        "snippet": "You could try apps like Forest, Focus@Will, or AppBlock. They let you set specific times to block distractions and stay focused. Digital ...",
+        "recency_signal": "unknown"
+      },
+      {
+        "title": "Hank Green's Focus Friend app is climbing the App Store charts",
+        "url": "https://techcrunch.com/2025/08/18/hank-greens-focus-friend-app-is-climbing-the-app-store-charts-and-its-extremely-cute/",
+        "source_site": "techcrunch.com",
+        "snippet": "It invites you to set a timer on your phone, which will temporarily prevent you from opening certain apps (on iOS, the “Deep Focus Mode” setting ...",
+        "recency_signal": "unknown"
+      },
+      {
+        "title": "What productivity apps are you using in 2026? - Reddit",
+        "url": "https://www.reddit.com/r/ProductivityApps/comments/1q2zsls/what_productivity_apps_are_you_using_in_2026/",
+        "source_site": "other",
+        "snippet": "Try my app FlexiBoard, it brings daily useful tools right to your iOS keyboard so you don't have to switch between apps to do basics tasks, ...",
+        "recency_signal": "last_24mo"
+      },
+      {
+        "title": "10 Best Productivity Apps for 2026 (The Future of Work) - rivva blog",
+        "url": "https://blog.rivva.app/p/best-productivity-apps-for-2026",
+        "source_site": "other",
+        "snippet": "We analyzed the productivity apps defining 2026—from autonomous AI to capacity-aware tools built for sustainable work.",
+        "recency_signal": "last_24mo"
+      }
+    ],
+    "verdict": "Gate 5 CONDITIONAL. Moderate Why-Now signal: 4 recent enabler(s) plus launch cluster. Real movement, but not a clear inflection — verify the enabler list materially unlocks this idea.",
+    "gate5_signal_strength": "moderate"
+  },
+  "sources": [
+    {
+      "url": "https://www.google.com/search?q=focus%20app%20screen%20time%20deep%20work%20on-task%20distraction%20blocker%202026%20OR%202025%20site%3Adeveloper.apple.com",
+      "tier": "S",
+      "bias": "conflicted",
+      "fetched_at": "2026-05-25T15:38:43.188Z",
+      "contribution": "Apple dev-doc / API release mentions for \"focus app screen time deep work on-task distraction blocker\" (2025–2026)"
+    },
+    {
+      "url": "https://www.google.com/search?q=focus%20app%20screen%20time%20deep%20work%20on-task%20distraction%20blocker%202026%20OR%202025%20site%3Adevelopers.google.com",
+      "tier": "S",
+      "bias": "conflicted",
+      "fetched_at": "2026-05-25T15:38:43.188Z",
+      "contribution": "Google dev-doc / API release mentions for \"focus app screen time deep work on-task distraction blocker\" (2025–2026)"
+    },
+    {
+      "url": "https://www.google.com/search?q=focus%20app%20screen%20time%20deep%20work%20on-task%20distraction%20blocker%202026%20OR%202025%20site%3Alearn.microsoft.com",
+      "tier": "S",
+      "bias": "conflicted",
+      "fetched_at": "2026-05-25T15:38:43.189Z",
+      "contribution": "Microsoft dev-doc / API release mentions for \"focus app screen time deep work on-task distraction blocker\" (2025–2026)"
+    },
+    {
+      "url": "https://www.google.com/search?q=focus%20app%20screen%20time%20deep%20work%20on-task%20distraction%20blocker%202026%20OR%202025%20site%3Adevelopers.meta.com",
+      "tier": "S",
+      "bias": "conflicted",
+      "fetched_at": "2026-05-25T15:38:43.189Z",
+      "contribution": "Meta dev-doc / API release mentions for \"focus app screen time deep work on-task distraction blocker\" (2025–2026)"
+    },
+    {
+      "url": "https://www.google.com/search?q=focus%20app%20screen%20time%20deep%20work%20on-task%20distraction%20blocker%202026%20OR%202025%20site%3Aplatform.openai.com",
+      "tier": "S",
+      "bias": "conflicted",
+      "fetched_at": "2026-05-25T15:38:43.189Z",
+      "contribution": "OpenAI dev-doc / API release mentions for \"focus app screen time deep work on-task distraction blocker\" (2025–2026)"
+    },
+    {
+      "url": "https://www.google.com/search?q=focus%20app%20screen%20time%20deep%20work%20on-task%20distraction%20blocker%202026%20OR%202025%20site%3Adocs.anthropic.com",
+      "tier": "S",
+      "bias": "conflicted",
+      "fetched_at": "2026-05-25T15:38:43.189Z",
+      "contribution": "Anthropic dev-doc / API release mentions for \"focus app screen time deep work on-task distraction blocker\" (2025–2026)"
+    },
+    {
+      "url": "https://www.google.com/search?q=focus%20app%20regulation%202026%20OR%202025%20site%3Aec.europa.eu",
+      "tier": "A",
+      "bias": "independent",
+      "fetched_at": "2026-05-25T15:38:43.189Z",
+      "contribution": "European Commission regulatory mentions for \"focus app\" (2025–2026)"
+    },
+    {
+      "url": "https://www.google.com/search?q=focus%20app%20regulation%202026%20OR%202025%20site%3Aftc.gov",
+      "tier": "A",
+      "bias": "independent",
+      "fetched_at": "2026-05-25T15:38:43.189Z",
+      "contribution": "US FTC regulatory mentions for \"focus app\" (2025–2026)"
+    },
+    {
+      "url": "https://www.google.com/search?q=focus%20app%20regulation%202026%20OR%202025%20site%3Agov.uk",
+      "tier": "A",
+      "bias": "independent",
+      "fetched_at": "2026-05-25T15:38:43.189Z",
+      "contribution": "UK Government regulatory mentions for \"focus app\" (2025–2026)"
+    },
+    {
+      "url": "https://www.google.com/search?q=focus%20app%20screen%20time%20deep%20work%20on-task%20distraction%20blocker%20launched%202026%20OR%202025%20site%3Atechcrunch.com%20OR%20site%3Atheverge.com%20OR%20site%3Aproducthunt.com",
+      "tier": "B",
+      "bias": "independent",
+      "fetched_at": "2026-05-25T15:38:44.063Z",
+      "contribution": "Launch-cluster aggregation across TC/Verge/ProductHunt for \"focus app screen time deep work on-task distraction blocker\""
+    }
+  ],
+  "confidence_note": "Searched 6 hyperscaler dev-doc filters + 3 regulatory filters + 1 launch-cluster query. Source mix: 4 independent, 6 conflicted (hyperscaler/YC self-publications). Recency detection relies on year-string scan of titles/snippets — dateless pages may misclassify as \"unknown\".",
+  "fallbacks_used": []
+}

@@ -1,0 +1,62 @@
+{
+  "data": {
+    "categories": [
+      {
+        "name": "Company Brain",
+        "description": "Software that acts as an intelligent operating system for companies — capturing institutional knowledge, automating cross-functional workflows, and enabling AI to make or recommend decisions across the business. Think Notion + Slack + internal tooling, but AI-native.",
+        "alignment_score": 0,
+        "alignment_reasoning": "No keyword match. Idea may not align with this category, or description uses different terminology. Review manually.",
+        "fit": "none"
+      },
+      {
+        "name": "Software for Agents",
+        "description": "Infrastructure, tooling, and platforms that enable AI agents to operate reliably in the real world — orchestration, memory, tool use, evaluation, sandboxing, and deployment primitives for autonomous AI systems.",
+        "alignment_score": 0,
+        "alignment_reasoning": "No keyword match. Idea may not align with this category, or description uses different terminology. Review manually.",
+        "fit": "none"
+      },
+      {
+        "name": "AI-Native Service Companies",
+        "description": "Companies delivering services traditionally performed by humans — legal, accounting, HR, consulting, design, coding — using AI to deliver at 10-100x lower cost with equivalent or better quality. Not software with AI features; fundamentally an AI-delivered service.",
+        "alignment_score": 0,
+        "alignment_reasoning": "No keyword match. Idea may not align with this category, or description uses different terminology. Review manually.",
+        "fit": "none"
+      },
+      {
+        "name": "Dynamic Software Interfaces",
+        "description": "Software where the UI itself is generated or adapted by AI — interfaces that change based on user context, role, and task rather than being statically designed. Post-SaaS UI paradigm.",
+        "alignment_score": 0,
+        "alignment_reasoning": "No keyword match. Idea may not align with this category, or description uses different terminology. Review manually.",
+        "fit": "none"
+      },
+      {
+        "name": "SaaS Challengers",
+        "description": "New entrants challenging established SaaS incumbents by rebuilding category-defining products as AI-native. Not just adding AI features to existing workflows — rethinking what the product fundamentally does when AI is the primary interface.",
+        "alignment_score": 0,
+        "alignment_reasoning": "No keyword match. Idea may not align with this category, or description uses different terminology. Review manually.",
+        "fit": "none"
+      },
+      {
+        "name": "AI Operating System for Companies",
+        "description": "A unifying layer that integrates all company data, tools, and AI agents into a single coherent system — the \"OS\" on top of which company workflows run. Broader than a single app; a platform play for enterprise AI.",
+        "alignment_score": 0,
+        "alignment_reasoning": "No keyword match. Idea may not align with this category, or description uses different terminology. Review manually.",
+        "fit": "none"
+      }
+    ],
+    "top_match": "Company Brain",
+    "verdict": "No clear YC S26 RFS alignment found. This is neither a positive nor a negative signal — YC RFS covers only a slice of fundable ideas. Does not affect gate scoring.",
+    "rfs_vintage": "YC Summer 2026"
+  },
+  "sources": [
+    {
+      "url": "https://www.ycombinator.com/rfs",
+      "tier": "A",
+      "bias": "conflicted",
+      "fetched_at": "2026-05-25T15:38:44.067Z",
+      "contribution": "YC YC Summer 2026 Request for Startups — YC's strategic priorities (positioning signal, not endorsement). Not a funding commitment."
+    }
+  ],
+  "confidence_note": "Static dataset — YC S26 RFS baked in. Update quarterly or when YC publishes a new RFS. Keyword matching is heuristic — manual review recommended for borderline scores.",
+  "fallbacks_used": []
+}

@@ -1,0 +1,186 @@
+{
+  "data": {
+    "indiehackers_entries": [
+      {
+        "company": "Rize",
+        "mrr": "$10k/MRR",
+        "url": "https://www.indiehackers.com/post/bootstrapping-a-personal-productivity-saas-to-10k-mrr-cac5dfe318",
+        "snippet": "This week I'm interviewing Will Goto, the co-founder of Rize, an intelligent time-tracking SaaS. They're currently well over $10k/MRR and hope to hit $1M+ ARR ..."
+      },
+      {
+        "company": "Forest",
+        "mrr": "$2,000 MRR",
+        "url": "https://www.indiehackers.com/product/session-2/2-000-mrr-revenue-and-100-reviews-on-app-store--MQvx6feV1Ez_Kq0qqzx",
+        "snippet": "There are only ~750 installs per month from AppStore. Forest, for instance, has 400K downloads in December alone. So I had a lot of opportunity and leeway to ..."
+      },
+      {
+        "company": "Freedom",
+        "mrr": "",
+        "url": "https://www.indiehackers.com/product/swifteq-apps/getting-to-20k-mrr-with-swifteq--O-yq-LdknOUPxdjmasT",
+        "snippet": "No investors or co-founders means I get to focus on what matters most: my customers. Sure, there's more responsibility, but the freedom that comes with it is ..."
+      },
+      {
+        "company": "Cold Turkey",
+        "mrr": "",
+        "url": "https://www.indiehackers.com/post/every-focus-app-i-tried-on-mac-failed-me-heres-what-finally-worked-7afe1db0a1",
+        "snippet": "I tried Cold Turkey. Too rigid — blocked Stack Overflow during coding. I tried Focus (the Mac app). Too easy to bypass — one click and it's ..."
+      },
+      {
+        "company": "Freedom",
+        "mrr": "$18K/mo",
+        "url": "https://www.indiehackers.com/post/how-i-manage-running-multiple-products-of-18k-mo-total-revenue-e5443df3b8",
+        "snippet": "... freedom. User Avatar manshetq8. ·. 4 years ago. ·. Reply · 2. Congrats! awesome framework on how to work on multiple products. User Avatar ..."
+      },
+      {
+        "company": "Freedom",
+        "mrr": "",
+        "url": "https://www.indiehackers.com/post/skyrocket-your-mrr-by-going-open-source-a8c242904f",
+        "snippet": "From there, I had one thing in mind: Freedom. I started to implement features that empower users and let them do whatever they want such as JSON ..."
+      },
+      {
+        "company": "Freedom",
+        "mrr": "$22k/mo",
+        "url": "https://www.indiehackers.com/post/tech/from-failed-app-to-30-app-portfolio-making-22k-mo-in-less-than-a-year-myy3U7K9evxGOVOHti8s",
+        "snippet": "My motivation was simple: I wanted to achieve financial freedom and work on my own projects without a fixed 9-5 schedule. I wanted to spend ..."
+      },
+      {
+        "company": "Rize",
+        "mrr": "",
+        "url": "https://www.indiehackers.com/post/hello-ih-i-cofounded-rize-where-we-got-1-on-product-hunt-in-may-and-just-reached-11-000-in-monthly-sales-ama-97f4c8f30e",
+        "snippet": "I cofounded Rize where we got #1 on Product Hunt in May and just reached $11,000+ in monthly sales. AMA. by Will Goto. Hey everyone! I'm Will ..."
+      },
+      {
+        "company": "Freedom",
+        "mrr": "$23k MRR",
+        "url": "https://www.indiehackers.com/post/tech/hitting-23k-mrr-in-six-months-after-five-failures-4d64o9ev4AXXhX9ogHQQ",
+        "snippet": "The app is designed for people who want easy access to a wide ... Optimizing for freedom with money as the enabler produces different ..."
+      },
+      {
+        "company": "Freedom",
+        "mrr": "",
+        "url": "https://www.indiehackers.com/post/sam-s-stair-step-strategy-to-indie-hacking-with-confidence-6094042cf9",
+        "snippet": "Textiful was at the point where it basically ran itself which gave me the freedom to focus on another project without sacrificing income."
+      }
+    ],
+    "founder_mrr_tweets": [
+      {
+        "author": "@BlitzitApp",
+        "claim": "We're almost done with our Free Focus App built low-code right on . @framer ... we started at $360 on july 1st and now we're sitting pretty at $621 MRR.",
+        "url": "https://x.com/BlitzitApp"
+      },
+      {
+        "author": "@KCodes7777",
+        "claim": "→$17 MRR and growing... Having my baby in a few weeks. Didn't really learn ... This focus app is making $20K/month. For an app that guilt trips you into ...",
+        "url": "https://x.com/KCodes7777"
+      },
+      {
+        "author": "@gamedevmayank",
+        "claim": "... focus app, i was told that > ... With the experience I have now, from building fast MVPs to scaling with marketing, I know this could be a $100K MRR app in 3 ...",
+        "url": "https://x.com/gamedevmayank"
+      },
+      {
+        "author": "@NotionMetrics",
+        "claim": "NotionMetrics (@NotionMetrics) - Posts - Get live metrics like Stripe MRR ... Using @rescuetime on your Mac takes the guesswork out of ...",
+        "url": "https://x.com/NotionMetrics"
+      },
+      {
+        "author": "@Hi_Bennie",
+        "claim": "I saw a tweet saying they launched their product just 12 days ago and already hit 4,800 signups and 40k MRR. ... A focus app that turns every session into a ...",
+        "url": "https://x.com/Hi_Bennie"
+      }
+    ],
+    "sec_filings": [
+      {
+        "company": "unknown",
+        "filing_type": "10-Q",
+        "url": "https://www.sec.gov/Archives/edgar/data/1590418/000168316825003212/focus_i10q-033125.htm"
+      },
+      {
+        "company": "unknown",
+        "filing_type": "10-Q",
+        "url": "https://www.sec.gov/Archives/edgar/data/320193/000119312510012085/d10q.htm"
+      },
+      {
+        "company": "unknown",
+        "filing_type": "10-K",
+        "url": "https://www.sec.gov/Archives/edgar/data/1590418/000168316824001995/focus_i10k-123123.htm"
+      },
+      {
+        "company": "unknown",
+        "filing_type": "10-K",
+        "url": "https://www.sec.gov/Archives/edgar/data/1824920/000095017024022072/ionq-20231231.htm"
+      },
+      {
+        "company": "unknown",
+        "filing_type": "S-1",
+        "url": "https://www.sec.gov/Archives/edgar/data/1590418/000168316825009197/focus_s1a1.htm"
+      }
+    ],
+    "openstartup_entries": [
+      {
+        "company": "Digging in to the Open Startups List",
+        "url": "https://tylertringas.com/digging-in-to-the-open-startups-list/",
+        "snippet": "However at least with the Open Startups List we do have LTV per customer calculated the exact same way for 7 different businesses. Fascinating."
+      },
+      {
+        "company": "Recruiting, the Friendly way: Open Startup Quarterly Q1 2026",
+        "url": "https://friendly.ch/en/q1-2026",
+        "snippet": "A new format for our transparent reports, and two new team members at once. Welcome to our first Open Startup Quarterly."
+      },
+      {
+        "company": "unknown",
+        "url": "https://www.instagram.com/reel/DVVdO6xCjN7/",
+        "snippet": "This site shows real startup revenue. This is open startup list. A directory of transparent startups. See real revenue and growth numbers."
+      },
+      {
+        "company": "Open Startup Report",
+        "url": "https://open.pricewell.io/p/open-startup-report-jan-24",
+        "snippet": "Open Startup Report - Jan '24. We're back with a different type of update. Matt Reid's avatar."
+      },
+      {
+        "company": "Build in Public: The New Era of Transparency in Startups",
+        "url": "https://growsurf.com/blog/build-in-public/",
+        "snippet": "Here are a few examples of open startups that have found success from the “build in public” approach. GrowSurf. GrowSurf's story is an underdog story through ..."
+      }
+    ],
+    "revenue_summary": {
+      "paid_comparables_count": 10,
+      "highest_observed_mrr": "$100K MRR",
+      "sample_arr_range": null
+    },
+    "gate2_wtp_signal_strength": "strong",
+    "verdict": "Gate 2 PASS likely + Gate 4 PASS likely. Strong public revenue evidence: 10 IndieHackers entries (highest: $100K MRR); 5 SEC filing(s). Paid comparables exist at scale — category supports real economics."
+  },
+  "sources": [
+    {
+      "url": "https://google.serper.dev/search?q=%22RescueTime%22%20OR%20%22Freedom%22%20OR%20%22Forest%22%20OR%20%22Rize%22%20OR%20%22Cold%20Turkey%22%20focus%20app%20revenue%20OR%20MRR%20site%3Aindiehackers.com",
+      "tier": "A",
+      "bias": "independent",
+      "fetched_at": "2026-05-25T15:38:09.901Z",
+      "contribution": "[IndieHackers] 10 IH result(s) for 5 competitor(s) in \"focus app\""
+    },
+    {
+      "url": "https://google.serper.dev/search?q=%22focus%20app%22%20OR%20%22RescueTime%22%20%22MRR%22%20site%3Ax.com",
+      "tier": "A",
+      "bias": "conflicted",
+      "fetched_at": "2026-05-25T15:38:09.901Z",
+      "contribution": "[FounderTweets] 5 tweet(s) referencing MRR/recurring revenue in category"
+    },
+    {
+      "url": "https://google.serper.dev/search?q=focus%20app%2010-K%20OR%20S-1%20site%3Asec.gov",
+      "tier": "S",
+      "bias": "independent",
+      "fetched_at": "2026-05-25T15:38:09.901Z",
+      "contribution": "[SEC] 5 SEC filing reference(s) for category"
+    },
+    {
+      "url": "https://google.serper.dev/search?q=focus%20app%20open%20startup%20MRR%20transparency",
+      "tier": "S",
+      "bias": "conflicted",
+      "fetched_at": "2026-05-25T15:38:09.901Z",
+      "contribution": "[OpenStartup] 5 OpenStartup-style transparency page(s)"
+    }
+  ],
+  "confidence_note": "Serper: live; 4/4 source families returned results. IndieHackers: 10 entries (capped competitor list at 5/5). Founder tweets: 5 result(s) — bias 'conflicted' per spec §4 rule 6 (founder has stake in favorable framing). SEC: 5 filing(s) — most SMB/consumer SaaS won't be public; empty here is normal, not a failure. OpenStartup: 5 page(s) — coverage is thin; many founders publish transparency on personal blogs instead. MRR extraction is opportunistic regex; raw snippets always preserved (never fabricated). Source mix: 2 independent, 2 conflicted.",
+  "fallbacks_used": []
+}

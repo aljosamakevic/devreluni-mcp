@@ -33,14 +33,18 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const REPO_ROOT = resolve(__dirname, '..');
 
-const ARTIFACT_PATH = resolve(
-  REPO_ROOT,
-  '.planning/validation-runs/01-fomi-focus-app.md',
-);
-const TOOL_RESPONSE_PATH = resolve(
-  REPO_ROOT,
-  '.planning/validation-runs/01-fomi-focus-app-tool-response.json',
-);
+// --artifact <path> selects an alternate captured artifact (T-final-3 reuse).
+// Defaults to the Phase 01 artifact when the flag is absent. The tool-response
+// JSON sibling is inferred by swapping `.md` → `-tool-response.json`.
+function parseArtifactFlag(): string {
+  const argv = process.argv.slice(2);
+  const idx = argv.findIndex((a) => a === '--artifact');
+  if (idx >= 0 && argv[idx + 1]) return resolve(REPO_ROOT, argv[idx + 1]);
+  return resolve(REPO_ROOT, '.planning/validation-runs/01-fomi-focus-app.md');
+}
+
+const ARTIFACT_PATH = parseArtifactFlag();
+const TOOL_RESPONSE_PATH = ARTIFACT_PATH.replace(/\.md$/, '-tool-response.json');
 
 // ---------------------------------------------------------------------------
 // Canonical constant (must match src/validation/constants.ts byte-for-byte
