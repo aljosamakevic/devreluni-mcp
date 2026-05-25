@@ -26,6 +26,7 @@ import { registerFindPricingAnchors } from './tools/find-pricing-anchors.js';
 import { registerCheckBigTechEncroachment } from './tools/check-big-tech-encroachment.js';
 import { registerFindWhyNowSignals } from './tools/find-why-now-signals.js';
 import { registerEstimateDemandSignals } from './tools/estimate-demand-signals.js';
+import { registerFindPublicRevenueSignals } from './tools/find-public-revenue-signals.js';
 import { registerFinalizeValidationReport } from './tools/finalize-validation-report.js';
 
 // Prompts
@@ -92,6 +93,7 @@ registerFindPricingAnchors(server);
 registerCheckBigTechEncroachment(server);
 registerFindWhyNowSignals(server);
 registerEstimateDemandSignals(server);
+registerFindPublicRevenueSignals(server);
 registerFinalizeValidationReport(server);
 
 // Register prompts
