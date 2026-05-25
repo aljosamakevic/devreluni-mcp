@@ -24,6 +24,7 @@ import { registerGetCategoryFailureModes } from './tools/get-category-failure-mo
 import { registerFindYCRFSAlignment } from './tools/find-yc-rfs-alignment.js';
 import { registerFindPricingAnchors } from './tools/find-pricing-anchors.js';
 import { registerCheckBigTechEncroachment } from './tools/check-big-tech-encroachment.js';
+import { registerFindWhyNowSignals } from './tools/find-why-now-signals.js';
 import { registerFinalizeValidationReport } from './tools/finalize-validation-report.js';
 
 // Prompts
@@ -88,6 +89,7 @@ registerGetCategoryFailureModes(server);
 registerFindYCRFSAlignment(server);
 registerFindPricingAnchors(server);
 registerCheckBigTechEncroachment(server);
+registerFindWhyNowSignals(server);
 registerFinalizeValidationReport(server);
 
 // Register prompts
