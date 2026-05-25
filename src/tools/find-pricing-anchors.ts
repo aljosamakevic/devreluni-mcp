@@ -5,6 +5,7 @@ import { fetchPage, stripHtml } from '../lib/webfetch.js';
 import { serperSearch, serperSource, serperConfidenceNote, isSerperLive } from '../lib/serper.js';
 import { waybackLookup, waybackSource, waybackConfidenceNote } from '../lib/wayback.js';
 import { effectiveBias } from '../lib/bias.js';
+import { resolveCompetitorDomain } from '../lib/competitor-domain.js';
 
 type PricingModel = 'subscription' | 'one-time' | 'freemium' | 'usage-based' | 'unknown';
 
@@ -31,25 +32,44 @@ interface FindPricingAnchorsData {
 
 const PRICING_URL_PATHS = ['/pricing', '/plans', '/price', '/pricing-plans'];
 
-function guessPricingUrl(competitor: string): string {
-  const slug = competitor
-    .toLowerCase()
-    .replace(/\s+/g, '')
-    .replace(/[^a-z0-9-]/g, '');
-  const base = competitor.startsWith('http') ? competitor : `https://${slug}.com`;
-  return `${base.replace(/\/$/, '')}/pricing`;
-}
-
-function extractDomain(competitor: string): string {
+/**
+ * Legacy `<slug>.com` fallback for when Serper-based domain resolution is
+ * unavailable (stubbed, no key, or no organic hits). Callers MUST push
+ * a fallback note when they end up here.
+ */
+function legacyGuessDomain(competitor: string): string {
   if (competitor.startsWith('http')) {
     try {
-      return new URL(competitor).hostname.replace(/^www\./, '');
+      return new URL(competitor).hostname.replace(/\/$/, '');
     } catch {
       return competitor;
     }
   }
   const slug = competitor.toLowerCase().replace(/\s+/g, '').replace(/[^a-z0-9-.]/g, '');
   return `${slug}.com`;
+}
+
+/**
+ * Build the candidate probe list. Per D-01: try BOTH the canonical host
+ * (whatever Serper / the user gave us) AND its www. ↔ apex sibling, so a
+ * pricing page hosted on `www.freedom.to` is reachable even if the
+ * resolved host is `freedom.to` (or vice-versa).
+ */
+function buildPricingProbeList(host: string): string[] {
+  const variants = new Set<string>();
+  variants.add(host);
+  if (host.startsWith('www.')) {
+    variants.add(host.slice(4));
+  } else {
+    variants.add(`www.${host}`);
+  }
+  const urls: string[] = [];
+  for (const h of variants) {
+    for (const p of PRICING_URL_PATHS) {
+      urls.push(`https://${h}${p}`);
+    }
+  }
+  return urls;
 }
 
 function detectPricingModel(text: string): PricingModel {
@@ -138,15 +158,33 @@ export function registerFindPricingAnchors(server: McpServer): void {
 
       if (!isSerperLive()) fallbacksUsed.push('serper (stub — set SERPER_API_KEY)');
 
+      // Per CONCERNS.md M2 + deferred D-01: resolve each competitor's real
+      // hostname via Serper rather than blindly appending `.com`. Track how
+      // many resolved via Serper vs. fell back to `<slug>.com` for the
+      // confidence_note audit trail.
+      let domainsResolvedViaSerper = 0;
+      let domainsResolvedViaFallback = 0;
+
       for (const competitor of competitors) {
-        const domain = extractDomain(competitor);
-        const pricingUrl = guessPricingUrl(competitor);
+        const resolvedHost = await resolveCompetitorDomain(competitor);
+        let domain: string;
+        if (resolvedHost) {
+          domain = resolvedHost;
+          domainsResolvedViaSerper += 1;
+        } else {
+          domain = legacyGuessDomain(competitor);
+          domainsResolvedViaFallback += 1;
+          fallbacksUsed.push(`domain-resolution for ${competitor} (Serper unavailable — guessed ${domain})`);
+        }
+
+        const probeUrls = buildPricingProbeList(domain);
         let fetchedText = '';
         let fetchedSuccessfully = false;
         let liveFetchedUrl: string | null = null;
 
-        // Step 1: Fetch live pricing page
-        for (const path of [pricingUrl, ...PRICING_URL_PATHS.map((p) => `https://${domain}${p}`)]) {
+        // Step 1: Fetch live pricing page — try both apex and www. variants
+        // across all PRICING_URL_PATHS suffixes.
+        for (const path of probeUrls) {
           const result = await fetchPage(path);
           if (result.ok && result.text.length > 300) {
             fetchedText = stripHtml(result.text).slice(0, 5000);
@@ -162,6 +200,10 @@ export function registerFindPricingAnchors(server: McpServer): void {
             break;
           }
         }
+
+        // Default lookup target for Wayback uses the first probe URL when no
+        // live fetch succeeded — that's the most canonical guess.
+        const pricingUrl = probeUrls[0] ?? `https://${domain}/pricing`;
 
         // Step 2: Wayback Machine — verified snapshot ONLY (no fabrication; H8 fix).
         // Per spec §11 anti-pattern 2: we never record an S-tier source for a URL
@@ -316,6 +358,12 @@ export function registerFindPricingAnchors(server: McpServer): void {
       confidenceParts.push(
         `Pricing pages: ${fetchedCount > 0 ? `${fetchedCount} fetched live (S/conflicted)` : 'none fetched live'}.`
       );
+      const totalCompetitors = domainsResolvedViaSerper + domainsResolvedViaFallback;
+      if (totalCompetitors > 0) {
+        confidenceParts.push(
+          `Domain resolution: ${domainsResolvedViaSerper}/${totalCompetitors} via Serper top-result, ${domainsResolvedViaFallback}/${totalCompetitors} via legacy <slug>.com guess.`
+        );
+      }
       confidenceParts.push(waybackConfidenceNote(waybackFound, waybackAttempted));
       confidenceParts.push(serperConfidenceNote());
       confidenceParts.push('G2/Capterra data via Serper snippets (B/independent).');
