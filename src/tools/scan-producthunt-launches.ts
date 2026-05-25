@@ -1,7 +1,14 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 import type { ToolResult } from '../types.js';
-import { searchProductHunt, phSource, phConfidenceNote, isPHLive } from '../lib/producthunt.js';
+import {
+  searchProductHunt,
+  searchPostsByTopic,
+  resolveTopicSlug,
+  phSource,
+  phConfidenceNote,
+  isPHLive,
+} from '../lib/producthunt.js';
 
 type LaunchSignal = 'high_conviction' | 'viral_but_shallow' | 'low_signal';
 
@@ -56,7 +63,31 @@ export function registerScanProductHuntLaunches(server: McpServer): void {
       const fallbacksUsed: string[] = [];
       if (!isPHLive()) fallbacksUsed.push('producthunt (stub — set PRODUCTHUNT_API_KEY)');
 
-      const posts = await searchProductHunt(category, 15);
+      // M6 fix: prefer topic-resolved posts over query-by-string search.
+      // Free-form categories like "focus app" return sparse / wrong results
+      // via the search field; resolving to a canonical PH topic slug first
+      // yields ranked posts within the right vertical.
+      let posts;
+      let sourceContribution: string;
+      let fetchPathNote: string | null = null;
+      const slug = await resolveTopicSlug(category);
+
+      if (slug) {
+        posts = await searchPostsByTopic(slug, 15);
+        sourceContribution = `PH posts by topic '${slug}' (resolved from '${category}')`;
+        if (posts.length === 0) {
+          fetchPathNote = `PH topic '${slug}' returned 0 posts.`;
+        }
+      } else {
+        // Fallback per D-T07-1: topics API unavailable or no match. Use the
+        // legacy query-by-string path and surface the gap honestly per spec
+        // §11 anti-pattern 2 (no silent failures).
+        posts = await searchProductHunt(category, 15);
+        sourceContribution = `PH query-by-string search for '${category}' (topic resolution returned no match)`;
+        fetchPathNote = isPHLive()
+          ? `PH topic resolution returned 0 matches for '${category}' — using query-based search; results may be off-topic.`
+          : `PH topics API unavailable — falling back to query-based search.`;
+      }
 
       const launches: PHLaunch[] = posts.map((post) => {
         const { ratio, signal } = computeSignal(post.votesCount, post.commentsCount);
@@ -80,11 +111,15 @@ export function registerScanProductHuntLaunches(server: McpServer): void {
       const highConviction = launches.filter((l) => l.signal === 'high_conviction').length;
       const viralShallow = launches.filter((l) => l.signal === 'viral_but_shallow').length;
 
+      const baseSource = phSource(category);
+      const sources = [{ ...baseSource, contribution: sourceContribution }];
+
       const result: ToolResult<ScanProductHuntLaunchesData> = {
         data: { launches },
-        sources: [phSource(category)],
+        sources,
         confidence_note: [
           phConfidenceNote(),
+          fetchPathNote ?? '',
           highConviction > 0
             ? `${highConviction} high-conviction launch(es) found (engagement ratio >15%).`
             : 'No high-conviction launches found.',
