@@ -7,6 +7,19 @@ Severity-ordered. Each item maps to a spec section. Honest read — do not softe
 
 ---
 
+## Phase 01 Resolution Summary (2026-05-20)
+
+**All 8 HIGH concerns CLOSED.** See per-item resolution notes below.
+
+- Calibration: `.planning/validation-runs/01-fomi-focus-app.md` returns NO-GO with sourced killshots
+- Mechanical verification: `scripts/assert-fomi-run.ts` (6/6 assertions PASS, exit code 0)
+- 12 tools registered (was 8 at start of phase) + 1 finalize tool
+- Build green throughout (19 atomic commits, 0 broken builds, 0 rollbacks)
+
+MEDIUM and LOW concerns remain open per Phase 01 scope (`CONTEXT.md` "Out of scope").
+
+---
+
 ## 🔴 HIGH — fundamentals at risk
 
 These concerns threaten the "single defining design goal" (§1): *making confirmation bias structurally impossible*. If any of the 5 anti-bias mechanisms is only described in prompt text but not enforced in code, the MCP is functionally a plausible-sounding wrapper around an LLM, which is exactly what the spec says it must NOT be.
@@ -17,6 +30,7 @@ These concerns threaten the "single defining design goal" (§1): *making confirm
 **Where:** `src/prompts/validate-idea.ts:33-46`, `:56-65`, `:159-164`, `:185-195` (anti-pattern checklist is also LLM-side).
 **Severity:** HIGH
 **Fix:** Add a post-generation validator prompt or a structured-output schema (e.g., zod schema for the report sections) that fails closed if a gate block is missing DOK 1/2/3/4 + Contradicting Evidence. At minimum, ship a `validate_report` tool the prompt is forced to call before emitting the final artifact.
+**RESOLVED (Phase 01, 2026-05-20):** Code-enforced via `src/validation/structural-validator.ts` (rejects fundamental DOK-separation / Contradicting-Evidence violations); `finalize_validation_report` tool refuses to render markdown when fundamentals fail; master prompt rewritten to JSON-only — markdown escape hatch closed — see commits 67af958 23d67f6 53a26a9 + evidence at `.planning/validation-runs/01-fomi-focus-app.md` (T20 assertion 6 PASS).
 
 ### H2. "Your Spiky POV" blank-section guarantee is also instruction-only
 **What:** §1 lists the blank "Your Spiky POV" as one of the 5 anti-bias mechanisms; §11 lists "Filling in Your Spiky POV section automatically" as an anti-pattern to reject. Enforcement lives only in prompt text (`src/prompts/validate-idea.ts:119-121`, `:171-172`, `:195`).
@@ -24,6 +38,7 @@ These concerns threaten the "single defining design goal" (§1): *making confirm
 **Where:** `src/prompts/validate-idea.ts:119-121`, `:171-172`.
 **Severity:** HIGH
 **Fix:** Post-process the artifact to assert the "Your Spiky POV" block matches the empty template; refuse to render otherwise.
+**RESOLVED (Phase 01, 2026-05-20):** Defense-in-depth at three layers — `src/validation/renderer.ts` ignores `report.spiky_pov` entirely and emits `SPIKY_POV_BLANK_TEMPLATE` constant; structural validator refuses populated POV; prompt instructs blank — see commits 6686388 67af958 53a26a9 + evidence at `.planning/validation-runs/01-fomi-focus-app.md` (T20 assertion 6 PASS).
 
 ### H3. `unknown` bias flag default not codified — only mentioned in markdown
 **What:** §4 rule 4 and §11 anti-pattern 6: *"Defaulting `unknown` bias flag to 'independent' (must default to 'vendor-funded')."* The rule is documented in `src/resources/source-tier-bias.md` but is never enforced in any tool. Tools either hardcode `'independent'`, `'conflicted'`, `'vendor-funded'` (e.g. `find-pricing-anchors.ts:155`, `check-big-tech-encroachment.ts:172, 245`), or leave bias decisions to the LLM. There is no helper like `resolveBias(flag)` that converts `unknown → vendor-funded` for confidence math.
@@ -31,6 +46,7 @@ These concerns threaten the "single defining design goal" (§1): *making confirm
 **Where:** `src/types.ts` defines the union; no consumer enforces the substitution. Search `src/` — no occurrence of `unknown` being remapped.
 **Severity:** HIGH
 **Fix:** Add a `src/lib/bias.ts` with `effectiveBias(flag)` and `requiresUpgradeFromUnknown(sources)`; use it wherever confidence math touches sources. Document in `validate_idea` prompt that the LLM must call it (or have the report validator do it).
+**RESOLVED (Phase 01, 2026-05-20):** `src/lib/bias.ts` exports `effectiveBias(flag)` which maps `unknown → vendor-funded` for confidence math; wired into all tools doing confidence math; raw bias preserved on the wire for transparency — see commits 62cb855 eee95af + evidence at `find_public_revenue_signals` `confidence_note` example.
 
 ### H4. PASS-requires-≥2-tier-B rule (§4 rule 1) not enforced in code
 **What:** Tools return sources with tiers, but no code aggregates per-gate and rejects PASS verdicts with <2 tier-B-or-higher independent sources. Rule lives only in `validate-idea.ts:41` as a prompt instruction.
@@ -38,6 +54,7 @@ These concerns threaten the "single defining design goal" (§1): *making confirm
 **Where:** No file. The rule exists as English in the prompt and resource markdown only.
 **Severity:** HIGH
 **Fix:** Same as H1 — a report validator that counts sources per gate and downgrades verdicts mechanically.
+**RESOLVED (Phase 01, 2026-05-20):** `src/validation/verdict-validator.ts` downgrades any PASS gate with <2 tier-S/A/B sources to INCONCLUSIVE; fail-2 rule recomputed after gate-level adjustments — see commit a297f53 + evidence at `.planning/validation-runs/01-fomi-focus-app-tool-response.json` `adjustments_made[]` (Gates 1, 3, 4 visibly downgraded due to >30% conflicted).
 
 ### H5. Validation Checks decision matrix (§3 / §11 anti-pattern 5) not enforced
 **What:** §11 anti-pattern 5: "Rendering GO verdicts when validation checks have major issues." The override rule (Major → Low confidence; Fundamental → Inconclusive) lives in `validate-idea.ts:95-99` as instruction. No code applies it.
@@ -45,6 +62,7 @@ These concerns threaten the "single defining design goal" (§1): *making confirm
 **Where:** `src/prompts/validate-idea.ts:95-99`.
 **Severity:** HIGH
 **Fix:** Encode the validation matrix as a code-side post-step over the structured report, identical to H1's report-validator.
+**RESOLVED (Phase 01, 2026-05-20):** `src/validation/verdict-validator.ts` mutates verdicts based on Validation Check severities — Major → confidence Low; Fundamental → overall INCONCLUSIVE. Mechanical, not LLM-discretionary — see commit a297f53 + evidence at `.planning/validation-runs/01-fomi-focus-app.md` (T20 assertion 6 PASS).
 
 ### H6. Four required tools per §10 build sequence are missing
 **What:** Spec §10 lists 6 new tools (4 P0, 2 P1). Current `src/tools/` has only 2 of the 6 new tools shipped (`find-pricing-anchors.ts`, `check-big-tech-encroachment.ts`). Missing:
@@ -56,6 +74,7 @@ These concerns threaten the "single defining design goal" (§1): *making confirm
 **Where:** `src/tools/` — only `find-pricing-anchors.ts` and `check-big-tech-encroachment.ts` exist of the new six. `src/index.ts:18-27` registers 8 tools total; spec demands 12.
 **Severity:** HIGH
 **Fix:** Build the 4 missing tools in the order specified in §10: `find_why_now_signals` → `estimate_demand_signals` → `find_public_revenue_signals` → `assess_platform_dependency`.
+**RESOLVED (Phase 01, 2026-05-20):** All 4 tools shipped and wired: `find_why_now_signals` (8e5b7b1 / wiring 8fd70f3), `estimate_demand_signals` (fc8cc6e / 831dee3), `find_public_revenue_signals` (b6dce3b / 2d656b9), `assess_platform_dependency` (4c431c2 / 1acd564); plus D-T04-1 fix for YC RFS bias mislabeling (ceee881). `src/index.ts` now registers 12 spec tools + 1 finalize tool = 13 total.
 
 ### H7. Critical Test (§10 Phase 4, §11 DoD) not yet run
 **What:** §11 definition of done: *"validate_idea on the AI-native focus app idea returns NO-GO with sound reasoning."* No evidence of a calibration run, fixture, or test case for this in the repo. Without it we don't know whether the structural safeguards (even at the prompt-only level) survive contact with a real idea.
@@ -63,6 +82,7 @@ These concerns threaten the "single defining design goal" (§1): *making confirm
 **Where:** No fixtures, no test runs in `.planning/` or any test directory.
 **Severity:** HIGH (gating)
 **Fix:** Run the focus-app idea through `validate_idea` after H6 ships; capture the output as a regression artifact in `.planning/validation-runs/`.
+**RESOLVED (Phase 01, 2026-05-20):** Fomi (AI-native focus app) calibration captured at `.planning/validation-runs/01-fomi-focus-app.md`. Verdict: NO-GO with 3 killshots citing tier-S/A sources; 12 tool calls (under §11 budget of 20). Mechanical assertion script `scripts/assert-fomi-run.ts` verifies all 6 acceptance checks (`npx tsx scripts/assert-fomi-run.ts` exits 0 with `6/6 assertions passed`) — see commits c2f961f becf0e1 + evidence at `.planning/validation-runs/01-fomi-focus-app.md`.
 
 ### H8. Soft-failing tool calls (§11 anti-pattern 2) — partial violation
 **What:** §11 anti-pattern 2: "Soft-failing tool calls (returning made-up data when the API fails)." The codebase mostly avoids fabrication, but `find-pricing-anchors.ts:152-159` records a Wayback URL as a "source" with `tier: 'S', bias: 'independent'` *without ever fetching the page*. The URL is a search-form pattern (`https://web.archive.org/web/2024*/${domain}/pricing`) — it is not a verified historical snapshot. This is exactly "made-up data when the API fails" wearing an S-tier badge.
@@ -70,6 +90,7 @@ These concerns threaten the "single defining design goal" (§1): *making confirm
 **Where:** `src/tools/find-pricing-anchors.ts:152-159`.
 **Severity:** HIGH
 **Fix:** Either (a) actually fetch Wayback CDX API and record the real snapshot timestamp, or (b) demote this entry to a "search URL" with `tier: 'D'` and `contribution: "search query — not a verified snapshot"`.
+**RESOLVED (Phase 01, 2026-05-20):** Replaced wildcard URL fabrication with real Wayback CDX API client (`src/lib/wayback.ts`); `find_pricing_anchors` now only cites Wayback URLs when verified snapshots exist — see commits 83799ad d54ecf5 + evidence (smoke test): `fallbacks_used: ["wayback (no snapshots found for ...)"]` when no snapshot exists; no phantom S-tier source recorded.
 
 ---
 
