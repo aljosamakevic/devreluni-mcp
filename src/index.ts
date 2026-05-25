@@ -27,6 +27,7 @@ import { registerCheckBigTechEncroachment } from './tools/check-big-tech-encroac
 import { registerFindWhyNowSignals } from './tools/find-why-now-signals.js';
 import { registerEstimateDemandSignals } from './tools/estimate-demand-signals.js';
 import { registerFindPublicRevenueSignals } from './tools/find-public-revenue-signals.js';
+import { registerAssessPlatformDependency } from './tools/assess-platform-dependency.js';
 import { registerFinalizeValidationReport } from './tools/finalize-validation-report.js';
 
 // Prompts
@@ -94,6 +95,7 @@ registerCheckBigTechEncroachment(server);
 registerFindWhyNowSignals(server);
 registerEstimateDemandSignals(server);
 registerFindPublicRevenueSignals(server);
+registerAssessPlatformDependency(server);
 registerFinalizeValidationReport(server);
 
 // Register prompts
