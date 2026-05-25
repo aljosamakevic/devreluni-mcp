@@ -18,6 +18,7 @@ import {
 } from '../lib/serper.js';
 import { expandHyperscalerQueries } from '../lib/category-platform-features.js';
 import { detectRecency } from '../lib/recency.js';
+import { cacheGet, cacheSet, makeCacheKey, TTL } from '../lib/cache.js';
 
 type Hyperscaler = 'Apple' | 'Google' | 'Microsoft' | 'Meta' | 'Amazon';
 type AdjacencyScore = 1 | 2 | 3 | 4 | 5;
@@ -102,6 +103,20 @@ function scoreAdjacency(
   return { score: 1, label: 'No clear encroachment signal in 24mo window' };
 }
 
+// Strict end-anchored acquisition extractor. Returns the target-company name
+// or null. Per CONCERNS.md M4 the regex MUST require an explicit deal anchor
+// ("for $X", "in a $X deal", "$<digits>", or literal "deal") after the candidate
+// — otherwise headlines like "Pixelmator hints at" or "This Week in Apps"
+// produce phantom acquisitions. Better to drop a real acquisition than
+// fabricate one. See src/tools/check-big-tech-encroachment.test.ts for the
+// locked positive / negative trade-off fixtures.
+export function extractAcquisitionTarget(title: string): string | null {
+  const m = title.match(
+    /[Aa]cqui(?:res?|red)\s+([A-Z][A-Za-z0-9.&\- ]{1,40}?)(?=\s+(?:for\s+\$|in\s+a\s+\$|deal\b|\$\d))/,
+  );
+  return m ? m[1].trim() : null;
+}
+
 export function registerCheckBigTechEncroachment(server: McpServer): void {
   server.registerTool(
     'check_big_tech_encroachment',
@@ -122,6 +137,24 @@ export function registerCheckBigTechEncroachment(server: McpServer): void {
       },
     },
     async ({ idea_description, category, category_keywords }) => {
+      // Tool-layer cache: TTL.SHORT (5min). This handler fans out 8+ Serper
+      // queries across hyperscaler conferences + APIs + acquisitions, and
+      // Serper has NO internal cache (src/lib/serper.ts) — so without this
+      // wrap every re-invocation with identical args re-runs the full fan-out.
+      // Inner caches (none for serper here) do not apply; this is the only
+      // line of defense against duplicate Gate 3 / Gate 5 invocations within
+      // a single validate_idea session.
+      const keywordsForKey = (category_keywords ?? []).map((k) => k.trim().toLowerCase()).sort();
+      const cacheKey = makeCacheKey(
+        'check_big_tech_encroachment',
+        category.trim().toLowerCase(),
+        keywordsForKey.join(','),
+      );
+      const cached = cacheGet<ToolResult<CheckBigTechEncroachmentData>>(cacheKey);
+      if (cached) {
+        return { content: [{ type: 'text', text: JSON.stringify(cached, null, 2) }] };
+      }
+
       const sources: ToolSource[] = [];
       const fallbacksUsed: string[] = [];
 
@@ -279,13 +312,11 @@ export function registerCheckBigTechEncroachment(server: McpServer): void {
           // fallthrough to a 60-char title slice fabricated phantom acquisitions
           // from headlines like "This Week in Apps". Better to drop a real
           // acquisition than fabricate one — on no-match, skip the entry.
-          const acqMatch = r.title.match(
-            /[Aa]cqui(?:res?|red)\s+([A-Z][A-Za-z0-9.&\- ]{1,40}?)(?=\s+(?:for\s+\$|in\s+a\s+\$|deal\b|\$\d))/,
-          );
-          if (!acqMatch) continue;
+          const target = extractAcquisitionTarget(r.title);
+          if (!target) continue;
           acquisitions.push({
             hyperscaler,
-            target_company: acqMatch[1].trim(),
+            target_company: target,
             url: r.link,
             snippet: r.snippet,
           });
@@ -343,6 +374,7 @@ export function registerCheckBigTechEncroachment(server: McpServer): void {
         fallbacks_used: fallbacksUsed,
       };
 
+      cacheSet(cacheKey, result, TTL.SHORT);
       return {
         content: [{ type: 'text', text: JSON.stringify(result, null, 2) }],
       };
