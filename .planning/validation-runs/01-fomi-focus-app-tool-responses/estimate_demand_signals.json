@@ -1,0 +1,179 @@
+{
+  "data": {
+    "github_signals": {
+      "top_repos": [
+        {
+          "full_name": "super-productivity/super-productivity",
+          "stars": 19629,
+          "forks": 1713,
+          "open_issues": 1040,
+          "primary_language": "TypeScript",
+          "description": "Super Productivity is an advanced todo list app with integrated Timeboxing and time tracking capabilities. It also comes with integrations for Jira, GitLab, GitHub and Open Project.",
+          "last_commit_at": "2026-05-23T23:23:23Z",
+          "days_since_last_commit": 1,
+          "contributors_count": 426
+        },
+        {
+          "full_name": "ActivityWatch/activitywatch",
+          "stars": 17663,
+          "forks": 904,
+          "open_issues": 176,
+          "primary_language": "Python",
+          "description": "The best free and open-source automated time tracker. Cross-platform, extensible, privacy-focused.",
+          "last_commit_at": "2026-05-09T17:16:52Z",
+          "days_since_last_commit": 15,
+          "contributors_count": 32
+        },
+        {
+          "full_name": "Splode/pomotroid",
+          "stars": 5227,
+          "forks": 449,
+          "open_issues": 105,
+          "primary_language": "Rust",
+          "description": ":tomato: Simple and visually-pleasing Pomodoro timer",
+          "last_commit_at": "2026-05-23T21:49:38Z",
+          "days_since_last_commit": 1,
+          "contributors_count": 31
+        },
+        {
+          "full_name": "zidoro/pomatez",
+          "stars": 4842,
+          "forks": 206,
+          "open_issues": 165,
+          "primary_language": "TypeScript",
+          "description": "Stay Focused. Take a Break.",
+          "last_commit_at": "2026-05-19T14:32:15Z",
+          "days_since_last_commit": 5,
+          "contributors_count": 27
+        },
+        {
+          "full_name": "vladelaina/Catime",
+          "stars": 4261,
+          "forks": 171,
+          "open_issues": 149,
+          "primary_language": "C",
+          "description": "💌A tiny (995KB) but mighty timer in **pure C** ! — almost no memory usage!❤️‍🔥 Supports clock, countdown, stopwatch, Pomodoro, and fully customizable tray animations (GIFs, CPU/Mem%) 💘 Don't be shy, join here🧸: https://discord.com/invite/W3tW2gtp6g",
+          "last_commit_at": "2026-05-25T08:59:07Z",
+          "days_since_last_commit": 0,
+          "contributors_count": 15
+        }
+      ],
+      "total_stars_top5": 51622,
+      "avg_days_since_last_commit": 4,
+      "languages_seen": [
+        "TypeScript",
+        "Python",
+        "Rust",
+        "C"
+      ]
+    },
+    "reddit_signals": {
+      "subreddits": [
+        {
+          "name": "productivity",
+          "subscribers": 4194867,
+          "active_user_count": null,
+          "recency_days": 6695
+        },
+        {
+          "name": "focus",
+          "subscribers": 5209,
+          "active_user_count": null,
+          "recency_days": 5318
+        },
+        {
+          "name": "getdisciplined",
+          "subscribers": 2164685,
+          "active_user_count": null,
+          "recency_days": 5008
+        },
+        {
+          "name": "ADHD",
+          "subscribers": 2232364,
+          "active_user_count": null,
+          "recency_days": 6418
+        }
+      ]
+    },
+    "launch_cluster_signals": {
+      "recent_launches_count": 5,
+      "sample_launches": [
+        {
+          "title": "Hank Green's Focus Friend app is climbing the App Store charts",
+          "url": "https://techcrunch.com/2025/08/18/hank-greens-focus-friend-app-is-climbing-the-app-store-charts-and-its-extremely-cute/",
+          "snippet": "Focus Friend, which is available on iOS and Android, has the bones of a typical productivity app. It invites you to set a timer on your phone, ..."
+        },
+        {
+          "title": "Barrier: The FREE screen time focus app Awards (2026) | Product ...",
+          "url": "https://www.producthunt.com/products/barrier-social-lock/awards",
+          "snippet": "Focus Bear. Block Distractions. Build Habits. For ADHDers by ADHDers. ; Zario Screen Time AI. Take action against distraction ; Magicflow. Track your productivity ..."
+        },
+        {
+          "title": "FocusRoom | Turn your tasks into calming space missions",
+          "url": "https://www.producthunt.com/products/focusroom",
+          "snippet": "FocusRoom is a calming, ADHD-friendly focus app that turns your work into guided space missions ... Track your productivity, context switching and deep work."
+        },
+        {
+          "title": "Focus Bear Competitors & Alternatives (2026) - Product Hunt",
+          "url": "https://www.producthunt.com/products/focus-bear/alternatives",
+          "snippet": "Focus Bear is a productivity and habit app built by a team with ADHD and ASD for people who need better focus. Helps you build better habits through real ..."
+        },
+        {
+          "title": "EyeFocus Awards (2026) | Product Hunt",
+          "url": "https://www.producthunt.com/products/eyefocus/awards",
+          "snippet": "Opal: Screen Time Control. The fun, free Screen Time app to improve your focus. 4.8(5 reviews) · Safety and Privacy platformsApps for kids."
+        }
+      ]
+    },
+    "gate2_signal_strength": "strong",
+    "verdict": "Gate 2 PASS likely. Strong demand: top GitHub repo super-productivity/super-productivity @ 19629★ (1d since last commit); 4 subreddit(s) resolved (largest: 4,194,867 subscribers); 5 recent launch mention(s) on PH/TC. Multiple converging signals — community, code, and launch activity all align."
+  },
+  "sources": [
+    {
+      "url": "https://api.github.com/search/repositories?q=focus%20productivity%20tracker%20%7C%20pomodoro",
+      "tier": "S",
+      "bias": "independent",
+      "fetched_at": "2026-05-25T12:29:04.406Z",
+      "contribution": "GitHub public repo metadata for: focus productivity tracker | pomodoro"
+    },
+    {
+      "url": "https://www.reddit.com/r/productivity/about.json",
+      "tier": "A",
+      "bias": "independent",
+      "fetched_at": "2026-05-25T12:29:04.406Z",
+      "contribution": "Subreddit metadata (subscribers, activity) for r/productivity"
+    },
+    {
+      "url": "https://www.reddit.com/r/focus/about.json",
+      "tier": "A",
+      "bias": "independent",
+      "fetched_at": "2026-05-25T12:29:04.406Z",
+      "contribution": "Subreddit metadata (subscribers, activity) for r/focus"
+    },
+    {
+      "url": "https://www.reddit.com/r/getdisciplined/about.json",
+      "tier": "A",
+      "bias": "independent",
+      "fetched_at": "2026-05-25T12:29:04.406Z",
+      "contribution": "Subreddit metadata (subscribers, activity) for r/getdisciplined"
+    },
+    {
+      "url": "https://www.reddit.com/r/ADHD/about.json",
+      "tier": "A",
+      "bias": "independent",
+      "fetched_at": "2026-05-25T12:29:04.406Z",
+      "contribution": "Subreddit metadata (subscribers, activity) for r/ADHD"
+    },
+    {
+      "url": "https://google.serper.dev/search?q=focus%20app%20launched%202026%20OR%202025%20site%3Aproducthunt.com%20OR%20site%3Atechcrunch.com",
+      "tier": "A",
+      "bias": "independent",
+      "fetched_at": "2026-05-25T12:29:04.406Z",
+      "contribution": "Google search results for: focus app launched 2026 OR 2025 site:producthunt.com OR site:techcrunch.com"
+    }
+  ],
+  "confidence_note": "GitHub: live (authenticated); surfaced 5 repo(s) across 2 query/queries. Reddit: 4/4 candidate subreddits resolved (null = doesn't exist or private). Launch cluster: live; 5 non-stub launches in window. Google Trends + SimilarWeb dimensions deferred in v1 (see fallbacks_used) — verdict is based on code/community/launch signals only. Source mix: 6 independent, 0 conflicted.",
+  "fallbacks_used": [
+    "similarweb (deferred in v1 — competitor traffic dimension unavailable)"
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "data": {
+    "resolved_url": "https://community.boomi.com/s/topic/0TO1W000000cn2eWAA/release-notes",
+    "fetched": true,
+    "entries": [
+      {
+        "summary": "Changelog content from https://community.boomi.com/s/topic/0TO1W000000cn2eWAA/release-notes (unstructured)",
+        "raw": "Boomi User Community Loading × Sorry to interrupt CSS Error Refresh",
+        "failure_signals": []
+      }
+    ],
+    "failure_signals_found": [],
+    "interpretation": "No failure signals detected in 1 changelog entries. Product appears to be iterating cleanly. Low exploitation opportunity from changelog alone — use map_competitive_weaknesses for user sentiment."
+  },
+  "sources": [
+    {
+      "url": "https://community.boomi.com/s/topic/0TO1W000000cn2eWAA/release-notes",
+      "tier": "S",
+      "bias": "conflicted",
+      "fetched_at": "2026-05-25T15:38:04.240Z",
+      "contribution": "Changelog page found via search: Topic: Release Notes - Boomi Community"
+    }
+  ],
+  "confidence_note": "Live changelog fetched from https://community.boomi.com/s/topic/0TO1W000000cn2eWAA/release-notes. Source is competitor-controlled (conflicted bias) but content is immutable at fetch time (S tier).",
+  "fallbacks_used": [
+    "Changelog URL guessing failed — falling back to Serper search"
+  ]
+}

@@ -1,0 +1,207 @@
+{
+  "data": {
+    "recent_enablers": [
+      {
+        "title": "iPhone | Apple Developer Forums",
+        "url": "https://developer.apple.com/forums/tags/iphone?page=7",
+        "type": "platform_change",
+        "recency_signal": "unknown",
+        "snippet": "Core Features: • AI-powered context detection directly inside Safari • Real-time app suggestions based on user intent • Smart overlays when selecting text or ...",
+        "hyperscaler_or_body": "Apple"
+      },
+      {
+        "title": "Design Power BI Reports for Accessibility - Microsoft Learn",
+        "url": "https://learn.microsoft.com/en-us/power-bi/create-reports/desktop-accessibility-creating-reports",
+        "type": "platform_change",
+        "recency_signal": "unknown",
+        "snippet": "This article describes the accessibility features and tools for creating accessible reports in Power BI.",
+        "hyperscaler_or_body": "Microsoft"
+      },
+      {
+        "title": "How can I disable the 'AUTOSAVE HAS BEEN TURNED OFF ...",
+        "url": "https://learn.microsoft.com/en-my/answers/questions/5532939/how-can-i-disable-the-autosave-has-been-turned-off",
+        "type": "platform_change",
+        "recency_signal": "unknown",
+        "snippet": "Auto Save takes that flexibility away and I don't need to be reminded every time I open or create a new MS Word document that Auto Save is off.",
+        "hyperscaler_or_body": "Microsoft"
+      },
+      {
+        "title": "SystemParametersInfoA function (winuser.h) - Win32 - Microsoft Learn",
+        "url": "https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-systemparametersinfoa",
+        "type": "platform_change",
+        "recency_signal": "unknown",
+        "snippet": "Retrieves or sets the value of one of the system-wide parameters. This function can also update the user profile while setting a parameter.",
+        "hyperscaler_or_body": "Microsoft"
+      },
+      {
+        "title": "AI Act | Shaping Europe's digital future - European Union",
+        "url": "https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai",
+        "type": "regulatory",
+        "recency_signal": "last_24mo",
+        "snippet": "The AI Act entered into force on 1 August 2024, and will be fully applicable 2 years later on 2 August 2026, with some exceptions: prohibited AI practices and ...",
+        "hyperscaler_or_body": "European Commission"
+      },
+      {
+        "title": "Sixth meeting of the Digital Markets Act High-Level Group",
+        "url": "https://digital-markets-act.ec.europa.eu/sixth-meeting-digital-markets-act-high-level-group-2026-03-20_en",
+        "type": "regulatory",
+        "recency_signal": "last_24mo",
+        "snippet": "Sixth meeting of the Digital Markets Act High-Level Group. News announcement; 20 March 2026; Directorate-General for Competition, Directorate- ...",
+        "hyperscaler_or_body": "European Commission"
+      },
+      {
+        "title": "Mobile Health App Interactive Tool | Federal Trade Commission",
+        "url": "https://www.ftc.gov/business-guidance/resources/mobile-health-apps-interactive-tool",
+        "type": "regulatory",
+        "recency_signal": "unknown",
+        "snippet": "This tool is meant to help you figure out the federal regulatory, privacy, and security laws and regulations that may apply.",
+        "hyperscaler_or_body": "US FTC"
+      },
+      {
+        "title": "Children's Online Privacy Protection Rule (\"COPPA\")",
+        "url": "https://www.ftc.gov/legal-library/browse/rules/childrens-online-privacy-protection-rule-coppa",
+        "type": "regulatory",
+        "recency_signal": "unknown",
+        "snippet": "COPPA imposes certain requirements on operators of websites or online services directed to children under 13 years of age.",
+        "hyperscaler_or_body": "US FTC"
+      },
+      {
+        "title": "Office for Statistics Regulation Annual Business Plan 2026/27",
+        "url": "https://osr.statisticsauthority.gov.uk/publication/office-for-statistics-regulation-annual-business-plan-2026-27/",
+        "type": "regulatory",
+        "recency_signal": "last_24mo",
+        "snippet": "Focus reviews on areas of greatest public interest and data quality risk.​; Follow up on key requirements from recent regulatory work.​ ...",
+        "hyperscaler_or_body": "UK Government"
+      },
+      {
+        "title": "How the Better Regulation Framework promotes competition to ...",
+        "url": "https://rpc.blog.gov.uk/2026/02/04/how-the-better-regulation-framework-promotes-competition-to-deliver-affordable-prices-innovation-and-growth/",
+        "type": "regulatory",
+        "recency_signal": "unknown",
+        "snippet": "The Better Regulation Framework requires departments to assess how policies affect market competition. Regulations can inadvertently harm ...",
+        "hyperscaler_or_body": "UK Government"
+      }
+    ],
+    "yc_rfs_touchpoints": [],
+    "macro_demand_shifts": [
+      {
+        "title": "Hank Green's Focus Friend app is climbing the App Store charts",
+        "url": "https://techcrunch.com/2025/08/18/hank-greens-focus-friend-app-is-climbing-the-app-store-charts-and-its-extremely-cute/",
+        "source_site": "techcrunch.com",
+        "snippet": "It invites you to set a timer on your phone, which will temporarily prevent you from opening certain apps (on iOS, the “Deep Focus Mode” setting ...",
+        "recency_signal": "unknown"
+      },
+      {
+        "title": "FocusRoom | Turn your tasks into calming space missions",
+        "url": "https://www.producthunt.com/products/focusroom",
+        "source_site": "producthunt.com",
+        "snippet": "FocusRoom is a calming, ADHD-friendly focus app that turns your work into guided space missions. Instead of overwhelming to-do lists, you choose one task ...",
+        "recency_signal": "unknown"
+      },
+      {
+        "title": "Hank Green's Focus Friend swapped my screen time for bean time",
+        "url": "https://www.theverge.com/tech/763021/focus-friend-hank-green-app-store-ios-android",
+        "source_site": "theverge.com",
+        "snippet": "Focus Friend, a new ADHD-friendly focus app from Hank Green, gamifies attention by allowing a bean to generate in-app currency in the form ...",
+        "recency_signal": "unknown"
+      },
+      {
+        "title": "Focus Bear Competitors & Alternatives (2026) - Product Hunt",
+        "url": "https://www.producthunt.com/products/focus-bear/alternatives",
+        "source_site": "producthunt.com",
+        "snippet": "Focus Bear is a productivity and habit app built by a team with ADHD and ASD for people who need better focus. Helps you build better habits through real ...",
+        "recency_signal": "last_24mo"
+      },
+      {
+        "title": "focusedOS Competitors & Alternatives (2026) | Product Hunt",
+        "url": "https://www.producthunt.com/products/focusos/alternatives",
+        "source_site": "producthunt.com",
+        "snippet": "Explore focusedOS alternatives—Raycast, Alfred, Setapp, and Amine—to hide distractions and speed up workflows on macOS.",
+        "recency_signal": "last_24mo"
+      },
+      {
+        "title": "Your Focus is worth Fighting for | Sixteen - Product Hunt",
+        "url": "https://www.producthunt.com/products/sixteen",
+        "source_site": "producthunt.com",
+        "snippet": "I'm thrilled to launch Sixteen — a screen-time app for people who want to protect their focus, not just block apps. Our favorite feature? Linear Unlock. Try ...",
+        "recency_signal": "unknown"
+      }
+    ],
+    "verdict": "Gate 5 CONDITIONAL. Moderate Why-Now signal: 3 recent enabler(s) plus launch cluster. Real movement, but not a clear inflection — verify the enabler list materially unlocks this idea.",
+    "gate5_signal_strength": "moderate"
+  },
+  "sources": [
+    {
+      "url": "https://www.google.com/search?q=focus%20app%20screen%20time%20deep%20work%20ADHD%20focus%20modes%202026%20OR%202025%20site%3Adeveloper.apple.com",
+      "tier": "S",
+      "bias": "conflicted",
+      "fetched_at": "2026-05-25T12:29:30.293Z",
+      "contribution": "Apple dev-doc / API release mentions for \"focus app screen time deep work ADHD focus modes\" (2025–2026)"
+    },
+    {
+      "url": "https://www.google.com/search?q=focus%20app%20screen%20time%20deep%20work%20ADHD%20focus%20modes%202026%20OR%202025%20site%3Adevelopers.google.com",
+      "tier": "S",
+      "bias": "conflicted",
+      "fetched_at": "2026-05-25T12:29:30.293Z",
+      "contribution": "Google dev-doc / API release mentions for \"focus app screen time deep work ADHD focus modes\" (2025–2026)"
+    },
+    {
+      "url": "https://www.google.com/search?q=focus%20app%20screen%20time%20deep%20work%20ADHD%20focus%20modes%202026%20OR%202025%20site%3Alearn.microsoft.com",
+      "tier": "S",
+      "bias": "conflicted",
+      "fetched_at": "2026-05-25T12:29:30.293Z",
+      "contribution": "Microsoft dev-doc / API release mentions for \"focus app screen time deep work ADHD focus modes\" (2025–2026)"
+    },
+    {
+      "url": "https://www.google.com/search?q=focus%20app%20screen%20time%20deep%20work%20ADHD%20focus%20modes%202026%20OR%202025%20site%3Adevelopers.meta.com",
+      "tier": "S",
+      "bias": "conflicted",
+      "fetched_at": "2026-05-25T12:29:30.293Z",
+      "contribution": "Meta dev-doc / API release mentions for \"focus app screen time deep work ADHD focus modes\" (2025–2026)"
+    },
+    {
+      "url": "https://www.google.com/search?q=focus%20app%20screen%20time%20deep%20work%20ADHD%20focus%20modes%202026%20OR%202025%20site%3Aplatform.openai.com",
+      "tier": "S",
+      "bias": "conflicted",
+      "fetched_at": "2026-05-25T12:29:30.293Z",
+      "contribution": "OpenAI dev-doc / API release mentions for \"focus app screen time deep work ADHD focus modes\" (2025–2026)"
+    },
+    {
+      "url": "https://www.google.com/search?q=focus%20app%20screen%20time%20deep%20work%20ADHD%20focus%20modes%202026%20OR%202025%20site%3Adocs.anthropic.com",
+      "tier": "S",
+      "bias": "conflicted",
+      "fetched_at": "2026-05-25T12:29:30.293Z",
+      "contribution": "Anthropic dev-doc / API release mentions for \"focus app screen time deep work ADHD focus modes\" (2025–2026)"
+    },
+    {
+      "url": "https://www.google.com/search?q=focus%20app%20regulation%202026%20OR%202025%20site%3Aec.europa.eu",
+      "tier": "A",
+      "bias": "independent",
+      "fetched_at": "2026-05-25T12:29:30.293Z",
+      "contribution": "European Commission regulatory mentions for \"focus app\" (2025–2026)"
+    },
+    {
+      "url": "https://www.google.com/search?q=focus%20app%20regulation%202026%20OR%202025%20site%3Aftc.gov",
+      "tier": "A",
+      "bias": "independent",
+      "fetched_at": "2026-05-25T12:29:30.293Z",
+      "contribution": "US FTC regulatory mentions for \"focus app\" (2025–2026)"
+    },
+    {
+      "url": "https://www.google.com/search?q=focus%20app%20regulation%202026%20OR%202025%20site%3Agov.uk",
+      "tier": "A",
+      "bias": "independent",
+      "fetched_at": "2026-05-25T12:29:30.293Z",
+      "contribution": "UK Government regulatory mentions for \"focus app\" (2025–2026)"
+    },
+    {
+      "url": "https://www.google.com/search?q=focus%20app%20screen%20time%20deep%20work%20ADHD%20focus%20modes%20launched%202026%20OR%202025%20site%3Atechcrunch.com%20OR%20site%3Atheverge.com%20OR%20site%3Aproducthunt.com",
+      "tier": "B",
+      "bias": "independent",
+      "fetched_at": "2026-05-25T12:29:31.133Z",
+      "contribution": "Launch-cluster aggregation across TC/Verge/ProductHunt for \"focus app screen time deep work ADHD focus modes\""
+    }
+  ],
+  "confidence_note": "Searched 6 hyperscaler dev-doc filters + 3 regulatory filters + 1 launch-cluster query. Source mix: 4 independent, 6 conflicted (hyperscaler/YC self-publications). Recency detection relies on year-string scan of titles/snippets — dateless pages may misclassify as \"unknown\".",
+  "fallbacks_used": []
+}

@@ -1,0 +1,67 @@
+[
+  {
+    "tool": "find_closest_competitor",
+    "outFile": "find_closest_competitor.json",
+    "succeeded": true
+  },
+  {
+    "tool": "read_competitor_changelog",
+    "outFile": "read_competitor_changelog.json",
+    "succeeded": true
+  },
+  {
+    "tool": "map_competitive_weaknesses",
+    "outFile": "map_competitive_weaknesses.json",
+    "succeeded": true
+  },
+  {
+    "tool": "find_closest_competitor",
+    "outFile": "contra_g1.json",
+    "succeeded": true
+  },
+  {
+    "tool": "estimate_demand_signals",
+    "outFile": "estimate_demand_signals.json",
+    "succeeded": true
+  },
+  {
+    "tool": "find_public_revenue_signals",
+    "outFile": "find_public_revenue_signals.json",
+    "succeeded": true
+  },
+  {
+    "tool": "check_big_tech_encroachment",
+    "outFile": "check_big_tech_encroachment.json",
+    "succeeded": true
+  },
+  {
+    "tool": "assess_platform_dependency",
+    "outFile": "assess_platform_dependency.json",
+    "succeeded": true
+  },
+  {
+    "tool": "find_pricing_anchors",
+    "outFile": "find_pricing_anchors.json",
+    "succeeded": true
+  },
+  {
+    "tool": "find_why_now_signals",
+    "outFile": "find_why_now_signals.json",
+    "succeeded": true
+  },
+  {
+    "tool": "find_yc_rfs_alignment",
+    "outFile": "find_yc_rfs_alignment.json",
+    "succeeded": true
+  },
+  {
+    "tool": "get_category_failure_modes",
+    "outFile": "get_category_failure_modes.json",
+    "succeeded": true
+  },
+  {
+    "tool": "scan_producthunt_launches",
+    "outFile": "scan_producthunt_launches.json",
+    "succeeded": true
+  }
+]
