@@ -65,15 +65,24 @@ function detectPricingModel(text: string): PricingModel {
 
 function extractPriceTiers(text: string): string[] {
   const tiers: string[] = [];
-  // Match patterns like "$29/mo", "$99/month", "$199/year", "€49/mo", "Free"
+  // Per CONCERNS.md M1: REQUIRE a currency anchor — bare digits like "8217" (HTML
+  // entity remnants) or "474" (CSS class fragments) must not reach tiers[].
   const priceMatches = text.matchAll(
-    /(?:free|[\$€£¥]?\s*\d+(?:[.,]\d+)?(?:\s*\/\s*(?:mo(?:nth)?|yr|year|user|seat|month))?)/gi
+    /[\$€£¥]\s*\d+(?:[.,]\d+)?(?:\s*\/\s*(?:mo(?:nth)?|yr|year|user|seat))?/gi
   );
   for (const match of priceMatches) {
     const val = match[0].trim();
     if (val.length > 0 && !tiers.includes(val) && tiers.length < 6) {
       tiers.push(val);
     }
+  }
+  // Free tier handled separately as a literal sentinel — not via the price regex.
+  if (/\b(free\s+forever|free\s+plan|free\s+tier|free\s+forever\s+plan)\b/i.test(text)) {
+    if (!tiers.includes('Free tier') && tiers.length < 6) tiers.unshift('Free tier');
+  } else if (/\bfree\b/i.test(text) && tiers.length > 0) {
+    // Only treat bare "free" as a tier when we already saw paid tiers — otherwise
+    // the word "free" appears too often in marketing copy to be a reliable signal.
+    if (!tiers.includes('Free') && tiers.length < 6) tiers.unshift('Free');
   }
   return tiers;
 }
