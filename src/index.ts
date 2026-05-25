@@ -108,7 +108,7 @@ async function main(): Promise<void> {
   await server.connect(transport);
   console.error('ProductValidation MCP Server running on stdio');
   console.error(
-    'Tools: find_closest_competitor, read_competitor_changelog, map_competitive_weaknesses, scan_producthunt_launches, get_category_failure_modes, find_yc_rfs_alignment, find_pricing_anchors, check_big_tech_encroachment, find_why_now_signals, estimate_demand_signals, finalize_validation_report'
+    'Tools: find_closest_competitor, read_competitor_changelog, map_competitive_weaknesses, scan_producthunt_launches, get_category_failure_modes, find_yc_rfs_alignment, find_pricing_anchors, check_big_tech_encroachment, find_why_now_signals, estimate_demand_signals, find_public_revenue_signals, finalize_validation_report'
   );
   console.error('Prompts: validate_idea, steelman_against, run_single_gate, generate_test_cards, quick_kill_check');
   console.error('Resources: source-tier-bias, tool-to-gate-map, evaluation-lens-matrix');
