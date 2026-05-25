@@ -94,6 +94,17 @@ These concerns threaten the "single defining design goal" (§1): *making confirm
 
 ---
 
+## Phase 02 Resolution Summary (2026-05-25)
+
+**All 9 MEDIUM concerns + 3 Phase-01 deferred items CLOSED.** D-T07-1 (PH topics API auth) marked as graceful-degradation flag (not a bug).
+
+- Tool quality fixes: 11 atomic commits across Streams A/B/C/D (M1, M2, M4, M5, M6, M9, D-01, D-T04-2, D-T16-1; M3 + M7 verified pre-closed)
+- Cache wiring: 6 orchestrator tools wrapped (cold 11.7s → warm 0ms)
+- Test harness: Vitest + 8 test files + 70 assertions (L1 closed)
+- Build green throughout (~22 atomic commits)
+
+---
+
 ## 🟡 MEDIUM — tool quality issues
 
 ### M1. `find_pricing_anchors` price parser is noisy
@@ -102,6 +113,7 @@ These concerns threaten the "single defining design goal" (§1): *making confirm
 **Where:** `src/tools/find-pricing-anchors.ts:64-77`.
 **Severity:** MEDIUM
 **Fix:** Require a currency symbol or unit anchor in the regex (`/[\$€£¥]\s*\d+(?:[.,]\d+)?(?:\s*\/\s*(?:mo|month|yr|year|user|seat))?/gi`) and treat bare "free" as a separate flag.
+**RESOLVED (Phase 02, 2026-05-25):** `extractPriceTiers` regex tightened to require currency anchor — HTML-noise digits (e.g. `&#8217;`, CSS class numerics) no longer surface as tiers — see commits a74737f + a49d328 (T-V03 regression test) + evidence at `src/tools/find-pricing-anchors.test.ts` (10 assertions including 3 HTML-noise negatives).
 
 ### M2. `find_pricing_anchors` domain guessing fails ~50%
 **What:** `extractDomain` / `guessPricingUrl` in `src/tools/find-pricing-anchors.ts:32-51` always appends `.com`. Real-world: Forest is `forestapp.cc`, not `forest.com`; Freedom is `freedom.to`, not `freedom.com`; Cold Turkey is `getcoldturkey.com`. The current strategy will miss every one of those.
@@ -109,6 +121,7 @@ These concerns threaten the "single defining design goal" (§1): *making confirm
 **Where:** `src/tools/find-pricing-anchors.ts:32-51`.
 **Severity:** MEDIUM
 **Fix:** Resolve the domain via Serper search (`<competitor> pricing`) first; pick the top result's hostname. Cache the mapping.
+**RESOLVED (Phase 02, 2026-05-25):** Serper-based competitor → hostname resolution with `www.` variant fallback. Forest/Cold Turkey/Opal now resolve to forestadmin.com/getcoldturkey.com/opal.so (was `.com` guess and miss). Also closes D-01 (`www.` host mismatch for Wayback) — see commit 5213442 + smoke-test evidence in commit body.
 
 ### M3. `find_pricing_anchors` Wayback URL is cited but not fetched
 **What:** Same line range as H8 — a Wayback wildcard URL is added to `sources` with no fetch. Listed here as MEDIUM-grade noise (HIGH-grade severity already covered in H8 because of the bias-mislabeling).
@@ -116,6 +129,7 @@ These concerns threaten the "single defining design goal" (§1): *making confirm
 **Severity:** MEDIUM (overlap with H8)
 **Fix:** See H8.
 **Verified closed by Phase 02 T04 (covered by Phase 01 H8 fix).** Audit grep `web\.archive\.org/web/[^0-9]` on `src/tools/find-pricing-anchors.ts` returns zero matches. Only Wayback references remaining are (1) a Serper search query string (`site:web.archive.org`) and (2) a `historyResults` snippet-filter check — neither writes a Wayback URL into `sources`. All `sources` Wayback entries route through `waybackSource(snapshot, ...)` which fires only when `waybackLookup()` returns a real timestamped snapshot. Live smoke (3 competitors) returned only real-timestamp snapshot URLs (e.g. `web/20260510041848`, `web/20180720081744`) — no wildcards. See `.planning/phases/02-tool-quality-and-test-harness/m3-verification.md`.
+**RESOLVED (Phase 02, 2026-05-25):** Pre-closed by Phase 01 H8 fix (commit d54ecf5 — real Wayback CDX API client). Phase 02 T04 confirmed no regression — see commit 34496f9 + evidence at `.planning/phases/02-tool-quality-and-test-harness/m3-verification.md`.
 
 ### M4. `check_big_tech_encroachment` acquisition regex extracts article titles, not company names
 **What:** `src/tools/check-big-tech-encroachment.ts:234` — `r.title.match(/acquir(?:es?|ed)\s+([A-Z][A-Za-z0-9.&\- ]+?)(?:\s+for|\s+in|[,.])/)`. On real TechCrunch headlines like *"Apple's AI strategy after acquiring Pixelmator hints at..."* this captures `"Pixelmator hints at"` or falls through entirely to `r.title.slice(0, 60)` — the full headline becomes the "target company."
@@ -123,6 +137,7 @@ These concerns threaten the "single defining design goal" (§1): *making confirm
 **Where:** `src/tools/check-big-tech-encroachment.ts:234-240`.
 **Severity:** MEDIUM
 **Fix:** Tighten regex to require an end anchor (`\s+(?:for\s+\$|in\s+a\s+\$|deal)`) AND skip entries when match fails — don't fall back to the headline.
+**RESOLVED (Phase 02, 2026-05-25):** Acquisition regex tightened with end-anchor + drops entries on fallthrough (no headline-as-target fallback). Trade-off (real acquisitions without `for $X` shape are dropped) is locked in by negative test fixtures — see commits 3a1eef6 + 9b3fcca (T-V05 regression test) + evidence at `src/tools/check-big-tech-encroachment.test.ts` (12 assertions including 7 negatives).
 
 ### M5. `check_big_tech_encroachment` conference search misses obvious signals (literal keyword match)
 **What:** Conference queries use `${queryBase} site:developer.apple.com` where `queryBase = category + keywords`. For an idea like "AI-native focus app," `queryBase` is something like "focus app deep work" — which will not match WWDC sessions on "Apple Intelligence," "Screen Time," or "Focus Modes" (which is the literal name of a system feature). The classic killshot case in §10 Phase 4 will be missed.
@@ -130,6 +145,7 @@ These concerns threaten the "single defining design goal" (§1): *making confirm
 **Where:** `src/tools/check-big-tech-encroachment.ts:138, 146`.
 **Severity:** MEDIUM
 **Fix:** Expand each hyperscaler search with a synonym map (`focus app` → `Focus Modes`, `Screen Time`, `Digital Wellbeing`, `Apple Intelligence`, `Copilot`) — derived from a static category-to-platform-feature map, or generated by a sub-prompt at tool invocation time.
+**RESOLVED (Phase 02, 2026-05-25):** Category → platform-feature synonym map fans hyperscaler queries (focus app → Focus Modes, Screen Time, Digital Wellbeing, Apple Intelligence, Copilot, etc.). Smoke showed sources before=12 → after=39, with 12 matching synonym keywords — see commit 0e64097 + smoke-test evidence in commit body.
 
 ### M6. `scan_producthunt_launches` returns empty / wrong results for plain category queries
 **What:** The PH client searches by raw category string (`searchProductHunt(category, 15)` at `src/tools/scan-producthunt-launches.ts:59`). For "focus app" the PH GraphQL search returns largely empty or off-topic launches; filtering happens client-side via topics, but there's no fallback to topic-based search. Live testing showed empty results for the canonical test idea.
@@ -137,6 +153,7 @@ These concerns threaten the "single defining design goal" (§1): *making confirm
 **Where:** `src/lib/producthunt.ts` (search function), `src/tools/scan-producthunt-launches.ts:59`.
 **Severity:** MEDIUM
 **Fix:** Add a topic-resolution step (PH has a topics API) — convert category → topic slug → posts query. If topic search returns nothing, log that fact in `confidence_note` rather than returning an empty `launches[]` array with no warning.
+**RESOLVED (Phase 02, 2026-05-25):** PH topics API resolution wired into `scan_producthunt_launches`; `confidence_note` reports actual fetch path (topic-resolved vs. query-string fallback vs. API unauthorized). D-T07-1 documents the PH API auth-scope limitation as a graceful-degradation flag, not a bug — see commits 68f7a54 + 2b7eacb + evidence at `.planning/phases/02-tool-quality-and-test-harness/deferred-items.md` (D-T07-1).
 
 ### M7. Reddit refactor: spec implied OAuth API; current code uses Serper site search
 **What:** `src/lib/reddit.ts:1-15` documents the divergence honestly: Reddit data is fetched via `serperSearch(query + ' site:reddit.com')` instead of Reddit OAuth. Tier was reduced A → B in `redditSource` (line 91). This is a documented design choice but worth surfacing.
@@ -144,6 +161,7 @@ These concerns threaten the "single defining design goal" (§1): *making confirm
 **Where:** `src/lib/reddit.ts:58-80`.
 **Severity:** MEDIUM (acceptable for now, but blocks part of `estimate_demand_signals`)
 **Fix:** When `estimate_demand_signals` is built, add a separate Reddit API client (or a public `/r/<sub>/about.json` fetch — no auth required for subscriber counts) and reserve Serper for in-thread content extraction.
+**VERIFIED CLOSED (Phase 02, 2026-05-25):** Pre-closed by Phase 01 T12b (`getSubredditMeta` no-auth fetch via `about.json` for subscriber counts; Serper retained for in-thread content). No Phase 02 code change required — see commit 2455447 (Phase 01) + `src/lib/reddit.ts` `getSubredditMeta`.
 
 ### M8. No tool-result caching across a single `validate_idea` run
 **What:** §2 + §7 "Tool reuse rule": `find_closest_competitor` is supposed to be called *once* and referenced in G2 + G4. `src/lib/cache.ts` exists (30 lines) but is not wired into any tool. Each gate that the LLM walks through will re-invoke tools.
@@ -151,6 +169,7 @@ These concerns threaten the "single defining design goal" (§1): *making confirm
 **Where:** `src/lib/cache.ts` (unused by any tool); no tool checks the cache.
 **Severity:** MEDIUM
 **Fix:** Wrap each tool's main fetch in `cache.get/set` keyed by tool name + normalized args; TTL = one session.
+**RESOLVED (Phase 02, 2026-05-25):** Tool-layer caching wired into 6 orchestrator tools (TTL.SHORT). Smoke showed cold call 11.7s → warm call 0ms — see commits d1ce9fc (T11 audit identifying 6 tools) + fce5b0b (T12 wiring) + 5932894 (T-V08 cache-hit regression test) + evidence at `.planning/phases/02-tool-quality-and-test-harness/m8-cache-audit.md`.
 
 ### M9. `confidence_note` math is wrong in `find_pricing_anchors`
 **What:** `find-pricing-anchors.ts:281-285` computes `fetchedCount` by checking *if any* source has a "Live pricing" contribution — then multiplies that boolean across every competitor: `current_pricing.filter((_p) => sources.some(...))`. So if 1 of 4 competitors fetched live, all 4 are reported as "live fetched."
@@ -158,6 +177,7 @@ These concerns threaten the "single defining design goal" (§1): *making confirm
 **Where:** `src/tools/find-pricing-anchors.ts:281-288`.
 **Severity:** MEDIUM
 **Fix:** Track `fetchedSuccessfully` per competitor (the variable already exists at line 132) and push to a counter in the loop.
+**RESOLVED (Phase 02, 2026-05-25):** Per-competitor `fetchedSuccessfully` counter wired into `confidence_note`. Smoke showed "2 of 3 fetched live" (true) replacing the prior "3 of 3" (false) — see commit fa75385 + smoke-test evidence in commit body.
 
 ---
 
@@ -169,6 +189,7 @@ These concerns threaten the "single defining design goal" (§1): *making confirm
 **Where:** Repo-wide.
 **Severity:** LOW (rises to HIGH after v1 ships)
 **Fix:** Add Vitest. Start with unit tests for the parsers most likely to drift (`extractPriceTiers`, `detectRecency`, acquisition regex). Add one end-to-end snapshot test that runs `validate_idea` against the focus-app fixture.
+**RESOLVED (Phase 02, 2026-05-25):** Vitest installed + 8 test files + 70 assertions covering parsers, helpers, and renderer snapshot — see commits 8bc95e3 (T-V01 Vitest install) + 35db649 (T-V02) + a49d328 (T-V03) + c906375 (T-V04) + 9b3fcca (T-V05) + e8bbe7b (T-V06) + 6b18b87 (T-V07) + 5932894 (T-V08) + d730a1c (T-V09). Evidence: `npm test` passes 70/70 across 8 files.
 
 ### L2. Stale branches
 **What:** Local + remote branches `weather-mcp`, `research-v1`, `research-v2`, `pensive-newton-2f202f`, `priceless-haslett-797a93` still present. `weather-mcp` is from the pre-product-validation scaffolding.
