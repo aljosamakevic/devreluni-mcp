@@ -26,20 +26,23 @@ Per spec §2, this is an MCP (Model Context Protocol) server that orchestrates a
                        ▼
 ┌─────────────────────────────────────────────────────────────┐
 │  TOOLS — live-signal fetchers (return ToolResult<T>)        │
-│  `src/tools/*.ts` — 8 built, 4 remaining                    │
+│  `src/tools/*.ts` — 12 data tools + 1 finalize tool         │
 │  All return `{ data, sources[], confidence_note,            │
 │                fallbacks_used[] }` per `src/types.ts`       │
 └──────────────────────┬──────────────────────────────────────┘
                        │ use
                        ▼
 ┌─────────────────────────────────────────────────────────────┐
-│  LIB — shared infrastructure (HTTP, search, cache)          │
+│  LIB — shared infrastructure (HTTP, search, cache, bias)    │
 │  `src/lib/serper.ts`       Google search (Serper API)       │
 │  `src/lib/reddit.ts`       Reddit signals via Serper        │
 │  `src/lib/hn.ts`           Hacker News (Algolia API)        │
 │  `src/lib/producthunt.ts`  Product Hunt search              │
 │  `src/lib/webfetch.ts`     Raw HTTP fetch + HTML strip      │
 │  `src/lib/cache.ts`        In-memory TTL cache              │
+│  `src/lib/bias.ts`         effectiveBias (unknown→vendor)   │
+│  `src/lib/wayback.ts`      Wayback CDX (verified snapshots) │
+│  `src/lib/github.ts`       GitHub REST (public repo stats)  │
 └──────────────────────┬──────────────────────────────────────┘
                        │ reference (loaded fresh per invocation)
                        ▼
@@ -48,6 +51,18 @@ Per spec §2, this is an MCP (Model Context Protocol) server that orchestrates a
 │  `src/resources/source-tier-bias.md`                        │
 │  `src/resources/tool-to-gate-map.md`                        │
 │  `src/resources/evaluation-lens-matrix.md`                  │
+└──────────────────────┬──────────────────────────────────────┘
+                       │ JSON ValidationReport
+                       ▼
+┌─────────────────────────────────────────────────────────────┐
+│  VALIDATION PIPELINE (Phase 01)                             │
+│  `src/validation/schema.ts`          zod ValidationReport   │
+│  `src/validation/structural-validator.ts`  DOK + POV (H1/H2)│
+│  `src/validation/verdict-validator.ts`  source-count + matrix│
+│                                              (H4/H5)        │
+│  `src/validation/renderer.ts`        deterministic markdown │
+│  Invoked by `src/tools/finalize-validation-report.ts`       │
+│  Fundamental issues → refuse to render (no markdown out)    │
 └──────────────────────┬──────────────────────────────────────┘
                        │ produce
                        ▼
@@ -175,9 +190,13 @@ Per spec §6. All implemented.
 | `run_single_gate` | `src/prompts/run-single-gate.ts` | Deep dive on one gate (competitor / market / platform / wtp / why_now); no Validation Checks |
 | `generate_test_cards` | `src/prompts/generate-test-cards.ts` | 3–7 Strategyzer Test Cards tied to riskiest assumptions; cheapest-test only (never "build the MVP") |
 
+## The 5 Prompts — Contract Change (Phase 01)
+
+The 5-prompt list above is unchanged in count and purpose. **The master prompt's contract changed:** `validate_idea` now emits a structured `ValidationReport` JSON object (per `src/validation/schema.ts`) instead of authoring markdown. The markdown rendering is the validator pipeline's job (see "Validation Pipeline" below). This closes the markdown-escape-hatch that allowed the LLM to bypass DOK separation, populate the Spiky POV, or skip the Contradicting Evidence block (H1, H2 hardening — commit 53a26a9).
+
 ## The 12 Tools Status
 
-Per spec §7. Built status as of 2026-05-20:
+Per spec §7. Built status as of 2026-05-20 (post Phase 01):
 
 | # | Tool | File | G1 | G2 | G3 | G4 | G5 | Status |
 |---|------|------|:--:|:--:|:--:|:--:|:--:|:------:|
@@ -189,14 +208,20 @@ Per spec §7. Built status as of 2026-05-20:
 | 6 | `find_yc_rfs_alignment` | `src/tools/find-yc-rfs-alignment.ts` | | s | | | **P** | ✅ Built |
 | 7 | `find_pricing_anchors` | `src/tools/find-pricing-anchors.ts` | s | | | **P** | | ✅ Built (P0) |
 | 8 | `check_big_tech_encroachment` | `src/tools/check-big-tech-encroachment.ts` | | | **P** | | s | ✅ Built (P0) |
-| 9 | `find_why_now_signals` | _not yet_ | | | | | **P** | ❌ Not built (P0) |
-| 10 | `estimate_demand_signals` | _not yet_ | | **P** | | | s | ❌ Not built (P0) |
-| 11 | `find_public_revenue_signals` | _not yet_ | s | **P** | | **P** | | ❌ Not built (P1) |
-| 12 | `assess_platform_dependency` | _not yet_ | | | **P** | | | ❌ Not built (P1) |
+| 9 | `find_why_now_signals` | `src/tools/find-why-now-signals.ts` | | | | | **P** | ✅ Built (P0) |
+| 10 | `estimate_demand_signals` | `src/tools/estimate-demand-signals.ts` | | **P** | | | s | ✅ Built (P0) |
+| 11 | `find_public_revenue_signals` | `src/tools/find-public-revenue-signals.ts` | s | **P** | | **P** | | ✅ Built (P1) |
+| 12 | `assess_platform_dependency` | `src/tools/assess-platform-dependency.ts` | | | **P** | | | ✅ Built (P1) |
 
 **P** = primary (must call for that gate); **s** = secondary.
 
-**Built:** 8 of 12. **Remaining P0:** `find_why_now_signals`, `estimate_demand_signals`. **Remaining P1:** `find_public_revenue_signals`, `assess_platform_dependency`. Until P0 tools land, Gates 2 and 5 lack a primary tool and will be evidence-thin (forced toward Inconclusive).
+**Built:** 12 of 12 (all spec §7 tools shipped in Phase 01). Plus 1 validation tool (`finalize_validation_report`) = **13 registered tools total**.
+
+### Validation tool (Phase 01 addition)
+
+| Tool | File | Purpose |
+|------|------|---------|
+| `finalize_validation_report` | `src/tools/finalize-validation-report.ts` | Validates a structured `ValidationReport` JSON (from `validate_idea`), applies verdict overrides, refuses to render on fundamental issues, returns deterministic markdown |
 
 ### Tool reuse rule (spec §7)
 
@@ -217,6 +242,33 @@ Per spec §1, five mechanisms make confirmation bias structurally impossible. Ea
 3. **Contradicting evidence search required before any gate verdict.** Enforced in prompt instructions: `src/prompts/validate-idea.ts` Step 1(e) ("Search for contradicting evidence (separate tool calls if needed)") and OPERATING RULES #3 ("No contradicting evidence surfaced — treat as a gap, not confirmation.").
 4. **Three Validation Checks audit the verdict.** Enforced in `src/prompts/validate-idea.ts` Step 2 — Source Quality / Counterargument / Logic & Coherence. Major issues → confidence downgrade; Fundamental flaws → verdict override to Inconclusive.
 5. **Blank "Your Spiky POV" section in the final report.** Enforced in `src/prompts/validate-idea.ts` Step 6 — model is explicitly told to LEAVE IT BLANK. Per Appendix B(4), implementation must not "helpfully" fill it in.
+
+## Validation Pipeline (Phase 01)
+
+**Flow:** JSON in → validate → render → markdown out.
+
+1. The master `validate_idea` prompt instructs the LLM to emit a `ValidationReport` JSON object matching `src/validation/schema.ts` (zod-typed; mirrors spec §5).
+2. The client (or a downstream tool call) invokes `finalize_validation_report` with that JSON.
+3. `finalize_validation_report` runs three stages:
+   - **Schema validation** (`src/validation/schema.ts`) — zod refuses structurally malformed reports.
+   - **Structural validation** (`src/validation/structural-validator.ts`) — refuses fundamentals: missing DOK 1/2/3/4 in any gate, missing Contradicting Evidence block, populated Spiky POV. Fundamental issues → **refuse to render** (no markdown returned).
+   - **Verdict validation** (`src/validation/verdict-validator.ts`) — applies source-count rule (PASS requires ≥2 tier-S/A/B independent sources; otherwise downgrade to INCONCLUSIVE) and the Validation-Checks decision matrix (Major → confidence Low; Fundamental → overall INCONCLUSIVE). Mutates verdicts and emits `adjustments_made[]` audit trail.
+4. **Deterministic rendering** (`src/validation/renderer.ts`) — emits markdown from the validated, possibly-mutated `ValidationReport`. Always emits `SPIKY_POV_BLANK_TEMPLATE` regardless of `report.spiky_pov` (defense-in-depth against H2).
+
+**Markdown escape hatch closed:** the LLM cannot author final markdown — the prompt contract is JSON-only. If a future change adds a code path that produces markdown directly (skipping `finalize_validation_report`), the H1/H2/H4/H5 hardening is bypassed.
+
+## Anti-bias Enforcement Layers
+
+For each high-risk mechanism, enforcement is layered (validator/renderer/prompt). If one layer regresses, others still hold.
+
+| Mechanism | Layer 1 (refuse / mutate) | Layer 2 | Layer 3 (instructs) |
+|-----------|----------------------------|---------|----------------------|
+| **H1 — DOK 1→4 separation** | `structural-validator.ts` refuses on missing DOK | — | `validate-idea.ts` prompt instructs |
+| **H2 — Blank Spiky POV** | `renderer.ts` overrides via `SPIKY_POV_BLANK_TEMPLATE` | `structural-validator.ts` refuses populated POV | `validate-idea.ts` prompt instructs |
+| **H4 — PASS ≥2 tier-B+** | `verdict-validator.ts` mutates verdict to INCONCLUSIVE | — | `validate-idea.ts` prompt instructs |
+| **H5 — Validation Checks override** | `verdict-validator.ts` mutates confidence (Major→Low) / verdict (Fundamental→Inconclusive) | — | `validate-idea.ts` prompt instructs |
+
+`effectiveBias()` (H3) is a single-layer enforcement at the lib level — every consumer doing confidence math imports `src/lib/bias.ts` to map `unknown → vendor-funded`. Raw bias preserved on the wire.
 
 ## Critical Implementation Rules (Appendix B)
 
@@ -248,7 +300,7 @@ Per spec §1, five mechanisms make confirmation bias structurally impossible. Ea
 
 **`src/index.ts` (stdio MCP server):**
 - Triggered by: AI assistant spawning the `weather` bin from `package.json` (`./build/index.js`)
-- Responsibilities: load `.env`, instantiate `McpServer({name: 'product-validation', version: '0.1.0'})`, register 3 resources + 8 tools + 5 prompts, connect `StdioServerTransport`
+- Responsibilities: load `.env`, instantiate `McpServer({name: 'product-validation', version: '0.1.0'})`, register 3 resources + 13 tools (12 spec §7 + 1 `finalize_validation_report`) + 5 prompts, connect `StdioServerTransport`
 - Logs go to stderr only (stdout reserved for JSON-RPC)
 
 ## Architectural Constraints

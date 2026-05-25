@@ -179,6 +179,33 @@ Tool/prompt input schemas use `zod` (v3.25.x) `z.object({...})`-shaped definitio
 
 `zod` is the only runtime validation library. Don't introduce alternatives.
 
+## Validation Layer Conventions (Phase 01 — MANDATORY)
+
+Phase 01 introduced a code-enforced validator/renderer pipeline that hardens spec §1 anti-bias mechanisms (H1, H2, H4, H5). New code touching the validation report MUST follow these conventions.
+
+**Directory: `src/validation/`** — code-enforced output validation. Files:
+
+- `types.ts` — `ValidationReport` typed shape (matches spec §5 structure)
+- `schema.ts` — zod schema with structural invariants (top-level + per-gate)
+- `structural-validator.ts` — DOK 1/2/3/4 separation + Contradicting Evidence presence + blank POV (closes H1, H2 as fundamentals)
+- `verdict-validator.ts` — source-count rule (≥2 tier-B+ for PASS) + Validation-Checks decision matrix override (closes H4, H5 mechanically)
+- `renderer.ts` — deterministic markdown rendering from a validated `ValidationReport` (defense-in-depth on blank POV)
+- `constants.ts` — `SPIKY_POV_BLANK_TEMPLATE`, `CONTRADICTING_EVIDENCE_NONE_SENTINEL` (use these, never inline strings)
+- `__fixtures__/synthetic-report.ts` — fixtures for validator self-checks
+
+**Pipeline contract (spec §1 mechanisms 2–5):** prompts emit structured JSON → `finalize_validation_report` tool validates + renders → markdown returned to client. **The LLM does NOT author the final markdown.** Any code path that bypasses `finalize_validation_report` to emit markdown directly violates the phase 01 contract.
+
+**Layering of defenses** (each mechanism enforced at multiple layers — see ARCHITECTURE.md "Anti-bias Enforcement Layers"):
+
+- H1 (DOK separation): structural-validator refuses + prompt instructs
+- H2 (blank POV): renderer overrides + structural-validator refuses + prompt instructs
+- H4 (≥2 tier-B+): verdict-validator mutates + prompt instructs
+- H5 (Validation Checks override): verdict-validator mutates + prompt instructs
+
+**Module: `src/lib/bias.ts`** — any consumer doing confidence math MUST use `effectiveBias(flag)` to map `unknown → vendor-funded` (spec §4 rule 4 / §11 anti-pattern 6). Raw bias is preserved on the wire for transparency; the helper only affects internal math. Do not inline the `unknown → vendor-funded` translation — always import the helper so the rule lives in one place.
+
+**Wayback sourcing (spec §4 / H8 fix):** Real Wayback CDX-verified snapshots are tier S; Wayback wildcards or search URLs are tier D. Never record a source URL you have not actually fetched. Use `src/lib/wayback.ts` `findClosestSnapshot()` rather than constructing `web.archive.org/web/<wildcard>` URLs by hand.
+
 ## ESM with `.js` Import Suffixes (Node ESM strict resolution)
 
 `package.json` declares `"type": "module"` and `tsconfig.json` uses `"module": "NodeNext"`. Local imports therefore include the `.js` extension even though the source is `.ts`:
