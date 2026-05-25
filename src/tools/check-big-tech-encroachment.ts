@@ -16,6 +16,7 @@ import {
   isSerperLive,
   type SerperOrganicResult,
 } from '../lib/serper.js';
+import { expandHyperscalerQueries } from '../lib/category-platform-features.js';
 
 type Hyperscaler = 'Apple' | 'Google' | 'Microsoft' | 'Meta' | 'Amazon';
 type AdjacencyScore = 1 | 2 | 3 | 4 | 5;
@@ -137,29 +138,66 @@ export function registerCheckBigTechEncroachment(server: McpServer): void {
       const keywords = category_keywords ?? [];
       const queryBase = [category, ...keywords].join(' ');
 
+      // Per CONCERNS.md M5: a literal `${queryBase} site:developer.apple.com`
+      // query won't match platform features that don't share the category's
+      // keywords (e.g. "Apple Intelligence", "Screen Time", "Focus Modes" for
+      // a "focus app"). Fan out one base query plus up to 3 feature-name
+      // queries per hyperscaler, sourced from the static synonym map.
+      const featureExpansions = expandHyperscalerQueries(category, keywords);
+      const hyperscalerKey = (hs: Hyperscaler): 'apple' | 'google' | 'microsoft' | null => {
+        if (hs === 'Apple') return 'apple';
+        if (hs === 'Google') return 'google';
+        if (hs === 'Microsoft') return 'microsoft';
+        return null;
+      };
+
       // ───────────────────────────────────────────────────────────
       // Phase 1: Conference mentions across all hyperscalers
       // ───────────────────────────────────────────────────────────
       const conferenceMentions: ConferenceMention[] = [];
 
-      const conferenceSearches = HYPERSCALER_CONFERENCES.map(async (conf) => {
-        const query = `${queryBase} site:${conf.site}`;
-        try {
-          const results = await serperSearch(query, 5);
-          return { conf, results };
-        } catch {
-          return { conf, results: [] as SerperOrganicResult[] };
+      // For each conference site, run 1 base query + N feature-name queries
+      // (N capped by MAX_FEATURES_PER_HYPERSCALER inside the map). Each search
+      // is wrapped in Promise.allSettled so a single Serper failure can't
+      // tank the rest of the phase.
+      type ConfSearchInput = {
+        conf: (typeof HYPERSCALER_CONFERENCES)[number];
+        query: string;
+        feature: string | null; // null = base query
+      };
+      const confSearchInputs: ConfSearchInput[] = [];
+      for (const conf of HYPERSCALER_CONFERENCES) {
+        confSearchInputs.push({ conf, query: `${queryBase} site:${conf.site}`, feature: null });
+        const key = hyperscalerKey(conf.hyperscaler);
+        if (!key) continue;
+        for (const feat of featureExpansions[key]) {
+          confSearchInputs.push({
+            conf,
+            query: `"${feat}" site:${conf.site}`,
+            feature: feat,
+          });
         }
-      });
+      }
 
-      const conferenceResults = await Promise.all(conferenceSearches);
+      const conferenceResults = await Promise.allSettled(
+        confSearchInputs.map(async (input) => {
+          try {
+            const results = await serperSearch(input.query, 5);
+            return { input, results };
+          } catch {
+            return { input, results: [] as SerperOrganicResult[] };
+          }
+        }),
+      );
 
-      for (const { conf, results } of conferenceResults) {
+      for (const settled of conferenceResults) {
+        if (settled.status !== 'fulfilled') continue;
+        const { input, results } = settled.value;
         for (const r of results) {
           const text = `${r.title} ${r.snippet}`;
           conferenceMentions.push({
-            hyperscaler: conf.hyperscaler,
-            event: conf.event,
+            hyperscaler: input.conf.hyperscaler,
+            event: input.conf.event,
             title: r.title,
             url: r.link,
             snippet: r.snippet,
@@ -167,25 +205,37 @@ export function registerCheckBigTechEncroachment(server: McpServer): void {
           });
         }
         sources.push({
-          url: `https://www.google.com/search?q=${encodeURIComponent(`${queryBase} site:${conf.site}`)}`,
+          url: `https://www.google.com/search?q=${encodeURIComponent(input.query)}`,
           tier: 'S', // first-party dev docs / keynote material
           bias: 'conflicted', // hyperscaler self-reported
           fetched_at: new Date().toISOString(),
-          contribution: `${conf.hyperscaler} ${conf.event} mentions of "${queryBase}"`,
+          contribution: input.feature
+            ? `${input.conf.hyperscaler} ${input.conf.event} mentions of platform feature "${input.feature}"`
+            : `${input.conf.hyperscaler} ${input.conf.event} mentions of "${queryBase}"`,
         });
       }
 
       // ───────────────────────────────────────────────────────────
       // Phase 2: Platform API / SDK signals (broader than conferences)
       // ───────────────────────────────────────────────────────────
-      const apiQueries: { hyperscaler: Hyperscaler; q: string }[] = [
-        { hyperscaler: 'Apple', q: `${queryBase} "iOS" OR "macOS" API SDK new framework` },
-        { hyperscaler: 'Google', q: `${queryBase} "Android" OR "Chrome" API new` },
-        { hyperscaler: 'Microsoft', q: `${queryBase} "Windows" OR "Copilot" API new` },
+      const apiQueries: { hyperscaler: Hyperscaler; q: string; feature: string | null }[] = [
+        { hyperscaler: 'Apple', q: `${queryBase} "iOS" OR "macOS" API SDK new framework`, feature: null },
+        { hyperscaler: 'Google', q: `${queryBase} "Android" OR "Chrome" API new`, feature: null },
+        { hyperscaler: 'Microsoft', q: `${queryBase} "Windows" OR "Copilot" API new`, feature: null },
       ];
 
+      // Per CONCERNS.md M5: also fan out one extra API query per platform
+      // feature, so doc/news pages about the actual feature names surface.
+      for (const hs of ['apple', 'google', 'microsoft'] as const) {
+        const display: Hyperscaler =
+          hs === 'apple' ? 'Apple' : hs === 'google' ? 'Google' : 'Microsoft';
+        for (const feat of featureExpansions[hs]) {
+          apiQueries.push({ hyperscaler: display, q: `"${feat}" API SDK developer`, feature: feat });
+        }
+      }
+
       const platformApiSignals: PlatformApiSignal[] = [];
-      for (const { hyperscaler, q } of apiQueries) {
+      for (const { hyperscaler, q, feature } of apiQueries) {
         try {
           const results = await serperSearch(q, 3);
           for (const r of results) {
@@ -204,7 +254,9 @@ export function registerCheckBigTechEncroachment(server: McpServer): void {
             tier: 'S',
             bias: 'conflicted',
             fetched_at: new Date().toISOString(),
-            contribution: `${hyperscaler} platform API/SDK announcements`,
+            contribution: feature
+              ? `${hyperscaler} platform feature "${feature}" — API/SDK pages`
+              : `${hyperscaler} platform API/SDK announcements`,
           });
         } catch {
           // graceful degradation per spec — never fail silently, but never throw
@@ -297,7 +349,7 @@ export function registerCheckBigTechEncroachment(server: McpServer): void {
           killshot_risk: killshotRisk,
         },
         sources,
-        confidence_note: `Searched ${HYPERSCALER_CONFERENCES.length} conference site filters across ${new Set(HYPERSCALER_CONFERENCES.map((c) => c.hyperscaler)).size} hyperscalers + ${apiQueries.length} API queries + 1 acquisition query. Adjacency score is heuristic from signal counts — review the raw mentions before treating verdict as final. Recency detection relies on year strings in titles/snippets and can miss recent dateless pages.${!isSerperLive() ? ' Serper not configured — results are stubbed.' : ''}`,
+        confidence_note: `Searched ${confSearchInputs.length} conference site/feature filters across ${new Set(HYPERSCALER_CONFERENCES.map((c) => c.hyperscaler)).size} hyperscalers (${HYPERSCALER_CONFERENCES.length} base + ${confSearchInputs.length - HYPERSCALER_CONFERENCES.length} platform-feature expansions) + ${apiQueries.length} API queries + 1 acquisition query. Adjacency score is heuristic from signal counts — review the raw mentions before treating verdict as final. Recency detection relies on year strings in titles/snippets and can miss recent dateless pages.${!isSerperLive() ? ' Serper not configured — results are stubbed.' : ''}`,
         fallbacks_used: fallbacksUsed,
       };
 
