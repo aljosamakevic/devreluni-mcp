@@ -115,6 +115,7 @@ These concerns threaten the "single defining design goal" (§1): *making confirm
 **Where:** `src/tools/find-pricing-anchors.ts:152-159`.
 **Severity:** MEDIUM (overlap with H8)
 **Fix:** See H8.
+**Verified closed by Phase 02 T04 (covered by Phase 01 H8 fix).** Audit grep `web\.archive\.org/web/[^0-9]` on `src/tools/find-pricing-anchors.ts` returns zero matches. Only Wayback references remaining are (1) a Serper search query string (`site:web.archive.org`) and (2) a `historyResults` snippet-filter check — neither writes a Wayback URL into `sources`. All `sources` Wayback entries route through `waybackSource(snapshot, ...)` which fires only when `waybackLookup()` returns a real timestamped snapshot. Live smoke (3 competitors) returned only real-timestamp snapshot URLs (e.g. `web/20260510041848`, `web/20180720081744`) — no wildcards. See `.planning/phases/02-tool-quality-and-test-harness/m3-verification.md`.
 
 ### M4. `check_big_tech_encroachment` acquisition regex extracts article titles, not company names
 **What:** `src/tools/check-big-tech-encroachment.ts:234` — `r.title.match(/acquir(?:es?|ed)\s+([A-Z][A-Za-z0-9.&\- ]+?)(?:\s+for|\s+in|[,.])/)`. On real TechCrunch headlines like *"Apple's AI strategy after acquiring Pixelmator hints at..."* this captures `"Pixelmator hints at"` or falls through entirely to `r.title.slice(0, 60)` — the full headline becomes the "target company."
