@@ -17,6 +17,7 @@ import {
   type SerperOrganicResult,
 } from '../lib/serper.js';
 import { expandHyperscalerQueries } from '../lib/category-platform-features.js';
+import { detectRecency } from '../lib/recency.js';
 
 type Hyperscaler = 'Apple' | 'Google' | 'Microsoft' | 'Meta' | 'Amazon';
 type AdjacencyScore = 1 | 2 | 3 | 4 | 5;
@@ -69,19 +70,8 @@ const HYPERSCALER_CONFERENCES: { hyperscaler: Hyperscaler; event: string; site: 
   { hyperscaler: 'Amazon', event: 'AWS re:Invent', site: 'aws.amazon.com' },
 ];
 
-// Year markers to detect recency from a snippet/title.
-const CURRENT_YEAR = new Date().getFullYear();
-const RECENT_YEARS = [CURRENT_YEAR, CURRENT_YEAR - 1, CURRENT_YEAR - 2];
-
-function detectRecency(text: string): 'last_24mo' | 'older' | 'unknown' {
-  for (const y of RECENT_YEARS) {
-    if (text.includes(String(y))) return 'last_24mo';
-  }
-  // any 4-digit year that isn't in the recent window → older
-  const oldYear = text.match(/\b(19|20)\d{2}\b/);
-  if (oldYear && !RECENT_YEARS.includes(parseInt(oldYear[0], 10))) return 'older';
-  return 'unknown';
-}
+// Recency classification (year markers in title/snippet) lives in lib/recency.ts
+// — shared with find_why_now_signals so both tools stay in sync.
 
 function scoreAdjacency(
   conferences: ConferenceMention[],

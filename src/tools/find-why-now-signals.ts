@@ -21,6 +21,7 @@ import {
   type SerperOrganicResult,
 } from '../lib/serper.js';
 import { effectiveBias, requiresUpgradeFromUnknown } from '../lib/bias.js';
+import { detectRecency, CURRENT_YEAR } from '../lib/recency.js';
 
 type EnablerType =
   | 'api'
@@ -158,21 +159,8 @@ const YC_S26_CATEGORIES = [
   },
 ];
 
-// ───────────────────────────────────────────────────────────────────────────
-// Recency helper — reused pattern from check-big-tech-encroachment.ts
-// ───────────────────────────────────────────────────────────────────────────
-
-const CURRENT_YEAR = new Date().getFullYear();
-const RECENT_YEARS = [CURRENT_YEAR, CURRENT_YEAR - 1, CURRENT_YEAR - 2];
-
-function detectRecency(text: string): 'last_24mo' | 'older' | 'unknown' {
-  for (const y of RECENT_YEARS) {
-    if (text.includes(String(y))) return 'last_24mo';
-  }
-  const oldYear = text.match(/\b(19|20)\d{2}\b/);
-  if (oldYear && !RECENT_YEARS.includes(parseInt(oldYear[0], 10))) return 'older';
-  return 'unknown';
-}
+// Recency classification (detectRecency, CURRENT_YEAR, RECENT_YEARS) is shared
+// with check_big_tech_encroachment via lib/recency.ts.
 
 // ───────────────────────────────────────────────────────────────────────────
 // YC RFS touchpoint scan (in-process, no tool-to-tool call)
