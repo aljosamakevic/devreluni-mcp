@@ -1,0 +1,109 @@
+{
+  "data": {
+    "signals": [
+      {
+        "source": "serper",
+        "quote": "... Fomi is safe, legit, or not worth it. LIKE and SUBSCRIBE for more app reviews, scam checks, and tech breakdowns! #FomiApp #AppReview ...",
+        "url": "https://www.youtube.com/watch?v=QxiZV03WYm0",
+        "is_structural": false
+      },
+      {
+        "source": "serper",
+        "quote": "Opal is great for \"Digital Detox\" (shutting everything off), but terrible for \"Deep Work\" (needing tools to function). ... switched from ...",
+        "url": "https://www.fomilab.ai/post/fomilab-ai-vs-opal-app",
+        "is_structural": false
+      },
+      {
+        "source": "serper",
+        "quote": "Not everyone will be like the last person who disappointed you. To stay connected and receive more life-transforming teachings, follow us on ...",
+        "url": "https://www.facebook.com/Churchgist.org/videos/everybody-needs-someone-to-talk-to-not-everyone-will-be-like-the-last-person-who/1615813239616476/",
+        "is_structural": false
+      },
+      {
+        "source": "serper",
+        "quote": "“I'm surprised and disappointed”- said that one idiot you know. Disappointment in Politics: A Common Sentiment. Explore the feelings of ...",
+        "url": "https://www.tiktok.com/@hertunba/video/7599782937306991879",
+        "is_structural": false
+      },
+      {
+        "source": "serper",
+        "quote": "FOMI (fear of missing in) experimental film I've made. Is this ... I'm Disappointed in my Film. 28. 34. Just started making short films. I ...",
+        "url": "https://www.reddit.com/r/cinematography/comments/bse3qn/fomi_fear_of_missing_in_experimental_film_ive/",
+        "is_structural": false
+      },
+      {
+        "source": "serper",
+        "quote": "They never rang the ambulance when he was having a terrible asthma attack all they were worried about was them being caught out with drugs in ...",
+        "url": "https://www.facebook.com/groups/205605261495906/posts/1456116596444760/",
+        "is_structural": true
+      },
+      {
+        "source": "serper",
+        "quote": "They made a separate post for us and emailed a certificate but this poor compensation was not worth the disorganised and actually insulting experience. Don ...",
+        "url": "https://filmfreeway.com/FOMIFestivalofMovingImage",
+        "is_structural": false
+      },
+      {
+        "source": "serper",
+        "quote": "This was a gift, so I am very disappointed. comfort. 1.0 out of 5. comfort: 1 ... Not worth it. Terrible, lasted less than 2 months. comfort. 3.0 out of 5.",
+        "url": "https://www.target.com/p/fomi-water-sleeping-pillow/-/A-88379698",
+        "is_structural": false
+      },
+      {
+        "source": "reddit",
+        "quote": "Radiology 1st yr struggling with a lot of FOMI - Reddit I switched from surg to radiology too pretty late in the game. I did a surgery prelim year specifically so I could prove to myself that I ...",
+        "url": "https://reddit.com/r/Radiology/comments/1i5vfap/radiology_1st_yr_struggling_with_a_lot_of_fomi/",
+        "upvotes": 0,
+        "is_structural": false
+      }
+    ],
+    "weakness_themes": [
+      {
+        "theme": "Pricing / Value",
+        "count": 3,
+        "is_structural": false
+      },
+      {
+        "theme": "Missing Features",
+        "count": 2,
+        "is_structural": false
+      },
+      {
+        "theme": "Integration Gaps",
+        "count": 1,
+        "is_structural": false
+      }
+    ],
+    "structural_weaknesses": [],
+    "feature_gaps": [
+      "Opal is great for \"Digital Detox\" (shutting everything off), but terrible for \"Deep Work\" (needing tools to function). ... switched from ...",
+      "FOMI (fear of missing in) experimental film I've made. Is this ... I'm Disappointed in my Film. 28. 34. Just started making short films. I ..."
+    ],
+    "interpretation": "Found 9 weakness signals but none are structural (3+ independent sources). Themes: Pricing / Value, Missing Features, Integration Gaps. Surface-level weaknesses — competitor could fix these; don't build a moat on them."
+  },
+  "sources": [
+    {
+      "url": "https://google.serper.dev/search?q=Fomi%20%22not%20worth%22%20OR%20%22cancelled%22%20OR%20%22switched%20from%22%20OR%20%22disappointed%22%20OR%20%22terrible%22",
+      "tier": "A",
+      "bias": "independent",
+      "fetched_at": "2026-05-26T15:34:46.470Z",
+      "contribution": "Google search results for: Fomi \"not worth\" OR \"cancelled\" OR \"switched from\" OR \"disappointed\" OR \"terrible\""
+    },
+    {
+      "url": "https://www.google.com/search?q=Fomi%20site%3Areddit.com",
+      "tier": "B",
+      "bias": "independent",
+      "fetched_at": "2026-05-26T15:34:46.470Z",
+      "contribution": "Reddit discussions surfaced via Google SERP for: Fomi (site:reddit.com)"
+    },
+    {
+      "url": "https://hn.algolia.com/api/v1/search?query=Fomi%20focus%20app%20problems%20complaints%20review&tags=story",
+      "tier": "A",
+      "bias": "independent",
+      "fetched_at": "2026-05-26T15:34:46.470Z",
+      "contribution": "HN discussion search for: Fomi focus app problems complaints review"
+    }
+  ],
+  "confidence_note": "Serper search data is live. Reddit data sourced via Serper (Google) with site:reddit.com. Tier B — snippets only, no full threads, no score/comment counts. HN data is live.",
+  "fallbacks_used": []
+}

@@ -1,0 +1,305 @@
+{
+  "data": {
+    "detected_platforms": [
+      {
+        "name": "Apple Screen Time API",
+        "evidence": "Provided in explicit_platforms input: \"Apple Screen Time API\"",
+        "detection_source": "explicit_input",
+        "restrictive_history": true
+      },
+      {
+        "name": "Android Digital Wellbeing",
+        "evidence": "Provided in explicit_platforms input: \"Android Digital Wellbeing\"",
+        "detection_source": "explicit_input",
+        "restrictive_history": true
+      },
+      {
+        "name": "macOS",
+        "evidence": "Provided in explicit_platforms input: \"macOS\"",
+        "detection_source": "explicit_input",
+        "restrictive_history": false
+      },
+      {
+        "name": "iOS / Apple platform APIs",
+        "evidence": "Provided in explicit_platforms input: \"iOS\"",
+        "detection_source": "explicit_input",
+        "restrictive_history": true
+      }
+    ],
+    "tos_history_signals": [
+      {
+        "platform": "Apple Screen Time API",
+        "finding": "Apple Makes Screen Time API Available to Third-Party Developers",
+        "url": "https://www.macrumors.com/2021/06/07/apple-screen-time-api-third-party-developers/",
+        "snippet": "Apple is making its Screen Time API available to third-party developers, which will let official Screen Time data be used in parental control apps."
+      },
+      {
+        "platform": "Apple Screen Time API",
+        "finding": "Locked: Less Screen Time - App Store - Apple",
+        "url": "https://apps.apple.com/ma/app/locked-less-screen-time/id6742744610",
+        "snippet": "All blocking is handled locally using Apple's Screen Time API. Privacy Policy: https://nowlocked.com/policies/privacy-policy Terms of Service ... Copyright © 2026 ..."
+      },
+      {
+        "platform": "Apple Screen Time API",
+        "finding": "Parental Control App Developers Urge Apple to 'Put Kids First' by ...",
+        "url": "https://www.macrumors.com/2019/05/31/apple-screen-time-api-campaign/",
+        "snippet": "Apple has yet to indicate whether it will release a public API for Screen Time. While it is certainly possible that Apple could announce that it ..."
+      },
+      {
+        "platform": "Apple Screen Time API",
+        "finding": "Brainrot: Screen Time Control - App Store - Apple",
+        "url": "https://apps.apple.com/sk/app/brainrot-screen-time-control/id6744338972",
+        "snippet": "... Apple's Screen Time API; all monitoring and blocking run *entirely* on your ... *All features described above require a subscription.* Terms of Service ..."
+      },
+      {
+        "platform": "Apple Screen Time API",
+        "finding": "Regain: Screen time control - App Store - Apple",
+        "url": "https://apps.apple.com/gb/app/regain-screen-time-control/id6749575953",
+        "snippet": "==> PRIVATE & SECURE Regain uses Apple's Screen Time API to safely block apps and track usage. ... Terms of Service: https://sponge-tugboat-107.notion.site ..."
+      },
+      {
+        "platform": "Android Digital Wellbeing",
+        "finding": "Google has ignored Android's Digital Wellbeing tools for years, so ...",
+        "url": "https://9to5google.com/2026/02/20/google-has-ignored-androids-digital-wellbeing-tools-for-years-so-whats-next/",
+        "snippet": "Google hasn't meaningfully improved Android's Digital Wellbeing tools in nearly a decade, leaving users without much help to curtail usage."
+      },
+      {
+        "platform": "Android Digital Wellbeing",
+        "finding": "'Pause Point' is the Digital Wellbeing upgrade Google's needed to ...",
+        "url": "https://9to5google.com/2026/05/12/android-digital-wellbeing-pause-point-upgrade/",
+        "snippet": "Pause Point is a big upgrade to Google's Digital Wellbeing tools on Android, and the company says it's just the start."
+      },
+      {
+        "platform": "Android Digital Wellbeing",
+        "finding": "Android's Digital Wellbeing And Parental Controls App - MMGuardian",
+        "url": "https://www.mmguardian.com/blog/digital-wellbeing-and-parental-controls?srsltid=AfmBOoqJxVfpMv00OZYOF9Uwt5ngN64Cw6yInHFyB80XBsO1DypQby1c",
+        "snippet": "Android's Digital Wellbeing and ... Legal. Privacy Policy · Terms of Service · Returns Policy · Cookies. © 2012 – 2026 Pervasive Group Inc."
+      },
+      {
+        "platform": "Android Digital Wellbeing",
+        "finding": "Remove Digital Wellbeing App on Android Easily - TikTok",
+        "url": "https://www.tiktok.com/@aurtechtips/video/7492722889901411630",
+        "snippet": "You can set overall screen time goals or individual app timers to control your phone usage habits. Use Android Digital Wellbeing features to ..."
+      },
+      {
+        "platform": "Android Digital Wellbeing",
+        "finding": "Digital Wellbeing for Android 9 Pie exits beta, available on Google ...",
+        "url": "https://9to5google.com/2018/11/20/digital-wellbeing-exits-beta-android-9-pie/",
+        "snippet": "On Android, Digital Wellbeing is now hitting version 1.0 and it provides a dashboard of device usage. Users can see how often they use ..."
+      },
+      {
+        "platform": "macOS",
+        "finding": "Software License Agreements - Legal - Apple",
+        "url": "https://www.apple.com/legal/sla/",
+        "snippet": "Software License Agreements · License Information · macOS · macOS Server · iOS and iPadOS · watchOS · visionOS · tvOS · Other."
+      },
+      {
+        "platform": "macOS",
+        "finding": "Self Service on macOS is being discontinued and replaced ... - Reddit",
+        "url": "https://www.reddit.com/r/jamf/comments/1i6porn/self_service_on_macos_is_being_discontinued_and/",
+        "snippet": "... deprecation of original Self Service is not schedule until March 2026. ... deprecating Self Service (classic) for macOS by 31 March 2026. To ..."
+      },
+      {
+        "platform": "macOS",
+        "finding": "Apple macOS - endoflife.date",
+        "url": "https://endoflife.date/macos",
+        "snippet": "Apple macOS ; macOS 11 (Big Sur), 5 years ago. (12 Nov 2020). Ended 3 months and 3 weeks ago. (02 Feb 2026). 11.7.11. (02 Feb 2026) ; macOS 10.15 ..."
+      },
+      {
+        "platform": "macOS",
+        "finding": "macOS deprecation - www.makemkv.com",
+        "url": "https://forum.makemkv.com/forum/viewtopic.php?t=41043",
+        "snippet": "macOS deprecation ... When installing MakeMKV via Homebrew on macOS, you're currently getting warned that MakeMKV has been \"deprecated because it does not pass ..."
+      },
+      {
+        "platform": "macOS",
+        "finding": "Apple Deprecates Legacy OS Software Update Management in iOS ...",
+        "url": "https://hub.ivanti.com/s/article/Apple-Deprecates-Legacy-Software-Update-Management-in-iOS-iPadOS-and-macOS-26",
+        "snippet": "... deprecation. Legacy Software Update ... The legacy MDM Software Update command will be deprecated in iOS 26 and macOS 26, expected in 2026."
+      },
+      {
+        "platform": "iOS / Apple platform APIs",
+        "finding": "[PDF] Apple Business Terms of Service",
+        "url": "https://www.apple.com/legal/platform-services/apple-business/abtj.pdf",
+        "snippet": "Certain of the Apple Business Services (each a “Platform Service”) are subject to their own terms and conditions (collectively, the “Platform ..."
+      }
+    ],
+    "deplatforming_retros": [
+      {
+        "platform": "Apple Screen Time API",
+        "founder_or_company": "Anyone familiar with ScreenTime or DeviceActivity API? I want to just ...",
+        "url": "https://www.reddit.com/r/iOSProgramming/comments/1d9linf/anyone_familiar_with_screentime_or_deviceactivity/",
+        "snippet": "I've managed to publish an app with Apple screen time API. Can ... r/iOSProgramming - My app has been rejected for the third time and I am."
+      },
+      {
+        "platform": "Apple Screen Time API",
+        "founder_or_company": "Parental Control App Developers Urge Apple to 'Put Kids First' by ...",
+        "url": "https://www.macrumors.com/2019/05/31/apple-screen-time-api-campaign/",
+        "snippet": "Over a dozen parental control app developers have come together with a shared message for Apple: it's time to put kids first."
+      },
+      {
+        "platform": "Apple Screen Time API",
+        "founder_or_company": "Apple Makes Screen Time API Available to Third",
+        "url": "https://www.macrumors.com/2021/06/07/apple-screen-time-api-third-party-developers/",
+        "snippet": "Apple is making its Screen Time API available to third-party developers, which will let official Screen Time data be used in parental control apps."
+      },
+      {
+        "platform": "Apple Screen Time API",
+        "founder_or_company": "How to use Apple's Screen Time API in React Native?",
+        "url": "https://stackoverflow.com/questions/77606015/how-to-use-apples-screen-time-api-in-react-native",
+        "snippet": "How to use Apple's Screen Time API in React Native? Ask ... banned. Community activity. Last 1 hr. Users online activity. 2985 users ..."
+      },
+      {
+        "platform": "Android Digital Wellbeing",
+        "founder_or_company": "Google has ignored Android's Digital Wellbeing tools for years, so ...",
+        "url": "https://9to5google.com/2026/02/20/google-has-ignored-androids-digital-wellbeing-tools-for-years-so-whats-next/",
+        "snippet": "Google has ignored Android's Digital Wellbeing tools for years, so what's next? ... That kicked off the era of social media we're living in to ..."
+      },
+      {
+        "platform": "Android Digital Wellbeing",
+        "founder_or_company": "Digital wellbeing on Android. : r/GrapheneOS",
+        "url": "https://www.reddit.com/r/GrapheneOS/comments/1pmgk1p/digital_wellbeing_on_android/",
+        "snippet": "Alternative to Android's Digital Wellbeing · r/degoogle. • 2y ago. Alternative to Android's Digital Wellbeing. 19. 9. Why everyone is so ..."
+      },
+      {
+        "platform": "Android Digital Wellbeing",
+        "founder_or_company": "Walking the Android (time)line. Using Android's Digital Wellbeing to ...",
+        "url": "https://thebinaryhick.blog/2020/02/22/walking-the-android-timeline-using-androids-digital-wellbeing-to-timeline-android-activity/",
+        "snippet": "Using Android's Digital Wellbeing to timeline Android activity. ... My hope for this blog post is that it takes their work one step further."
+      },
+      {
+        "platform": "Android Digital Wellbeing",
+        "founder_or_company": "Why isn't Digital Wellbeing working anymore? : r/galaxys10",
+        "url": "https://www.reddit.com/r/galaxys10/comments/ji9ch8/why_isnt_digital_wellbeing_working_anymore/",
+        "snippet": "Best tips for using Android Digital Wellbeing. How to delete Digital Wellbeing data. Tips for maximizing Galaxy S10 battery life. Best apps for ..."
+      },
+      {
+        "platform": "Android Digital Wellbeing",
+        "founder_or_company": "How do we improve digital wellbeing? : r/Android",
+        "url": "https://www.reddit.com/r/Android/comments/185ry86/how_do_we_improve_digital_wellbeing/",
+        "snippet": "Alternative to Android's Digital Wellbeing · r/degoogle. • 2y ago. Alternative to Android's Digital Wellbeing. 19. 9. How to raise map awareness ..."
+      },
+      {
+        "platform": "macOS",
+        "founder_or_company": "@women-make",
+        "url": "https://medium.com/women-make/how-i-built-a-macos-app-and-made-5000-in-a-week-de25c7be0458",
+        "snippet": "The story of how I learnt Swift from zero, developed a MacOS app that made thousands of dollars in just a few days, and was featured in Fast ..."
+      },
+      {
+        "platform": "macOS",
+        "founder_or_company": "@philipp_baldauf",
+        "url": "https://medium.com/@philipp_baldauf/why-my-first-mac-osx-app-got-rejected-by-apple-and-how-i-fixed-it-5efa8023d381",
+        "snippet": "However, my first builds got rejected for different reasons, that I ... macOS is Good. These 9 Apps Make It Perfect. M-Series Macs are ..."
+      },
+      {
+        "platform": "macOS",
+        "founder_or_company": "Can you slim macOS down?",
+        "url": "https://news.ycombinator.com/item?id=46702411",
+        "snippet": "I moved to MacOS from linux after seeing my co-founder use their Macbook ... shut down exploration and curiosity. It is entirely possible to gain an ..."
+      },
+      {
+        "platform": "macOS",
+        "founder_or_company": "Apple Just Lost Me",
+        "url": "https://news.ycombinator.com/item?id=47517701",
+        "snippet": "It rejected my Driver's License and I gave up after that. ... Building on the incredible success of MacOS 26 Tahoe, I can hardly wait for MacOS 27 ..."
+      },
+      {
+        "platform": "macOS",
+        "founder_or_company": "Tour of new custom M1 macOS runners racks with Christina Warren ...",
+        "url": "https://news.ycombinator.com/item?id=39066330",
+        "snippet": "... rejected and allowed on appeals sort of things. Android was the ... macOS running macOS VMs or Linux running macOS VMs. cedws on Jan 21 ..."
+      },
+      {
+        "platform": "iOS / Apple platform APIs",
+        "founder_or_company": "Application trust is hard, but Apple does it well",
+        "url": "https://news.ycombinator.com/item?id=25093161",
+        "snippet": "The problem is when one entity can lock down a platform entirely. ... And yeah, when people lost access to their zune music, or their ..."
+      }
+    ],
+    "single_platform_dependency_ratio": 0.25,
+    "gate3_platform_risk_score": 4,
+    "gate3_platform_risk_label": "Heavy dependency on a restrictive platform with documented enforcement history",
+    "verdict": "Gate 3 platform-dependency risk: 4/5 — Heavy dependency on a restrictive platform with documented enforcement history. Detected 4 platform deps: Apple Screen Time API, Android Digital Wellbeing, macOS, iOS / Apple platform APIs. Restrictive history: Apple Screen Time API, Android Digital Wellbeing, iOS / Apple platform APIs. 16 recent ToS / policy signal(s) surfaced. 15 founder retro(s) surfaced — read before committing. B2C + solo framing: App Store policy risk dominates. Apple \"system feature\" pattern has killed prior categories (Spotlight → launchers, Notes → note apps). Treat Gate 3 as likely FAIL on dependency risk alone unless a credible multi-platform fallback exists."
+  },
+  "sources": [
+    {
+      "url": "https://google.serper.dev/search?q=site%3Adeveloper.apple.com%20terms%20of%20service",
+      "tier": "S",
+      "bias": "conflicted",
+      "fetched_at": "2026-05-26T15:35:03.075Z",
+      "contribution": "Official ToS / dev-docs domain for Apple Screen Time API (developer.apple.com) — platform self-published"
+    },
+    {
+      "url": "https://google.serper.dev/search?q=%22Apple%20Screen%20Time%20API%22%20(ToS%20OR%20%22terms%20of%20service%22%20OR%20%22policy%20change%22%20OR%20deprecation)%202026%20OR%202025%20OR%20site%3Adeveloper.apple.com",
+      "tier": "A",
+      "bias": "independent",
+      "fetched_at": "2026-05-26T15:35:03.075Z",
+      "contribution": "Press / dev-docs ToS-change scan for Apple Screen Time API (5 hits)"
+    },
+    {
+      "url": "https://google.serper.dev/search?q=%22Apple%20Screen%20Time%20API%22%20(%22lost%20access%22%20OR%20%22deplatformed%22%20OR%20%22shut%20down%22%20OR%20%22kicked%20off%22%20OR%20%22banned%22%20OR%20%22rejected%22)%20founder%20OR%20retro%20OR%20postmortem%20site%3Amedium.com%20OR%20site%3Anews.ycombinator.com%20OR%20site%3Aindiehackers.com",
+      "tier": "A",
+      "bias": "conflicted",
+      "fetched_at": "2026-05-26T15:35:03.075Z",
+      "contribution": "Founder retro scan for Apple Screen Time API (4 retros) — bias 'conflicted' per spec §4 rule 6 (founder stake against platform)"
+    },
+    {
+      "url": "https://google.serper.dev/search?q=site%3Adeveloper.android.com%20terms%20of%20service",
+      "tier": "S",
+      "bias": "conflicted",
+      "fetched_at": "2026-05-26T15:35:03.075Z",
+      "contribution": "Official ToS / dev-docs domain for Android Digital Wellbeing (developer.android.com) — platform self-published"
+    },
+    {
+      "url": "https://google.serper.dev/search?q=%22Android%20Digital%20Wellbeing%22%20(ToS%20OR%20%22terms%20of%20service%22%20OR%20%22policy%20change%22%20OR%20deprecation)%202026%20OR%202025%20OR%20site%3Adeveloper.android.com",
+      "tier": "A",
+      "bias": "independent",
+      "fetched_at": "2026-05-26T15:35:03.075Z",
+      "contribution": "Press / dev-docs ToS-change scan for Android Digital Wellbeing (5 hits)"
+    },
+    {
+      "url": "https://google.serper.dev/search?q=%22Android%20Digital%20Wellbeing%22%20(%22lost%20access%22%20OR%20%22deplatformed%22%20OR%20%22shut%20down%22%20OR%20%22kicked%20off%22%20OR%20%22banned%22%20OR%20%22rejected%22)%20founder%20OR%20retro%20OR%20postmortem%20site%3Amedium.com%20OR%20site%3Anews.ycombinator.com%20OR%20site%3Aindiehackers.com",
+      "tier": "A",
+      "bias": "conflicted",
+      "fetched_at": "2026-05-26T15:35:03.075Z",
+      "contribution": "Founder retro scan for Android Digital Wellbeing (5 retros) — bias 'conflicted' per spec §4 rule 6 (founder stake against platform)"
+    },
+    {
+      "url": "https://google.serper.dev/search?q=%22macOS%22%20(ToS%20OR%20%22terms%20of%20service%22%20OR%20%22policy%20change%22%20OR%20deprecation)%202026%20OR%202025",
+      "tier": "A",
+      "bias": "independent",
+      "fetched_at": "2026-05-26T15:35:03.075Z",
+      "contribution": "Press / dev-docs ToS-change scan for macOS (5 hits)"
+    },
+    {
+      "url": "https://google.serper.dev/search?q=%22macOS%22%20(%22lost%20access%22%20OR%20%22deplatformed%22%20OR%20%22shut%20down%22%20OR%20%22kicked%20off%22%20OR%20%22banned%22%20OR%20%22rejected%22)%20founder%20OR%20retro%20OR%20postmortem%20site%3Amedium.com%20OR%20site%3Anews.ycombinator.com%20OR%20site%3Aindiehackers.com",
+      "tier": "A",
+      "bias": "conflicted",
+      "fetched_at": "2026-05-26T15:35:03.075Z",
+      "contribution": "Founder retro scan for macOS (5 retros) — bias 'conflicted' per spec §4 rule 6 (founder stake against platform)"
+    },
+    {
+      "url": "https://google.serper.dev/search?q=site%3Adeveloper.apple.com%20terms%20of%20service",
+      "tier": "S",
+      "bias": "conflicted",
+      "fetched_at": "2026-05-26T15:35:03.075Z",
+      "contribution": "Official ToS / dev-docs domain for iOS / Apple platform APIs (developer.apple.com) — platform self-published"
+    },
+    {
+      "url": "https://google.serper.dev/search?q=%22iOS%20%2F%20Apple%20platform%20APIs%22%20(ToS%20OR%20%22terms%20of%20service%22%20OR%20%22policy%20change%22%20OR%20deprecation)%202026%20OR%202025%20OR%20site%3Adeveloper.apple.com",
+      "tier": "A",
+      "bias": "independent",
+      "fetched_at": "2026-05-26T15:35:03.075Z",
+      "contribution": "Press / dev-docs ToS-change scan for iOS / Apple platform APIs (1 hit)"
+    },
+    {
+      "url": "https://google.serper.dev/search?q=%22iOS%20%2F%20Apple%20platform%20APIs%22%20(%22lost%20access%22%20OR%20%22deplatformed%22%20OR%20%22shut%20down%22%20OR%20%22kicked%20off%22%20OR%20%22banned%22%20OR%20%22rejected%22)%20founder%20OR%20retro%20OR%20postmortem%20site%3Amedium.com%20OR%20site%3Anews.ycombinator.com%20OR%20site%3Aindiehackers.com",
+      "tier": "A",
+      "bias": "conflicted",
+      "fetched_at": "2026-05-26T15:35:03.075Z",
+      "contribution": "Founder retro scan for iOS / Apple platform APIs (1 retro) — bias 'conflicted' per spec §4 rule 6 (founder stake against platform)"
+    }
+  ],
+  "confidence_note": "Detection: explicit_input → 4 platform(s). Serper: live; 8 fan-out calls fired (4 platforms × 2 families: ToS + retros). Source mix: 4 independent, 7 conflicted. Single-platform dependency ratio: 0.25 (rough proxy — 1.0 = all eggs in one basket). Risk score 4/5 base. No deplatforming stories are fabricated — empty retros[] means search returned no matches, not that the platform is safe.",
+  "fallbacks_used": []
+}

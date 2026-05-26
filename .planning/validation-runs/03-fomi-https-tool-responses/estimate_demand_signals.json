@@ -1,0 +1,58 @@
+{
+  "data": {
+    "github_signals": {
+      "top_repos": [],
+      "total_stars_top5": 0,
+      "avg_days_since_last_commit": null,
+      "languages_seen": []
+    },
+    "reddit_signals": {
+      "subreddits": []
+    },
+    "launch_cluster_signals": {
+      "recent_launches_count": 5,
+      "sample_launches": [
+        {
+          "title": "Best focus apps: 17 picks for deep work in 2026 - Flown",
+          "url": "https://flown.com/blog/deep-work/focus-apps",
+          "snippet": "Here's 17 of the best focus apps that can block distractions, help you time block and keep you accountable. These are picked from App Store, credbile review ..."
+        },
+        {
+          "title": "15 Best Productivity Apps in 2026: Tested & Reviewed - Lindy",
+          "url": "https://www.lindy.ai/blog/best-productivity-apps",
+          "snippet": "Freedom: Best focus and distraction blocking app. What it does: Freedom blocks distracting websites and apps so you can focus on deep work ..."
+        },
+        {
+          "title": "Hank Green's Focus Friend app is climbing the App Store charts",
+          "url": "https://techcrunch.com/2025/08/18/hank-greens-focus-friend-app-is-climbing-the-app-store-charts-and-its-extremely-cute/",
+          "snippet": "It invites you to set a timer on your phone, which will temporarily prevent you from opening certain apps (on iOS, the “Deep Focus Mode” setting ..."
+        },
+        {
+          "title": "What productivity apps are you using in 2026? - Reddit",
+          "url": "https://www.reddit.com/r/ProductivityApps/comments/1q2zsls/what_productivity_apps_are_you_using_in_2026/",
+          "snippet": "Try my app FlexiBoard, it brings daily useful tools right to your iOS keyboard so you don't have to switch between apps to do basics tasks, ..."
+        },
+        {
+          "title": "Focus Bear Reviews (2026) - Product Hunt",
+          "url": "https://www.producthunt.com/products/focus-bear/reviews",
+          "snippet": "Helps you build better habits through real time habit guidance. Gets you into deep work by blocking distractions across all your devices (desktop and mobile)."
+        }
+      ]
+    },
+    "gate2_signal_strength": "weak",
+    "verdict": "Gate 2 WEAK. Isolated demand signal: no GitHub repos surfaced; no subreddit metadata available; 5 recent launch mention(s) on PH/TC. Single-dimension evidence — broaden candidate_subreddits / candidate_repos and re-run, or treat as insufficient."
+  },
+  "sources": [
+    {
+      "url": "https://google.serper.dev/search?q=focus%20app%20launched%202026%20OR%202025%20site%3Aproducthunt.com%20OR%20site%3Atechcrunch.com",
+      "tier": "A",
+      "bias": "independent",
+      "fetched_at": "2026-05-26T15:34:48.371Z",
+      "contribution": "Google search results for: focus app launched 2026 OR 2025 site:producthunt.com OR site:techcrunch.com"
+    }
+  ],
+  "confidence_note": "GitHub: live (authenticated); surfaced 0 repo(s) across 1 query/queries. Reddit: 0/5 candidate subreddits resolved (null = doesn't exist or private). Launch cluster: live; 5 non-stub launches in window. Google Trends + SimilarWeb dimensions deferred in v1 (see fallbacks_used) — verdict is based on code/community/launch signals only. Source mix: 1 independent, 0 conflicted.",
+  "fallbacks_used": [
+    "similarweb (deferred in v1 — competitor traffic dimension unavailable)"
+  ]
+}
