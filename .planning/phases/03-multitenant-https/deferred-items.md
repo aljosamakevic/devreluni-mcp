@@ -31,10 +31,29 @@ times.
   3. Wire into `src/http/server.ts`'s `/health` handler so the
      `cache_hit_rate` field returns a real number between 0 and 1.
 
-**Files touched (if/when resolved):**
+**Files touched (resolved):**
 
-  - `src/lib/cache.ts` — add counters + `cacheStats` export.
-  - `src/http/server.ts` — health handler reads `cacheStats()`.
+  - `src/lib/cache.ts` — added `hits` + `misses` module-level counters
+    (monotonic from process start). `cacheGet` increments `hits` on a
+    live entry, `misses` on a missing key OR an expired entry (expired
+    entries explicitly count as misses, not silent hits — locked by a
+    regression test). New exports: `cacheStats(): CacheStats` returning
+    `{ hits, misses, hit_rate }` with `hit_rate` as a fraction in [0, 1]
+    or `null` when no invocations yet (distinguishes "0/0 unknown" from
+    "0/N legit-zero"). `__resetCacheForTests` zeroes counters + empties
+    the store for test isolation.
+  - `src/http/server.ts` — `/health` handler reads
+    `cacheStats().hit_rate` and surfaces it as `cache_hit_rate`. Field
+    is null until the first cacheGet invocation post-boot, then a real
+    number.
+  - `src/lib/cache.test.ts` — 5 new vitest cases lock the four
+    `hit_rate` states (null / 0 / 1 / proportional) plus the
+    expired-entry regression. Build green, tests green.
+
+**Status:** RESOLVED (post-Phase-03 follow-up, 2026-05-26). Counters
+reset on Fly machine restart — fine for v1 since `/health` reports the
+live ratio and Fly's metrics dashboard aggregates externally. A
+multi-process / Redis-backed cache is a separate Phase 04+ concern.
 
 **Spec compliance:** CONTEXT.md Stream E success criterion (observability);
 PLAN.md T22 acceptance note ("Phase 04 candidate").
@@ -270,10 +289,16 @@ is never exercised.
   3. If renaming, bump the package version + add a CHANGELOG note so any
      downstream user of the bin (none expected) sees the rename.
 
-**Files touched (if/when resolved):**
+**Files touched (resolved):**
 
-  - `package.json` — `bin` field.
-  - `docs/HOSTED_SETUP.md` — Section 5 (stdio fallback config).
+  - `package.json` — `bin` field removed entirely (no rename; package isn't
+    published to npm so there's no value preserving the alias). The
+    `"name": "devreluni-mcp"` and `"main": "index.js"` fields are unchanged.
+  - `docs/HOSTED_SETUP.md` — already documents path-based local invocation
+    (Section 5 references `build/index.js` via absolute path, not the bin
+    alias), so no doc change needed.
+
+**Status:** RESOLVED (post-Phase-03 follow-up, 2026-05-26).
 
 **Spec compliance:** Phase 03 Out-of-Scope bullet 11 ("`bin.weather`
 cleanup — `package.json` scaffold leftover; Phase 04 (D-03-6)").

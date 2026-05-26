@@ -239,6 +239,7 @@ The following entries were discovered (or settled at PLAN-CHECK time) during Pha
 **Impact:** No observability into cache effectiveness. The Phase 02 cache wiring (cold 11.7s → warm 0ms) works, but operationally we can't see hit-rate drift if a future refactor accidentally bypasses the cache.
 **Why deferred:** Adding hit/miss counters + a `cacheStats()` export is a separate concern from the HTTPS transport layer. Scope-bounded for Phase 04.
 **Suggested fix:** Add `hits` + `misses` counters to `src/lib/cache.ts`'s `get`/`set` paths; export `cacheStats(): { hits, misses, hit_rate }`. Wire into T22's health handler so `cache_hit_rate` returns a real number.
+**RESOLVED (post-Phase-03 follow-up, 2026-05-26):** `src/lib/cache.ts` now tracks hits + misses (monotonic from process start; expired entries count as misses). New export `cacheStats(): { hits, misses, hit_rate }` with `hit_rate` as a fraction in [0, 1] or null when no invocations yet. Wired into `src/http/server.ts`'s `/health` handler so `cache_hit_rate` reports the live ratio. 5 new vitest cases in `src/lib/cache.test.ts` lock the four states (null / 0 / 1 / proportional) + the expired-entry regression.
 
 ### D-03-1-a — Global Serper cap = graceful degradation at `src/lib/serper.ts`, NOT a 429 from the HTTP layer
 
@@ -293,6 +294,7 @@ The following entries were discovered (or settled at PLAN-CHECK time) during Pha
 **Impact:** Cosmetic only. Claude Desktop configs point at the absolute path of `build/index.js`, not the `bin` alias, so the leftover doesn't break anything in practice. But `npm install -g .` would install a `weather` command, which is wrong.
 **Why deferred:** Renaming or removing `bin` is a `package.json` mutation that touches the publish surface; Phase 03 scope was strictly the HTTPS transport stack, so a `package.json` cleanup belongs in Phase 04 alongside other hygiene fixes.
 **Suggested fix:** Phase 04 cleanup. Rename `bin.weather` → `bin.vetoed-mcp` (or remove entirely if not publishing to npm). Update `docs/HOSTED_SETUP.md` if the canonical local invocation changes.
+**RESOLVED (post-Phase-03 follow-up, 2026-05-26):** Removed the `bin` field from `package.json` entirely. The package isn't published to npm and Claude Desktop / Cursor configs use absolute paths to `build/index.js`, so dropping the alias has zero downstream impact. `docs/HOSTED_SETUP.md` already documents the path-based invocation, no doc change needed.
 
 ### D-03-7 — Singleton `McpServer` cannot accept a second HTTP session
 
