@@ -360,24 +360,52 @@ new-session branch and connects that fresh server to the new transport.
     initialize-twice smoke) and confirm neither 500s. Capture the
     transcript as the resolution artifact.
 
-**Files touched (if/when resolved):**
+**Files touched (resolved):**
 
-  - `src/index.ts` — extract registration block (lines 51-107) into the
-    factory; stdio path uses `createMcpServerInstance()` once.
-  - `src/http/server.ts` — `createHttpServer` signature takes a factory;
-    new-session branch calls `factory()` then `mcpServer.connect(transport)`.
-  - New: `src/server/factory.ts` (or equivalent module) — exports
-    `createMcpServerInstance()`.
-  - New vitest case under `tests/` covering the two-session scenario.
+  - `src/index.ts` — added exported `createMcpServer(): McpServer` factory;
+    stdio path still calls it once at boot (`const server = createMcpServer();
+    await server.connect(stdioTransport)`), HTTP path passes the factory
+    itself (`createHttpServer(createMcpServer)`). The factory contains the
+    same 3 resource + 13 tool + 5 prompt registrations in the same order as
+    pre-refactor. Bottom-of-file `main()` is now guarded by an
+    `import.meta.url === pathToFileURL(process.argv[1])` entrypoint check so
+    test files can import the factory without spawning a stdio server as a
+    side-effect.
+  - `src/http/server.ts` — `createHttpServer(mcpServer: McpServer)` →
+    `createHttpServer(getServer: () => McpServer)`. Inside the
+    `!sessionId && isInitializeRequest(req.body)` branch:
+    `const session = getServer(); await session.connect(transport);` — a
+    fresh `McpServer` per new session, exactly mirroring the SDK example.
+  - `src/http/server.test.ts` — new regression test. One supertest-driven
+    case that POSTs initialize twice against a fresh `createHttpServer(
+    createMcpServer)` app, asserts both succeed with **distinct**
+    `mcp-session-id` headers, then POSTs `tools/list` on each session and
+    asserts 13 tools each. Locked failure mode: if a future refactor
+    regresses to a shared singleton, the second initialize returns 500 + the
+    `-32603` body the production bug produced and the test fails.
+  - `scripts/smoke-http.ts` — unchanged at the call site (it spawns
+    `build/index.js`, which carries the refactor through `src/index.ts`).
+    The smoke still passes (`13 of 13 tools listed via HTTP`, envelope OK).
 
-**Disposition:** Phase 03.1 hotfix from `phase-v3-1-server-factory` branched
-off `main` **after Phase 03 merges** — small phase, ~3 atomic commits
-(factory extraction + http wire-up + redeploy verification). If no real
-users are onboarded between Phase 03 merge and the start of Phase 04, this
-folds cleanly into Phase 04 instead. Either way: do not let the bug reach a
-second concurrent / reconnecting user.
+**Verification (resolved):**
+
+  - `npm test` → 136 / 136 across 15 files (135 pre-existing + 1 new
+    server.test.ts assertion).
+  - `npm run smoke:http` → SMOKE OK (single-session path unchanged).
+  - `npm run build` → clean.
+  - After `flyctl deploy`, the multi-session probe documented in the bug
+    report runs twice without restart and both calls return
+    `tools=13` instead of the second call 500-ing.
+
+**Disposition:** RESOLVED as a Phase 04 follow-up off `phase-v3` (this
+session). Single squashed bug-fix commit (factory extraction + http wire-up
++ regression test + this disposition note in one atomic change). The
+pre-fix stub disposition (phase-v3-1-server-factory branch) is superseded
+— the fix landed inline before any second real user encountered the bug.
 
 **Spec compliance:** Phase 03 multi-tenant transport requirement (PLAN.md
 T01 — HTTP transport supports multiple concurrent sessions); CONCERNS.md
-Phase 01 inviolate-files rule (factory extraction must preserve byte-identical
-registration order).
+Phase 01 inviolate-files rule (factory extraction preserves byte-identical
+registration order — 13 tools, 5 prompts, 3 resources, same names, same
+order, verified by the existing `scripts/smoke-http.ts` plus the new
+server.test.ts case).
