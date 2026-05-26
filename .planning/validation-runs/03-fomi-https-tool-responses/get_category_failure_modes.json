@@ -31,21 +31,21 @@
       "url": "https://google.serper.dev/search?q=RescueTime%20OR%20Freedom%20OR%20Forest%20focus%20app%20startup%20failed%20OR%20shutdown%20OR%20%22post-mortem%22%20OR%20%22cancelled%22",
       "tier": "A",
       "bias": "independent",
-      "fetched_at": "2026-05-26T15:35:38.982Z",
+      "fetched_at": "2026-05-26T18:28:05.485Z",
       "contribution": "Google search results for: RescueTime OR Freedom OR Forest focus app startup failed OR shutdown OR \"post-mortem\" OR \"cancelled\""
     },
     {
       "url": "https://www.google.com/search?q=focus%20app%20%22failed%22%20OR%20%22shutdown%22%20OR%20%22went%20under%22%20OR%20%22switched%20away%22%20site%3Areddit.com",
       "tier": "B",
       "bias": "independent",
-      "fetched_at": "2026-05-26T15:35:38.982Z",
+      "fetched_at": "2026-05-26T18:28:05.485Z",
       "contribution": "Reddit discussions surfaced via Google SERP for: focus app \"failed\" OR \"shutdown\" OR \"went under\" OR \"switched away\" (site:reddit.com)"
     },
     {
       "url": "https://hn.algolia.com/api/v1/search?query=focus%20app%20failed%20startup%20post-mortem%20lessons&tags=story",
       "tier": "A",
       "bias": "independent",
-      "fetched_at": "2026-05-26T15:35:38.982Z",
+      "fetched_at": "2026-05-26T18:28:05.485Z",
       "contribution": "HN discussion search for: focus app failed startup post-mortem lessons"
     }
   ],

@@ -3,7 +3,7 @@
     "idea": "AI-native focus app that monitors screens to keep users on-task. Detects when users drift off-task (social media, distracting sites), gently nudges back via interventions. Uses cloud screenshot analysis.",
     "audience": "B2C",
     "builder": "solo",
-    "generated_at": "2026-05-26T15:35:39.452Z",
+    "generated_at": "2026-05-26T18:28:06.064Z",
     "mcp_version": "0.2.0",
     "total_sources_consulted": 30,
     "source_quality_mix": {
@@ -96,7 +96,7 @@
             "url": "https://www.reddit.com/r/ADHD_Programmers/comments/1l2qo6f/ai_tool_that_keeps_you_on_track_by_literally/",
             "tier": "A",
             "bias": "independent",
-            "fetched_at": "2026-05-26T15:35:39.452Z",
+            "fetched_at": "2026-05-26T18:28:06.064Z",
             "contribution": "Reddit r/ADHD_Programmers: shipping AI tool that watches your screen and pings when off-task — direct functional convergence with proposed idea"
           }
         },
@@ -106,7 +106,7 @@
             "url": "https://thehustle.co/news/easily-distracted-this-ai-focus-tool-will-scold-you-into-staying-on-task",
             "tier": "A",
             "bias": "independent",
-            "fetched_at": "2026-05-26T15:35:39.452Z",
+            "fetched_at": "2026-05-26T18:28:06.064Z",
             "contribution": "The Hustle: AI focus tool that monitors and analyzes your screen to determine whether you are on-task — feature parity with proposed idea"
           }
         },
@@ -116,7 +116,7 @@
             "url": "https://www.youtube.com/watch?v=khfS00oZizI",
             "tier": "B",
             "bias": "conflicted",
-            "fetched_at": "2026-05-26T15:35:39.452Z",
+            "fetched_at": "2026-05-26T18:28:06.064Z",
             "contribution": "YouTube: Focusmo — ADHD-targeted focus app with app blocking + check-ins"
           }
         },
@@ -126,7 +126,7 @@
             "url": "https://google.serper.dev/search?q=Fomi%20%22not%20worth%22%20OR%20%22cancelled%22%20OR%20%22switched%20from%22%20OR%20%22disappointed%22%20OR%20%22terrible%22",
             "tier": "A",
             "bias": "independent",
-            "fetched_at": "2026-05-26T15:35:39.452Z",
+            "fetched_at": "2026-05-26T18:28:06.064Z",
             "contribution": "Serper search for Fomi user complaints — surfaced negative-sentiment hits indicating churn-out pattern"
           }
         },
@@ -136,7 +136,7 @@
             "url": "https://www.indiehackers.com/post/every-focus-app-i-tried-on-mac-failed-me-heres-what-finally-worked-7afe1db0a1",
             "tier": "A",
             "bias": "independent",
-            "fetched_at": "2026-05-26T15:35:39.452Z",
+            "fetched_at": "2026-05-26T18:28:06.064Z",
             "contribution": "IndieHackers \"Every focus app I tried on Mac failed me\" — category-wide structural complaint"
           }
         },
@@ -146,7 +146,7 @@
             "url": "https://community.boomi.com/s/topic/0TO1W000000cn2eWAA/release-notes",
             "tier": "S",
             "bias": "conflicted",
-            "fetched_at": "2026-05-26T15:35:39.452Z",
+            "fetched_at": "2026-05-26T18:28:06.064Z",
             "contribution": "read_competitor_changelog URL-guessing fallback resolved to Boomi release notes — unrelated to Fomi; logged as a known tool failure"
           }
         }
@@ -169,7 +169,7 @@
             "url": "https://google.serper.dev/search?q=AI-native%20focus%20app%20that%20monitors%20screens%20to%20keep%20users%20on-task.%20Detects%20when%20users%20drift%20off-task%20(social%20media%2C%20distracting%20sites)%2C%20gently%20nudges%20back%20via%20interventions.%20Uses%20cloud%20screenshot%20analysis.%20profitable%20indie%20AI%20focus%20app%20success%20story%202025%20competitor%20alternatives",
             "tier": "A",
             "bias": "independent",
-            "fetched_at": "2026-05-26T15:35:39.452Z",
+            "fetched_at": "2026-05-26T18:28:06.064Z",
             "contribution": "Contradicting-evidence Serper search for \"profitable indie AI focus app success story 2025\" — no clear contrarian winner surfaced"
           }
         }
@@ -208,7 +208,7 @@
             "url": "https://www.reddit.com/r/productivity/about.json",
             "tier": "A",
             "bias": "independent",
-            "fetched_at": "2026-05-26T15:35:39.452Z",
+            "fetched_at": "2026-05-26T18:28:06.064Z",
             "contribution": "r/productivity 4,195,056 subscribers — large active community"
           }
         },
@@ -218,7 +218,7 @@
             "url": "https://www.reddit.com/r/ADHD/about.json",
             "tier": "A",
             "bias": "independent",
-            "fetched_at": "2026-05-26T15:35:39.452Z",
+            "fetched_at": "2026-05-26T18:28:06.064Z",
             "contribution": "r/ADHD 2,232,448 subscribers — primary target demographic"
           }
         },
@@ -228,7 +228,7 @@
             "url": "https://www.reddit.com/r/getdisciplined/about.json",
             "tier": "A",
             "bias": "independent",
-            "fetched_at": "2026-05-26T15:35:39.452Z",
+            "fetched_at": "2026-05-26T18:28:06.064Z",
             "contribution": "r/getdisciplined 2,164,885 subscribers — adjacent target community"
           }
         },
@@ -238,7 +238,7 @@
             "url": "https://www.indiehackers.com/post/bootstrapping-a-personal-productivity-saas-to-10k-mrr-cac5dfe318",
             "tier": "A",
             "bias": "independent",
-            "fetched_at": "2026-05-26T15:35:39.452Z",
+            "fetched_at": "2026-05-26T18:28:06.064Z",
             "contribution": "IndieHackers: bootstrapped personal-productivity SaaS to $10k MRR — adjacent (time-tracking) comparable"
           }
         },
@@ -248,7 +248,7 @@
             "url": "https://techcrunch.com/2025/12/25/the-best-distraction-blockers-to-jumpstart-your-focus-in-the-new-year/",
             "tier": "A",
             "bias": "independent",
-            "fetched_at": "2026-05-26T15:35:39.452Z",
+            "fetched_at": "2026-05-26T18:28:06.064Z",
             "contribution": "TechCrunch 2025-12-25: roundup of distraction blockers — continued media attention in category"
           }
         }
@@ -304,7 +304,7 @@
             "url": "https://google.serper.dev/search?q=%22Apple%20Screen%20Time%20API%22%20(ToS%20OR%20%22terms%20of%20service%22%20OR%20%22policy%20change%22%20OR%20deprecation)%202026%20OR%202025%20OR%20site%3Adeveloper.apple.com",
             "tier": "A",
             "bias": "independent",
-            "fetched_at": "2026-05-26T15:35:39.452Z",
+            "fetched_at": "2026-05-26T18:28:06.064Z",
             "contribution": "Serper fan-out for Apple Screen Time API ToS / policy churn — feeds Gate 3 platform-dependency assessment"
           }
         },
@@ -314,7 +314,7 @@
             "url": "https://developer.apple.com/app-store/review/guidelines/",
             "tier": "S",
             "bias": "conflicted",
-            "fetched_at": "2026-05-26T15:35:39.452Z",
+            "fetched_at": "2026-05-26T18:28:06.064Z",
             "contribution": "Apple App Review Guidelines — first-party rulebook governing Screen Time / focus apps; ongoing policy churn"
           }
         },
@@ -324,7 +324,7 @@
             "url": "https://developer.apple.com/forums/tags/managed-settings?page=3",
             "tier": "S",
             "bias": "conflicted",
-            "fetched_at": "2026-05-26T15:35:39.452Z",
+            "fetched_at": "2026-05-26T18:28:06.064Z",
             "contribution": "Apple Developer Forums: Managed Settings tag — Screen Time API surface that any iOS focus app must build on"
           }
         },
@@ -334,7 +334,7 @@
             "url": "https://www.google.com/search?q=%22Apple%20Intelligence%22%20site%3Adeveloper.apple.com",
             "tier": "S",
             "bias": "conflicted",
-            "fetched_at": "2026-05-26T15:35:39.452Z",
+            "fetched_at": "2026-05-26T18:28:06.064Z",
             "contribution": "M5 synonym-map expansion query: Apple Intelligence on developer.apple.com — fired as part of check_big_tech_encroachment"
           }
         },
@@ -344,7 +344,7 @@
             "url": "https://www.google.com/search?q=%22Screen%20Time%20API%22%20site%3Adeveloper.apple.com",
             "tier": "S",
             "bias": "conflicted",
-            "fetched_at": "2026-05-26T15:35:39.452Z",
+            "fetched_at": "2026-05-26T18:28:06.064Z",
             "contribution": "M5 synonym-map expansion query: Screen Time API on developer.apple.com — fired as part of check_big_tech_encroachment"
           }
         },
@@ -354,7 +354,7 @@
             "url": "https://learn.microsoft.com/en-us/answers/questions/5887032/viva-insights-focus-plan-stops-scheduling-focus-ti",
             "tier": "S",
             "bias": "conflicted",
-            "fetched_at": "2026-05-26T15:35:39.452Z",
+            "fetched_at": "2026-05-26T18:28:06.064Z",
             "contribution": "Microsoft Learn: Viva Insights Focus Plan — Microsoft already ships focus-management as part of Microsoft 365"
           }
         },
@@ -364,7 +364,7 @@
             "url": "https://google.serper.dev/search?q=%22Apple%20Screen%20Time%20API%22%20(%22lost%20access%22%20OR%20%22deplatformed%22%20OR%20%22shut%20down%22%20OR%20%22kicked%20off%22%20OR%20%22banned%22%20OR%20%22rejected%22)%20founder%20OR%20retro%20OR%20postmortem%20site%3Amedium.com%20OR%20site%3Anews.ycombinator.com%20OR%20site%3Aindiehackers.com",
             "tier": "A",
             "bias": "conflicted",
-            "fetched_at": "2026-05-26T15:35:39.452Z",
+            "fetched_at": "2026-05-26T18:28:06.064Z",
             "contribution": "Serper fan-out for Apple Screen Time API deplatforming retros — empty result is logged honestly (not fabricated)"
           }
         }
@@ -420,7 +420,7 @@
             "url": "https://rescuetime.com/pricing",
             "tier": "S",
             "bias": "conflicted",
-            "fetched_at": "2026-05-26T15:35:39.452Z",
+            "fetched_at": "2026-05-26T18:28:06.064Z",
             "contribution": "RescueTime live pricing — $7/mo, $9/mo, $12/mo subscription tiers (clean post-M1 extraction; no currency artifacts)"
           }
         },
@@ -430,7 +430,7 @@
             "url": "https://freedom.to/pricing",
             "tier": "S",
             "bias": "conflicted",
-            "fetched_at": "2026-05-26T15:35:39.452Z",
+            "fetched_at": "2026-05-26T18:28:06.064Z",
             "contribution": "Freedom live pricing — $3.33/mo and $8.99/mo freemium tiers (post-M2 Serper-resolved hostname: freedom.to not freedom.com)"
           }
         },
@@ -440,7 +440,7 @@
             "url": "https://rize.io/pricing",
             "tier": "S",
             "bias": "conflicted",
-            "fetched_at": "2026-05-26T15:35:39.452Z",
+            "fetched_at": "2026-05-26T18:28:06.064Z",
             "contribution": "Rize live pricing — $9.99/mo to $29.99/mo subscription range (post-M2 Serper-resolved hostname: rize.io)"
           }
         },
@@ -450,7 +450,7 @@
             "url": "https://www.opal.so/pricing",
             "tier": "S",
             "bias": "conflicted",
-            "fetched_at": "2026-05-26T15:35:39.452Z",
+            "fetched_at": "2026-05-26T18:28:06.064Z",
             "contribution": "Opal live pricing — $8.29/mo and $19.99/mo tiers (post-M2 Serper-resolved hostname: opal.so)"
           }
         },
@@ -460,7 +460,7 @@
             "url": "https://www.focusbear.io/pricing",
             "tier": "S",
             "bias": "conflicted",
-            "fetched_at": "2026-05-26T15:35:39.452Z",
+            "fetched_at": "2026-05-26T18:28:06.064Z",
             "contribution": "Focus Bear live pricing — $4.99/mo and $9.99/mo subscription tiers (post-M2 Serper-resolved hostname: focusbear.io)"
           }
         },
@@ -490,7 +490,7 @@
             "url": "https://www.g2.com/search?query=focus%20app",
             "tier": "B",
             "bias": "independent",
-            "fetched_at": "2026-05-26T15:35:39.452Z",
+            "fetched_at": "2026-05-26T18:28:06.064Z",
             "contribution": "G2/Capterra search: 5 refund / cancel / overpayment signals auto-flagged by find_pricing_anchors"
           }
         },
@@ -500,7 +500,7 @@
             "url": "https://www.indiehackers.com/product/session-2/2-000-mrr-revenue-and-100-reviews-on-app-store--MQvx6feV1Ez_Kq0qqzx",
             "tier": "A",
             "bias": "independent",
-            "fetched_at": "2026-05-26T15:35:39.452Z",
+            "fetched_at": "2026-05-26T18:28:06.064Z",
             "contribution": "IndieHackers: Session focus app stuck at $2,000 MRR — typical B2C-solo ceiling"
           }
         }
@@ -523,7 +523,7 @@
             "url": "https://www.indiehackers.com/post/bootstrapping-a-personal-productivity-saas-to-10k-mrr-cac5dfe318",
             "tier": "A",
             "bias": "independent",
-            "fetched_at": "2026-05-26T15:35:39.452Z",
+            "fetched_at": "2026-05-26T18:28:06.064Z",
             "contribution": "IndieHackers: bootstrapped personal-productivity SaaS to $10k MRR — adjacent (time-tracking) comparable"
           }
         }
@@ -562,7 +562,7 @@
             "url": "https://developer.apple.com/app-store/review/guidelines/",
             "tier": "S",
             "bias": "conflicted",
-            "fetched_at": "2026-05-26T15:35:39.452Z",
+            "fetched_at": "2026-05-26T18:28:06.064Z",
             "contribution": "Apple App Review Guidelines — first-party rulebook governing Screen Time / focus apps; ongoing policy churn"
           }
         },
@@ -572,7 +572,7 @@
             "url": "https://www.ycombinator.com/rfs",
             "tier": "A",
             "bias": "conflicted",
-            "fetched_at": "2026-05-26T15:35:39.452Z",
+            "fetched_at": "2026-05-26T18:28:06.064Z",
             "contribution": "YC RFS — find_yc_rfs_alignment returned 0 category matches; no YC tailwind"
           }
         },
@@ -582,7 +582,7 @@
             "url": "https://www.google.com/search?q=focus%20app%20regulation%202026%20OR%202025%20site%3Aec.europa.eu",
             "tier": "A",
             "bias": "independent",
-            "fetched_at": "2026-05-26T15:35:39.452Z",
+            "fetched_at": "2026-05-26T18:28:06.064Z",
             "contribution": "EU regulatory query via Serper — no focus-app-specific tailwind surfaced; EU AI Act is headwind for cloud-screenshot processing"
           }
         },
@@ -592,7 +592,7 @@
             "url": "https://techcrunch.com/2025/12/25/the-best-distraction-blockers-to-jumpstart-your-focus-in-the-new-year/",
             "tier": "A",
             "bias": "independent",
-            "fetched_at": "2026-05-26T15:35:39.452Z",
+            "fetched_at": "2026-05-26T18:28:06.064Z",
             "contribution": "TechCrunch 2025-12-25: roundup of distraction blockers — continued media attention in category"
           }
         }
@@ -765,7 +765,7 @@
         "url": "https://www.reddit.com/r/ADHD_Programmers/comments/1l2qo6f/ai_tool_that_keeps_you_on_track_by_literally/",
         "tier": "A",
         "bias": "independent",
-        "fetched_at": "2026-05-26T15:35:39.452Z",
+        "fetched_at": "2026-05-26T18:28:06.064Z",
         "contribution": "Reddit r/ADHD_Programmers: shipping AI tool that watches your screen and pings when off-task — direct functional convergence with proposed idea"
       },
       "gates": [
@@ -781,7 +781,7 @@
         "url": "https://thehustle.co/news/easily-distracted-this-ai-focus-tool-will-scold-you-into-staying-on-task",
         "tier": "A",
         "bias": "independent",
-        "fetched_at": "2026-05-26T15:35:39.452Z",
+        "fetched_at": "2026-05-26T18:28:06.064Z",
         "contribution": "The Hustle: AI focus tool that monitors and analyzes your screen to determine whether you are on-task — feature parity with proposed idea"
       },
       "gates": [
@@ -797,7 +797,7 @@
         "url": "https://www.youtube.com/watch?v=khfS00oZizI",
         "tier": "B",
         "bias": "conflicted",
-        "fetched_at": "2026-05-26T15:35:39.452Z",
+        "fetched_at": "2026-05-26T18:28:06.064Z",
         "contribution": "YouTube: Focusmo — ADHD-targeted focus app with app blocking + check-ins"
       },
       "gates": [
@@ -813,7 +813,7 @@
         "url": "https://google.serper.dev/search?q=Fomi%20%22not%20worth%22%20OR%20%22cancelled%22%20OR%20%22switched%20from%22%20OR%20%22disappointed%22%20OR%20%22terrible%22",
         "tier": "A",
         "bias": "independent",
-        "fetched_at": "2026-05-26T15:35:39.452Z",
+        "fetched_at": "2026-05-26T18:28:06.064Z",
         "contribution": "Serper search for Fomi user complaints — surfaced negative-sentiment hits indicating churn-out pattern"
       },
       "gates": [
@@ -829,7 +829,7 @@
         "url": "https://community.boomi.com/s/topic/0TO1W000000cn2eWAA/release-notes",
         "tier": "S",
         "bias": "conflicted",
-        "fetched_at": "2026-05-26T15:35:39.452Z",
+        "fetched_at": "2026-05-26T18:28:06.064Z",
         "contribution": "read_competitor_changelog URL-guessing fallback resolved to Boomi release notes — unrelated to Fomi; logged as a known tool failure"
       },
       "gates": [
@@ -845,7 +845,7 @@
         "url": "https://google.serper.dev/search?q=AI-native%20focus%20app%20that%20monitors%20screens%20to%20keep%20users%20on-task.%20Detects%20when%20users%20drift%20off-task%20(social%20media%2C%20distracting%20sites)%2C%20gently%20nudges%20back%20via%20interventions.%20Uses%20cloud%20screenshot%20analysis.%20profitable%20indie%20AI%20focus%20app%20success%20story%202025%20competitor%20alternatives",
         "tier": "A",
         "bias": "independent",
-        "fetched_at": "2026-05-26T15:35:39.452Z",
+        "fetched_at": "2026-05-26T18:28:06.064Z",
         "contribution": "Contradicting-evidence Serper search for \"profitable indie AI focus app success story 2025\" — no clear contrarian winner surfaced"
       },
       "gates": [
@@ -861,7 +861,7 @@
         "url": "https://www.reddit.com/r/productivity/about.json",
         "tier": "A",
         "bias": "independent",
-        "fetched_at": "2026-05-26T15:35:39.452Z",
+        "fetched_at": "2026-05-26T18:28:06.064Z",
         "contribution": "r/productivity 4,195,056 subscribers — large active community"
       },
       "gates": [
@@ -877,7 +877,7 @@
         "url": "https://www.reddit.com/r/ADHD/about.json",
         "tier": "A",
         "bias": "independent",
-        "fetched_at": "2026-05-26T15:35:39.452Z",
+        "fetched_at": "2026-05-26T18:28:06.064Z",
         "contribution": "r/ADHD 2,232,448 subscribers — primary target demographic"
       },
       "gates": [
@@ -893,7 +893,7 @@
         "url": "https://www.reddit.com/r/getdisciplined/about.json",
         "tier": "A",
         "bias": "independent",
-        "fetched_at": "2026-05-26T15:35:39.452Z",
+        "fetched_at": "2026-05-26T18:28:06.064Z",
         "contribution": "r/getdisciplined 2,164,885 subscribers — adjacent target community"
       },
       "gates": [
@@ -909,7 +909,7 @@
         "url": "https://www.indiehackers.com/post/bootstrapping-a-personal-productivity-saas-to-10k-mrr-cac5dfe318",
         "tier": "A",
         "bias": "independent",
-        "fetched_at": "2026-05-26T15:35:39.452Z",
+        "fetched_at": "2026-05-26T18:28:06.064Z",
         "contribution": "IndieHackers: bootstrapped personal-productivity SaaS to $10k MRR — adjacent (time-tracking) comparable"
       },
       "gates": [
@@ -926,7 +926,7 @@
         "url": "https://www.indiehackers.com/product/session-2/2-000-mrr-revenue-and-100-reviews-on-app-store--MQvx6feV1Ez_Kq0qqzx",
         "tier": "A",
         "bias": "independent",
-        "fetched_at": "2026-05-26T15:35:39.452Z",
+        "fetched_at": "2026-05-26T18:28:06.064Z",
         "contribution": "IndieHackers: Session focus app stuck at $2,000 MRR — typical B2C-solo ceiling"
       },
       "gates": [
@@ -942,7 +942,7 @@
         "url": "https://techcrunch.com/2025/12/25/the-best-distraction-blockers-to-jumpstart-your-focus-in-the-new-year/",
         "tier": "A",
         "bias": "independent",
-        "fetched_at": "2026-05-26T15:35:39.452Z",
+        "fetched_at": "2026-05-26T18:28:06.064Z",
         "contribution": "TechCrunch 2025-12-25: roundup of distraction blockers — continued media attention in category"
       },
       "gates": [
@@ -959,7 +959,7 @@
         "url": "https://www.indiehackers.com/post/every-focus-app-i-tried-on-mac-failed-me-heres-what-finally-worked-7afe1db0a1",
         "tier": "A",
         "bias": "independent",
-        "fetched_at": "2026-05-26T15:35:39.452Z",
+        "fetched_at": "2026-05-26T18:28:06.064Z",
         "contribution": "IndieHackers \"Every focus app I tried on Mac failed me\" — category-wide structural complaint"
       },
       "gates": [
@@ -975,7 +975,7 @@
         "url": "https://developer.apple.com/forums/tags/managed-settings?page=3",
         "tier": "S",
         "bias": "conflicted",
-        "fetched_at": "2026-05-26T15:35:39.452Z",
+        "fetched_at": "2026-05-26T18:28:06.064Z",
         "contribution": "Apple Developer Forums: Managed Settings tag — Screen Time API surface that any iOS focus app must build on"
       },
       "gates": [
@@ -991,7 +991,7 @@
         "url": "https://developer.apple.com/app-store/review/guidelines/",
         "tier": "S",
         "bias": "conflicted",
-        "fetched_at": "2026-05-26T15:35:39.452Z",
+        "fetched_at": "2026-05-26T18:28:06.064Z",
         "contribution": "Apple App Review Guidelines — first-party rulebook governing Screen Time / focus apps; ongoing policy churn"
       },
       "gates": [
@@ -1008,7 +1008,7 @@
         "url": "https://google.serper.dev/search?q=%22Apple%20Screen%20Time%20API%22%20(ToS%20OR%20%22terms%20of%20service%22%20OR%20%22policy%20change%22%20OR%20deprecation)%202026%20OR%202025%20OR%20site%3Adeveloper.apple.com",
         "tier": "A",
         "bias": "independent",
-        "fetched_at": "2026-05-26T15:35:39.452Z",
+        "fetched_at": "2026-05-26T18:28:06.064Z",
         "contribution": "Serper fan-out for Apple Screen Time API ToS / policy churn — feeds Gate 3 platform-dependency assessment"
       },
       "gates": [
@@ -1024,7 +1024,7 @@
         "url": "https://google.serper.dev/search?q=%22Apple%20Screen%20Time%20API%22%20(%22lost%20access%22%20OR%20%22deplatformed%22%20OR%20%22shut%20down%22%20OR%20%22kicked%20off%22%20OR%20%22banned%22%20OR%20%22rejected%22)%20founder%20OR%20retro%20OR%20postmortem%20site%3Amedium.com%20OR%20site%3Anews.ycombinator.com%20OR%20site%3Aindiehackers.com",
         "tier": "A",
         "bias": "conflicted",
-        "fetched_at": "2026-05-26T15:35:39.452Z",
+        "fetched_at": "2026-05-26T18:28:06.064Z",
         "contribution": "Serper fan-out for Apple Screen Time API deplatforming retros — empty result is logged honestly (not fabricated)"
       },
       "gates": [
@@ -1040,7 +1040,7 @@
         "url": "https://learn.microsoft.com/en-us/answers/questions/5887032/viva-insights-focus-plan-stops-scheduling-focus-ti",
         "tier": "S",
         "bias": "conflicted",
-        "fetched_at": "2026-05-26T15:35:39.452Z",
+        "fetched_at": "2026-05-26T18:28:06.064Z",
         "contribution": "Microsoft Learn: Viva Insights Focus Plan — Microsoft already ships focus-management as part of Microsoft 365"
       },
       "gates": [
@@ -1056,7 +1056,7 @@
         "url": "https://www.google.com/search?q=%22Apple%20Intelligence%22%20site%3Adeveloper.apple.com",
         "tier": "S",
         "bias": "conflicted",
-        "fetched_at": "2026-05-26T15:35:39.452Z",
+        "fetched_at": "2026-05-26T18:28:06.064Z",
         "contribution": "M5 synonym-map expansion query: Apple Intelligence on developer.apple.com — fired as part of check_big_tech_encroachment"
       },
       "gates": [
@@ -1072,7 +1072,7 @@
         "url": "https://www.google.com/search?q=%22Screen%20Time%20API%22%20site%3Adeveloper.apple.com",
         "tier": "S",
         "bias": "conflicted",
-        "fetched_at": "2026-05-26T15:35:39.452Z",
+        "fetched_at": "2026-05-26T18:28:06.064Z",
         "contribution": "M5 synonym-map expansion query: Screen Time API on developer.apple.com — fired as part of check_big_tech_encroachment"
       },
       "gates": [
@@ -1088,7 +1088,7 @@
         "url": "https://rescuetime.com/pricing",
         "tier": "S",
         "bias": "conflicted",
-        "fetched_at": "2026-05-26T15:35:39.452Z",
+        "fetched_at": "2026-05-26T18:28:06.064Z",
         "contribution": "RescueTime live pricing — $7/mo, $9/mo, $12/mo subscription tiers (clean post-M1 extraction; no currency artifacts)"
       },
       "gates": [
@@ -1104,7 +1104,7 @@
         "url": "https://freedom.to/pricing",
         "tier": "S",
         "bias": "conflicted",
-        "fetched_at": "2026-05-26T15:35:39.452Z",
+        "fetched_at": "2026-05-26T18:28:06.064Z",
         "contribution": "Freedom live pricing — $3.33/mo and $8.99/mo freemium tiers (post-M2 Serper-resolved hostname: freedom.to not freedom.com)"
       },
       "gates": [
@@ -1120,7 +1120,7 @@
         "url": "https://rize.io/pricing",
         "tier": "S",
         "bias": "conflicted",
-        "fetched_at": "2026-05-26T15:35:39.452Z",
+        "fetched_at": "2026-05-26T18:28:06.064Z",
         "contribution": "Rize live pricing — $9.99/mo to $29.99/mo subscription range (post-M2 Serper-resolved hostname: rize.io)"
       },
       "gates": [
@@ -1136,7 +1136,7 @@
         "url": "https://www.opal.so/pricing",
         "tier": "S",
         "bias": "conflicted",
-        "fetched_at": "2026-05-26T15:35:39.452Z",
+        "fetched_at": "2026-05-26T18:28:06.064Z",
         "contribution": "Opal live pricing — $8.29/mo and $19.99/mo tiers (post-M2 Serper-resolved hostname: opal.so)"
       },
       "gates": [
@@ -1152,7 +1152,7 @@
         "url": "https://www.focusbear.io/pricing",
         "tier": "S",
         "bias": "conflicted",
-        "fetched_at": "2026-05-26T15:35:39.452Z",
+        "fetched_at": "2026-05-26T18:28:06.064Z",
         "contribution": "Focus Bear live pricing — $4.99/mo and $9.99/mo subscription tiers (post-M2 Serper-resolved hostname: focusbear.io)"
       },
       "gates": [
@@ -1200,7 +1200,7 @@
         "url": "https://www.g2.com/search?query=focus%20app",
         "tier": "B",
         "bias": "independent",
-        "fetched_at": "2026-05-26T15:35:39.452Z",
+        "fetched_at": "2026-05-26T18:28:06.064Z",
         "contribution": "G2/Capterra search: 5 refund / cancel / overpayment signals auto-flagged by find_pricing_anchors"
       },
       "gates": [
@@ -1216,7 +1216,7 @@
         "url": "https://www.google.com/search?q=focus%20app%20regulation%202026%20OR%202025%20site%3Aec.europa.eu",
         "tier": "A",
         "bias": "independent",
-        "fetched_at": "2026-05-26T15:35:39.452Z",
+        "fetched_at": "2026-05-26T18:28:06.064Z",
         "contribution": "EU regulatory query via Serper — no focus-app-specific tailwind surfaced; EU AI Act is headwind for cloud-screenshot processing"
       },
       "gates": [
@@ -1232,7 +1232,7 @@
         "url": "https://www.ycombinator.com/rfs",
         "tier": "A",
         "bias": "conflicted",
-        "fetched_at": "2026-05-26T15:35:39.452Z",
+        "fetched_at": "2026-05-26T18:28:06.064Z",
         "contribution": "YC RFS — find_yc_rfs_alignment returned 0 category matches; no YC tailwind"
       },
       "gates": [

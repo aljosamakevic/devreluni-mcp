@@ -12,19 +12,19 @@
         "description": "Instead of outright blocking websites and apps, it asks what you're working on, then monitors and analyzes your screen to determine whether what ..."
       },
       {
-        "name": "Three digital tools I swear by to make screen habits *healthier* and ...",
-        "url": "https://www.instagram.com/reel/DARNLPNRLsd/",
-        "description": "Live Better. FOCUS & DEEP WORK APPS Stay focused. Eliminate distractions. Flipd, Flora, Opal, Daybase. BLOCK & CONTROL APPS Take control of your ..."
-      },
-      {
-        "name": "wired",
-        "url": "https://www.facebook.com/wired/posts/distractions-what-distractions-here-are-our-recommendations-for-apps-that-help-y/1332484412080481/",
-        "description": "Here are our recommendations for apps that help you stay focused on the task at hand. These 3 Focus Timer Apps Will Keep You on Task. WIRED."
+        "name": "Focus Assist",
+        "url": "https://apps.microsoft.com/detail/9n9l7tscxr0t?hl=en-US&gl=US",
+        "description": "This AI-powered app detects distractions, helps break bad habits, offers analytics for self-improvement, & guarantees your privacy. Ideal for students, parents ..."
       },
       {
         "name": "The Reason ADHD Brains Struggle With Focus (Focusmo App ...",
         "url": "https://www.youtube.com/watch?v=khfS00oZizI",
         "description": "Focusmo is an app designed for people with ADHD to enable deep focus and productivity. With features like app blocking, check ins and daily ..."
+      },
+      {
+        "name": "MindStay: Focus & ADHD Timer",
+        "url": "https://play.google.com/store/apps/details?id=com.relyvo.mindstay",
+        "description": "Distraction Sensor: Our smart technology detects when you drift away to other apps and gently nudges you back to your focus zone."
       }
     ],
     "hn_mentions": 0,
@@ -36,21 +36,21 @@
       "url": "https://google.serper.dev/search?q=AI-native%20focus%20app%20that%20monitors%20screens%20to%20keep%20users%20on-task.%20Detects%20when%20users%20drift%20off-task%20(social%20media%2C%20distracting%20sites)%2C%20gently%20nudges%20back%20via%20interventions.%20Uses%20cloud%20screenshot%20analysis.%20ADHD%20on-task%20screen%20monitoring%202025%20competitor%20alternatives",
       "tier": "A",
       "bias": "independent",
-      "fetched_at": "2026-05-26T15:34:43.038Z",
+      "fetched_at": "2026-05-26T18:27:30.013Z",
       "contribution": "Google search results for: AI-native focus app that monitors screens to keep users on-task. Detects when users drift off-task (social media, distracting sites), gently nudges back via interventions. Uses cloud screenshot analysis. ADHD on-task screen monitoring 2025 competitor alternatives"
     },
     {
       "url": "https://www.producthunt.com/search?q=AI-native%20focus%20app%20that%20monitors%20screens%20to%20keep%20users%20on-task.%20Detects%20when%20users%20drift%20off-task%20(social%20media%2C%20distracting%20sites)%2C%20gently%20nudges%20back%20via%20interventions.%20Uses%20cloud%20screenshot%20analysis.",
       "tier": "A",
       "bias": "independent",
-      "fetched_at": "2026-05-26T15:34:43.038Z",
+      "fetched_at": "2026-05-26T18:27:30.013Z",
       "contribution": "Product Hunt launches for: AI-native focus app that monitors screens to keep users on-task. Detects when users drift off-task (social media, distracting sites), gently nudges back via interventions. Uses cloud screenshot analysis."
     },
     {
       "url": "https://hn.algolia.com/api/v1/search?query=AI-native%20focus%20app%20that%20monitors%20screens%20to%20keep%20users%20on-task.%20Detects%20when%20users%20drift%20off-task%20(social%20media%2C%20distracting%20sites)%2C%20gently%20nudges%20back%20via%20interventions.%20Uses%20cloud%20screenshot%20analysis.%20ADHD%20on-task%20screen%20monitoring%202025%20competitor%20alternatives&tags=story",
       "tier": "A",
       "bias": "independent",
-      "fetched_at": "2026-05-26T15:34:43.038Z",
+      "fetched_at": "2026-05-26T18:27:30.013Z",
       "contribution": "HN discussion search for: AI-native focus app that monitors screens to keep users on-task. Detects when users drift off-task (social media, distracting sites), gently nudges back via interventions. Uses cloud screenshot analysis. ADHD on-task screen monitoring 2025 competitor alternatives"
     }
   ],

@@ -25,7 +25,8 @@
  *      T-final-3b OQ2.
  *
  * Args:
- *   --endpoint <url>   default https://vetoed-mcp.fly.dev/mcp (OQ2 fallback)
+ *   --endpoint <url>   default https://getvetoed.com/mcp (canonical; pass
+ *                      https://vetoed-mcp.fly.dev/mcp for the OQ2 fallback path)
  *   --token <bearer>   or env VETOED_TEST_TOKEN
  *   --out-md <path>    default .planning/validation-runs/03-fomi-via-https.md
  *   --out-tool-response <path>
@@ -60,7 +61,7 @@ interface Cli {
 }
 
 function parseCli(argv: string[]): Cli {
-  let endpoint = 'https://vetoed-mcp.fly.dev/mcp';
+  let endpoint = 'https://getvetoed.com/mcp';
   let token = process.env['VETOED_TEST_TOKEN'] ?? '';
   let outMd = resolve(REPO_ROOT, '.planning/validation-runs/03-fomi-via-https.md');
   let outToolResponse = resolve(
@@ -1198,15 +1199,21 @@ async function main(): Promise<void> {
     throw new Error('finalize returned no markdown');
   }
 
-  // Prepend frontmatter recording the endpoint per PLAN T-final-3b OQ2 fallback.
-  // The frontmatter sits ABOVE Section 1 so assert-fomi-run.ts's section parser
-  // (which keys off `## Section N:` headings) is unaffected.
+  // Prepend frontmatter recording the endpoint. The note auto-flips based on
+  // whether the canonical hostname or the OQ2 fallback was used so the
+  // artifact narrates its own provenance honestly. Sits ABOVE Section 1 so
+  // assert-fomi-run.ts's section parser (which keys off `## Section N:`
+  // headings) is unaffected.
+  const isCanonical = cli.endpoint.includes('getvetoed.com');
+  const endpointNote = isCanonical
+    ? `Canonical hostname (DNS + Let's Encrypt cert active at capture time).`
+    : `OQ2 fallback hostname per PLAN T-final-3b — used when getvetoed.com DNS had not yet propagated. Re-capture against the canonical hostname once DNS resolves.`;
   const frontmatter = [
     '<!--',
     'phase: 03-multitenant-https',
     'task: T-final-3b',
     `endpoint: ${cli.endpoint}`,
-    `endpoint_note: getvetoed.com DNS not yet configured at capture time; per PLAN T-final-3b OQ2 the vetoed-mcp.fly.dev fallback is the acceptable HTTPS endpoint and proves the transport layer.`,
+    `endpoint_note: ${endpointNote}`,
     `captured_at: ${new Date().toISOString()}`,
     `tool_call_count: ${summary.length}`,
     `tool_call_ok: ${okCount}`,

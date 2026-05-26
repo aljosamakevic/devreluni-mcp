@@ -2,14 +2,14 @@
   "data": {
     "competitors": [
       {
-        "name": "Three digital tools I swear by to make screen habits *healthier* and ...",
-        "url": "https://www.instagram.com/reel/DARNLPNRLsd/",
-        "description": "Live Better. FOCUS & DEEP WORK APPS Stay focused. Eliminate distractions. Flipd, Flora, Opal, Daybase. BLOCK & CONTROL APPS Take control of your ..."
-      },
-      {
         "name": "Easily distracted? This AI focus tool will scold you into staying on task",
         "url": "https://thehustle.co/news/easily-distracted-this-ai-focus-tool-will-scold-you-into-staying-on-task",
         "description": "Instead of outright blocking websites and apps, it asks what you're working on, then monitors and analyzes your screen to determine whether what ..."
+      },
+      {
+        "name": "Three digital tools I swear by to make screen habits *healthier* and ...",
+        "url": "https://www.instagram.com/reel/DARNLPNRLsd/",
+        "description": "Notes app: Perfect for quick brain dumps, organizing thoughts, or jotting down ideas when I'm on the go. Mental clutter? Gone. 🛡️ Firefox Focus ..."
       },
       {
         "name": "Focus: Screen time control",
@@ -22,9 +22,9 @@
         "description": "AI-powered app blocker and screen time tracker. Break phone addiction, block distracting apps, manage digital wellbeing, and reclaim your focus."
       },
       {
-        "name": "AI tool that keeps you on track by literally watching your screen?",
-        "url": "https://www.reddit.com/r/ADHD_Programmers/comments/1l2qo6f/ai_tool_that_keeps_you_on_track_by_literally/",
-        "description": "It watches your screen, and it uses AI to work out what you're actually doing (privacy note below). If you're off track, it pings and helps you get back on ..."
+        "name": "ABC News",
+        "url": "https://www.facebook.com/abcnews.au/posts/analysis-a-new-generation-of-focus-apps-has-burst-onto-the-productivity-scene-ea/1441655353982397/",
+        "description": "Escape is a simple app that tracks how many times you open your email, a social network, or other distracting websites. Each day, you'll get a ..."
       }
     ],
     "hn_mentions": 0,
@@ -36,21 +36,21 @@
       "url": "https://google.serper.dev/search?q=AI-native%20focus%20app%20that%20monitors%20screens%20to%20keep%20users%20on-task.%20Detects%20when%20users%20drift%20off-task%20(social%20media%2C%20distracting%20sites)%2C%20gently%20nudges%20back%20via%20interventions.%20Uses%20cloud%20screenshot%20analysis.%20profitable%20indie%20AI%20focus%20app%20success%20story%202025%20competitor%20alternatives",
       "tier": "A",
       "bias": "independent",
-      "fetched_at": "2026-05-26T15:34:47.595Z",
+      "fetched_at": "2026-05-26T18:27:35.092Z",
       "contribution": "Google search results for: AI-native focus app that monitors screens to keep users on-task. Detects when users drift off-task (social media, distracting sites), gently nudges back via interventions. Uses cloud screenshot analysis. profitable indie AI focus app success story 2025 competitor alternatives"
     },
     {
       "url": "https://www.producthunt.com/search?q=AI-native%20focus%20app%20that%20monitors%20screens%20to%20keep%20users%20on-task.%20Detects%20when%20users%20drift%20off-task%20(social%20media%2C%20distracting%20sites)%2C%20gently%20nudges%20back%20via%20interventions.%20Uses%20cloud%20screenshot%20analysis.",
       "tier": "A",
       "bias": "independent",
-      "fetched_at": "2026-05-26T15:34:47.595Z",
+      "fetched_at": "2026-05-26T18:27:35.092Z",
       "contribution": "Product Hunt launches for: AI-native focus app that monitors screens to keep users on-task. Detects when users drift off-task (social media, distracting sites), gently nudges back via interventions. Uses cloud screenshot analysis."
     },
     {
       "url": "https://hn.algolia.com/api/v1/search?query=AI-native%20focus%20app%20that%20monitors%20screens%20to%20keep%20users%20on-task.%20Detects%20when%20users%20drift%20off-task%20(social%20media%2C%20distracting%20sites)%2C%20gently%20nudges%20back%20via%20interventions.%20Uses%20cloud%20screenshot%20analysis.%20profitable%20indie%20AI%20focus%20app%20success%20story%202025%20competitor%20alternatives&tags=story",
       "tier": "A",
       "bias": "independent",
-      "fetched_at": "2026-05-26T15:34:47.595Z",
+      "fetched_at": "2026-05-26T18:27:35.092Z",
       "contribution": "HN discussion search for: AI-native focus app that monitors screens to keep users on-task. Detects when users drift off-task (social media, distracting sites), gently nudges back via interventions. Uses cloud screenshot analysis. profitable indie AI focus app success story 2025 competitor alternatives"
     }
   ],
