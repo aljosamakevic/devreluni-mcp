@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Vetoed — kill bad product ideas before you build them</title>
+    <meta
+      name="description"
+      content="An MCP server that validates product ideas with unbiased, source-grounded evidence across 5 structured gates. Returns a GO / NO-GO / CONDITIONAL GO verdict."
+    >
+    <style>
+      :root {
+        --fg: #1a1a1a;
+        --muted: #555;
+        --bg: #fafaf7;
+        --accent: #c0392b;
+        --rule: #e5e5e0;
+        --max: 720px;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; padding: 0; }
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+        font-size: 17px;
+        line-height: 1.6;
+        color: var(--fg);
+        background: var(--bg);
+        padding: 48px 24px 96px;
+      }
+      main { max-width: var(--max); margin: 0 auto; }
+      h1 {
+        font-size: 40px;
+        line-height: 1.15;
+        margin: 0 0 16px;
+        letter-spacing: -0.01em;
+      }
+      h2 {
+        font-size: 22px;
+        margin: 48px 0 12px;
+        padding-bottom: 8px;
+        border-bottom: 1px solid var(--rule);
+      }
+      h3 {
+        font-size: 17px;
+        margin: 24px 0 6px;
+      }
+      p { margin: 0 0 14px; }
+      .tagline {
+        font-size: 20px;
+        color: var(--muted);
+        margin: 0 0 36px;
+      }
+      .cta {
+        display: inline-block;
+        margin: 12px 0 8px;
+        padding: 12px 22px;
+        background: var(--accent);
+        color: #fff;
+        font-weight: 600;
+        text-decoration: none;
+        border-radius: 4px;
+      }
+      .cta:hover { opacity: 0.92; }
+      .gate {
+        margin: 18px 0;
+      }
+      .gate strong { color: var(--fg); }
+      footer {
+        margin-top: 64px;
+        padding-top: 24px;
+        border-top: 1px solid var(--rule);
+        color: var(--muted);
+        font-size: 14px;
+      }
+      footer a { color: var(--muted); }
+      code {
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        background: #efece4;
+        padding: 1px 6px;
+        border-radius: 3px;
+        font-size: 14px;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Vetoed</h1>
+      <p class="tagline">Kill bad product ideas before you build them.</p>
+
+      <p>
+        Vetoed is a Model Context Protocol server that validates product ideas
+        with unbiased, source-grounded evidence across five structured gates.
+        It returns a GO / NO-GO / CONDITIONAL GO verdict with citations &mdash;
+        not vibes. The framework is designed to make confirmation bias
+        structurally impossible.
+      </p>
+
+      <p>
+        <a class="cta" href="mailto:aljosa@getvetoed.com?subject=Vetoed%20access%20request">Request access</a>
+      </p>
+
+      <h2>How it works</h2>
+
+      <div class="gate">
+        <h3>Gate 1 &mdash; Direct Competitor Scan</h3>
+        <p>
+          Who is the closest existing thing, what have they shipped, where are
+          they weak? Vetoed surfaces the strongest direct competitor and reads
+          their public changelog for shipped features, then maps explicit
+          weaknesses you could exploit.
+        </p>
+      </div>
+
+      <div class="gate">
+        <h3>Gate 2 &mdash; Market Structure</h3>
+        <p>
+          Is the market shaped such that this idea can win a meaningful share?
+          For solopreneurs, that means a niche of roughly 1,000 reachable
+          customers through concentrated channels. For funded teams, a
+          plausible $1B+ TAM. Either bar, made explicit.
+        </p>
+      </div>
+
+      <div class="gate">
+        <h3>Gate 3 &mdash; Platform &amp; Big-Tech Risk</h3>
+        <p>
+          Will a platform shift or a hyperscaler shipping this as a system
+          primitive kill the idea inside 24 months? Vetoed checks Apple, Google,
+          Microsoft, and Meta for encroachment signals before any verdict.
+        </p>
+      </div>
+
+      <div class="gate">
+        <h3>Gate 4 &mdash; Willingness to Pay</h3>
+        <p>
+          Will the target customer actually pay enough to make this a business?
+          Public revenue from comparables is the strongest evidence. Auto-flag
+          if competitor pricing has fallen 25%+ over 24 months, or if the
+          category is freemium-only with no profitable paid tier.
+        </p>
+      </div>
+
+      <div class="gate">
+        <h3>Gate 5 &mdash; Why Now</h3>
+        <p>
+          What changed in the last 24 months that makes this possible or
+          necessary <em>now</em>? Must be a specific articulable thesis, not
+          &ldquo;AI got better.&rdquo; Automatic Inconclusive if no non-obvious
+          why-now exists.
+        </p>
+      </div>
+
+      <h2>Who it's for</h2>
+      <p>
+        Solopreneurs and small builder teams (1&ndash;5 people) evaluating
+        product ideas before committing build time. Funded founders pre-PRD
+        also welcome. If you ship code on weekends and have an idea graveyard,
+        Vetoed is built for you.
+      </p>
+
+      <section id="social-proof">
+        <!-- TODO: testimonials once 5 users have shipped a verdict -->
+      </section>
+
+      <h2>Get access</h2>
+      <p>
+        Vetoed is currently invite-only while shared API quotas stay manageable.
+        Email for a bearer token; paste it into your Claude Desktop config and
+        run <code>validate_idea</code> against your next idea.
+      </p>
+      <p>
+        <a class="cta" href="mailto:aljosa@getvetoed.com?subject=Vetoed%20access%20request">Request access</a>
+      </p>
+
+      <footer>
+        <p>
+          <a href="https://github.com/aljosamakevic/devreluni-mcp">Source on GitHub</a>
+          &middot;
+          <a href="https://github.com/aljosamakevic/devreluni-mcp/blob/main/.planning/spec/build-spec-v1.0.md">Framework spec</a>
+        </p>
+      </footer>
+    </main>
+  </body>
+</html>
