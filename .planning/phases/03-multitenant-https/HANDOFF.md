@@ -25,10 +25,11 @@
 
 ## What's pending
 
-1. **T00 spike result** (Hono vs Express) — agent was dispatched at session end. Check `.planning/phases/03-multitenant-https/T00-spike.md` when you resume. The recommendation should be ONE LINE in the spike doc: "Stay with Express" / "Switch to Hono" / "Tiebreaker". Act accordingly:
-   - If "Stay with Express" → no plan changes; dispatch `/gsd-execute-phase 03-multitenant-https` and start Wave 1
-   - If "Switch to Hono" → flip Decision 6 in CONTEXT.md back to Hono, update Stream A task language (T01-T04 are the only ones that name the framework), then dispatch
-   - If "Tiebreaker" → ask Aljosa, then proceed
+1. ~~**T00 spike result** (Hono vs Express)~~ — **DONE.** Recommendation: **Stay with Express. HIGH confidence.** See `.planning/phases/03-multitenant-https/T00-spike.md`. Key finding: MCP SDK ships 5 Express examples + `createMcpExpressApp()` helper; Hono path would require ~7h refactor + force a per-request `McpServer` factory pattern that expands R4 regression risk.
+   - **No plan changes needed.** Dispatch `/gsd-execute-phase 03-multitenant-https` directly.
+   - **T01 executor MUST crib from** `node_modules/@modelcontextprotocol/sdk/dist/esm/examples/server/jsonResponseStreamableHttp.js` (not the OAuth-heavy `simpleStreamableHttp.js`). It's the closest match to our needs (stateful Express + JSON-response mode, no OAuth).
+   - **T01 executor MUST use** `createMcpExpressApp()` from `@modelcontextprotocol/sdk/server/express` (saves ~15 lines, gives free DNS-rebinding protection). Call with `{ host: '0.0.0.0' }` for Fly.
+   - **Critical gotcha the executor must not miss:** stateful-mode race condition — write `transports[sid] = transport` inside the `onsessioninitialized` callback, NOT inline before the session is established. See `jsonResponseStreamableHttp.js:84-89` for the SDK author's flagged comment.
 
 2. **User-side prerequisites** before any deploy task lands (Stream D):
    - DNS configured for `getvetoed.com` (CNAME pointed at the Fly app after first deploy)
