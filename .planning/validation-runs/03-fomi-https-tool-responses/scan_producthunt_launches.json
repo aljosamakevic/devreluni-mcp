@@ -1,0 +1,16 @@
+{
+  "data": {
+    "launches": []
+  },
+  "sources": [
+    {
+      "url": "https://www.producthunt.com/search?q=focus%20app",
+      "tier": "A",
+      "bias": "independent",
+      "fetched_at": "2026-05-26T18:28:06.023Z",
+      "contribution": "PH query-by-string search for 'focus app' (topic resolution returned no match)"
+    }
+  ],
+  "confidence_note": "Product Hunt data is live. PH topic resolution returned 0 matches for 'focus app' — using query-based search; results may be off-topic. No high-conviction launches found.",
+  "fallbacks_used": []
+}

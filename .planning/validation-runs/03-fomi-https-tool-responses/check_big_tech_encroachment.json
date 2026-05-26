@@ -1,0 +1,300 @@
+{
+  "data": {
+    "adjacency_score": 1,
+    "adjacency_label": "No clear encroachment signal in 24mo window",
+    "conference_mentions": [
+      {
+        "hyperscaler": "Microsoft",
+        "event": "Microsoft Build",
+        "title": "Viva Insights Focus Plan stops scheduling focus time after 1 week",
+        "url": "https://learn.microsoft.com/en-us/answers/questions/5887032/viva-insights-focus-plan-stops-scheduling-focus-ti",
+        "snippet": "Viva Insights Focus Plan stops scheduling focus time after 1 week. DeNae Leverentz 5 Reputation points. May 11, 2026, 7:29 AM. I am having this problem ...",
+        "recency_signal": "last_24mo"
+      }
+    ],
+    "platform_api_signals": [],
+    "acquisitions": [],
+    "hyperscalers_active": [
+      "Microsoft"
+    ],
+    "verdict": "Gate 3 likely PASS on encroachment alone. Adjacency 1/5: No clear encroachment signal in 24mo window. Still verify with assess_platform_dependency for ToS/integration risks.",
+    "killshot_risk": null
+  },
+  "sources": [
+    {
+      "url": "https://www.google.com/search?q=focus%20app%20screen%20time%20deep%20work%20on-task%20distraction%20blocker%20site%3Adeveloper.apple.com",
+      "tier": "S",
+      "bias": "conflicted",
+      "fetched_at": "2026-05-26T18:27:38.377Z",
+      "contribution": "Apple WWDC mentions of \"focus app screen time deep work on-task distraction blocker\""
+    },
+    {
+      "url": "https://www.google.com/search?q=%22Apple%20Intelligence%22%20site%3Adeveloper.apple.com",
+      "tier": "S",
+      "bias": "conflicted",
+      "fetched_at": "2026-05-26T18:27:38.377Z",
+      "contribution": "Apple WWDC mentions of platform feature \"Apple Intelligence\""
+    },
+    {
+      "url": "https://www.google.com/search?q=%22Screen%20Time%22%20site%3Adeveloper.apple.com",
+      "tier": "S",
+      "bias": "conflicted",
+      "fetched_at": "2026-05-26T18:27:38.377Z",
+      "contribution": "Apple WWDC mentions of platform feature \"Screen Time\""
+    },
+    {
+      "url": "https://www.google.com/search?q=%22Screen%20Time%20API%22%20site%3Adeveloper.apple.com",
+      "tier": "S",
+      "bias": "conflicted",
+      "fetched_at": "2026-05-26T18:27:38.377Z",
+      "contribution": "Apple WWDC mentions of platform feature \"Screen Time API\""
+    },
+    {
+      "url": "https://www.google.com/search?q=focus%20app%20screen%20time%20deep%20work%20on-task%20distraction%20blocker%20site%3Aapple.com",
+      "tier": "S",
+      "bias": "conflicted",
+      "fetched_at": "2026-05-26T18:27:38.377Z",
+      "contribution": "Apple WWDC mentions of \"focus app screen time deep work on-task distraction blocker\""
+    },
+    {
+      "url": "https://www.google.com/search?q=%22Apple%20Intelligence%22%20site%3Aapple.com",
+      "tier": "S",
+      "bias": "conflicted",
+      "fetched_at": "2026-05-26T18:27:38.377Z",
+      "contribution": "Apple WWDC mentions of platform feature \"Apple Intelligence\""
+    },
+    {
+      "url": "https://www.google.com/search?q=%22Screen%20Time%22%20site%3Aapple.com",
+      "tier": "S",
+      "bias": "conflicted",
+      "fetched_at": "2026-05-26T18:27:38.377Z",
+      "contribution": "Apple WWDC mentions of platform feature \"Screen Time\""
+    },
+    {
+      "url": "https://www.google.com/search?q=%22Screen%20Time%20API%22%20site%3Aapple.com",
+      "tier": "S",
+      "bias": "conflicted",
+      "fetched_at": "2026-05-26T18:27:38.377Z",
+      "contribution": "Apple WWDC mentions of platform feature \"Screen Time API\""
+    },
+    {
+      "url": "https://www.google.com/search?q=focus%20app%20screen%20time%20deep%20work%20on-task%20distraction%20blocker%20site%3Aio.google",
+      "tier": "S",
+      "bias": "conflicted",
+      "fetched_at": "2026-05-26T18:27:38.377Z",
+      "contribution": "Google Google I/O mentions of \"focus app screen time deep work on-task distraction blocker\""
+    },
+    {
+      "url": "https://www.google.com/search?q=%22Digital%20Wellbeing%22%20site%3Aio.google",
+      "tier": "S",
+      "bias": "conflicted",
+      "fetched_at": "2026-05-26T18:27:38.377Z",
+      "contribution": "Google Google I/O mentions of platform feature \"Digital Wellbeing\""
+    },
+    {
+      "url": "https://www.google.com/search?q=%22Focus%20Mode%20Android%22%20site%3Aio.google",
+      "tier": "S",
+      "bias": "conflicted",
+      "fetched_at": "2026-05-26T18:27:38.377Z",
+      "contribution": "Google Google I/O mentions of platform feature \"Focus Mode Android\""
+    },
+    {
+      "url": "https://www.google.com/search?q=%22Bedtime%20Mode%22%20site%3Aio.google",
+      "tier": "S",
+      "bias": "conflicted",
+      "fetched_at": "2026-05-26T18:27:38.377Z",
+      "contribution": "Google Google I/O mentions of platform feature \"Bedtime Mode\""
+    },
+    {
+      "url": "https://www.google.com/search?q=focus%20app%20screen%20time%20deep%20work%20on-task%20distraction%20blocker%20site%3Adevelopers.google.com",
+      "tier": "S",
+      "bias": "conflicted",
+      "fetched_at": "2026-05-26T18:27:38.377Z",
+      "contribution": "Google Google I/O mentions of \"focus app screen time deep work on-task distraction blocker\""
+    },
+    {
+      "url": "https://www.google.com/search?q=%22Digital%20Wellbeing%22%20site%3Adevelopers.google.com",
+      "tier": "S",
+      "bias": "conflicted",
+      "fetched_at": "2026-05-26T18:27:38.377Z",
+      "contribution": "Google Google I/O mentions of platform feature \"Digital Wellbeing\""
+    },
+    {
+      "url": "https://www.google.com/search?q=%22Focus%20Mode%20Android%22%20site%3Adevelopers.google.com",
+      "tier": "S",
+      "bias": "conflicted",
+      "fetched_at": "2026-05-26T18:27:38.377Z",
+      "contribution": "Google Google I/O mentions of platform feature \"Focus Mode Android\""
+    },
+    {
+      "url": "https://www.google.com/search?q=%22Bedtime%20Mode%22%20site%3Adevelopers.google.com",
+      "tier": "S",
+      "bias": "conflicted",
+      "fetched_at": "2026-05-26T18:27:38.377Z",
+      "contribution": "Google Google I/O mentions of platform feature \"Bedtime Mode\""
+    },
+    {
+      "url": "https://www.google.com/search?q=focus%20app%20screen%20time%20deep%20work%20on-task%20distraction%20blocker%20site%3Abuild.microsoft.com",
+      "tier": "S",
+      "bias": "conflicted",
+      "fetched_at": "2026-05-26T18:27:38.377Z",
+      "contribution": "Microsoft Microsoft Build mentions of \"focus app screen time deep work on-task distraction blocker\""
+    },
+    {
+      "url": "https://www.google.com/search?q=%22Focus%20Sessions%20Windows%2011%22%20site%3Abuild.microsoft.com",
+      "tier": "S",
+      "bias": "conflicted",
+      "fetched_at": "2026-05-26T18:27:38.377Z",
+      "contribution": "Microsoft Microsoft Build mentions of platform feature \"Focus Sessions Windows 11\""
+    },
+    {
+      "url": "https://www.google.com/search?q=%22Viva%20Insights%20focus%22%20site%3Abuild.microsoft.com",
+      "tier": "S",
+      "bias": "conflicted",
+      "fetched_at": "2026-05-26T18:27:38.377Z",
+      "contribution": "Microsoft Microsoft Build mentions of platform feature \"Viva Insights focus\""
+    },
+    {
+      "url": "https://www.google.com/search?q=%22Copilot%20Focus%22%20site%3Abuild.microsoft.com",
+      "tier": "S",
+      "bias": "conflicted",
+      "fetched_at": "2026-05-26T18:27:38.377Z",
+      "contribution": "Microsoft Microsoft Build mentions of platform feature \"Copilot Focus\""
+    },
+    {
+      "url": "https://www.google.com/search?q=focus%20app%20screen%20time%20deep%20work%20on-task%20distraction%20blocker%20site%3Alearn.microsoft.com",
+      "tier": "S",
+      "bias": "conflicted",
+      "fetched_at": "2026-05-26T18:27:38.377Z",
+      "contribution": "Microsoft Microsoft Build mentions of \"focus app screen time deep work on-task distraction blocker\""
+    },
+    {
+      "url": "https://www.google.com/search?q=%22Focus%20Sessions%20Windows%2011%22%20site%3Alearn.microsoft.com",
+      "tier": "S",
+      "bias": "conflicted",
+      "fetched_at": "2026-05-26T18:27:38.377Z",
+      "contribution": "Microsoft Microsoft Build mentions of platform feature \"Focus Sessions Windows 11\""
+    },
+    {
+      "url": "https://www.google.com/search?q=%22Viva%20Insights%20focus%22%20site%3Alearn.microsoft.com",
+      "tier": "S",
+      "bias": "conflicted",
+      "fetched_at": "2026-05-26T18:27:38.377Z",
+      "contribution": "Microsoft Microsoft Build mentions of platform feature \"Viva Insights focus\""
+    },
+    {
+      "url": "https://www.google.com/search?q=%22Copilot%20Focus%22%20site%3Alearn.microsoft.com",
+      "tier": "S",
+      "bias": "conflicted",
+      "fetched_at": "2026-05-26T18:27:38.377Z",
+      "contribution": "Microsoft Microsoft Build mentions of platform feature \"Copilot Focus\""
+    },
+    {
+      "url": "https://www.google.com/search?q=focus%20app%20screen%20time%20deep%20work%20on-task%20distraction%20blocker%20site%3Adevelopers.meta.com",
+      "tier": "S",
+      "bias": "conflicted",
+      "fetched_at": "2026-05-26T18:27:38.377Z",
+      "contribution": "Meta Meta Connect mentions of \"focus app screen time deep work on-task distraction blocker\""
+    },
+    {
+      "url": "https://www.google.com/search?q=focus%20app%20screen%20time%20deep%20work%20on-task%20distraction%20blocker%20site%3Aaws.amazon.com",
+      "tier": "S",
+      "bias": "conflicted",
+      "fetched_at": "2026-05-26T18:27:38.377Z",
+      "contribution": "Amazon AWS re:Invent mentions of \"focus app screen time deep work on-task distraction blocker\""
+    },
+    {
+      "url": "https://www.google.com/search?q=focus%20app%20screen%20time%20deep%20work%20on-task%20distraction%20blocker%20%22iOS%22%20OR%20%22macOS%22%20API%20SDK%20new%20framework",
+      "tier": "S",
+      "bias": "conflicted",
+      "fetched_at": "2026-05-26T18:27:38.432Z",
+      "contribution": "Apple platform API/SDK announcements"
+    },
+    {
+      "url": "https://www.google.com/search?q=focus%20app%20screen%20time%20deep%20work%20on-task%20distraction%20blocker%20%22Android%22%20OR%20%22Chrome%22%20API%20new",
+      "tier": "S",
+      "bias": "conflicted",
+      "fetched_at": "2026-05-26T18:27:38.477Z",
+      "contribution": "Google platform API/SDK announcements"
+    },
+    {
+      "url": "https://www.google.com/search?q=focus%20app%20screen%20time%20deep%20work%20on-task%20distraction%20blocker%20%22Windows%22%20OR%20%22Copilot%22%20API%20new",
+      "tier": "S",
+      "bias": "conflicted",
+      "fetched_at": "2026-05-26T18:27:38.518Z",
+      "contribution": "Microsoft platform API/SDK announcements"
+    },
+    {
+      "url": "https://www.google.com/search?q=%22Apple%20Intelligence%22%20API%20SDK%20developer",
+      "tier": "S",
+      "bias": "conflicted",
+      "fetched_at": "2026-05-26T18:27:38.559Z",
+      "contribution": "Apple platform feature \"Apple Intelligence\" — API/SDK pages"
+    },
+    {
+      "url": "https://www.google.com/search?q=%22Screen%20Time%22%20API%20SDK%20developer",
+      "tier": "S",
+      "bias": "conflicted",
+      "fetched_at": "2026-05-26T18:27:38.596Z",
+      "contribution": "Apple platform feature \"Screen Time\" — API/SDK pages"
+    },
+    {
+      "url": "https://www.google.com/search?q=%22Screen%20Time%20API%22%20API%20SDK%20developer",
+      "tier": "S",
+      "bias": "conflicted",
+      "fetched_at": "2026-05-26T18:27:38.639Z",
+      "contribution": "Apple platform feature \"Screen Time API\" — API/SDK pages"
+    },
+    {
+      "url": "https://www.google.com/search?q=%22Digital%20Wellbeing%22%20API%20SDK%20developer",
+      "tier": "S",
+      "bias": "conflicted",
+      "fetched_at": "2026-05-26T18:27:38.676Z",
+      "contribution": "Google platform feature \"Digital Wellbeing\" — API/SDK pages"
+    },
+    {
+      "url": "https://www.google.com/search?q=%22Focus%20Mode%20Android%22%20API%20SDK%20developer",
+      "tier": "S",
+      "bias": "conflicted",
+      "fetched_at": "2026-05-26T18:27:38.723Z",
+      "contribution": "Google platform feature \"Focus Mode Android\" — API/SDK pages"
+    },
+    {
+      "url": "https://www.google.com/search?q=%22Bedtime%20Mode%22%20API%20SDK%20developer",
+      "tier": "S",
+      "bias": "conflicted",
+      "fetched_at": "2026-05-26T18:27:38.765Z",
+      "contribution": "Google platform feature \"Bedtime Mode\" — API/SDK pages"
+    },
+    {
+      "url": "https://www.google.com/search?q=%22Focus%20Sessions%20Windows%2011%22%20API%20SDK%20developer",
+      "tier": "S",
+      "bias": "conflicted",
+      "fetched_at": "2026-05-26T18:27:38.807Z",
+      "contribution": "Microsoft platform feature \"Focus Sessions Windows 11\" — API/SDK pages"
+    },
+    {
+      "url": "https://www.google.com/search?q=%22Viva%20Insights%20focus%22%20API%20SDK%20developer",
+      "tier": "S",
+      "bias": "conflicted",
+      "fetched_at": "2026-05-26T18:27:38.850Z",
+      "contribution": "Microsoft platform feature \"Viva Insights focus\" — API/SDK pages"
+    },
+    {
+      "url": "https://www.google.com/search?q=%22Copilot%20Focus%22%20API%20SDK%20developer",
+      "tier": "S",
+      "bias": "conflicted",
+      "fetched_at": "2026-05-26T18:27:38.895Z",
+      "contribution": "Microsoft platform feature \"Copilot Focus\" — API/SDK pages"
+    },
+    {
+      "url": "https://www.google.com/search?q=focus%20app%20screen%20time%20deep%20work%20on-task%20distraction%20blocker%20acquired%20OR%20acquisition%20(Apple%20OR%20Google%20OR%20Microsoft%20OR%20Meta)%20site%3Atechcrunch.com%20OR%20site%3Atheverge.com%20OR%20site%3Abloomberg.com",
+      "tier": "A",
+      "bias": "independent",
+      "fetched_at": "2026-05-26T18:27:38.941Z",
+      "contribution": "Press coverage of acquisitions in \"focus app\" space"
+    }
+  ],
+  "confidence_note": "Searched 26 conference site/feature filters across 5 hyperscalers (8 base + 18 platform-feature expansions) + 12 API queries + 1 acquisition query. Adjacency score is heuristic from signal counts — review the raw mentions before treating verdict as final. Recency detection relies on year strings in titles/snippets and can miss recent dateless pages.",
+  "fallbacks_used": []
+}

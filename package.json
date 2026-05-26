@@ -11,7 +11,10 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
-    "build": "tsc && chmod 755 build/index.js"
+    "build": "tsc && chmod 755 build/index.js && mkdir -p build/db && cp src/db/schema.sql build/db/schema.sql",
+    "smoke:http": "tsx scripts/smoke-http.ts",
+    "admin": "tsx scripts/admin.ts",
+    "fomi:https": "tsx scripts/run-fomi-via-https.ts"
   },
   "repository": {
     "type": "git",
@@ -26,13 +29,20 @@
   "homepage": "https://github.com/aljosamakevic/devreluni-mcp#readme",
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.29.0",
+    "better-sqlite3": "11.10.0",
     "dotenv": "^17.4.2",
+    "express": "5.2.1",
+    "pino": "10.3.1",
+    "tsx": "^4.21.0",
     "zod": "^3.25.76"
   },
   "devDependencies": {
+    "@types/better-sqlite3": "^7.6.13",
+    "@types/express": "^5.0.6",
     "@types/node": "^25.7.0",
+    "@types/supertest": "^7.2.0",
     "@vitest/coverage-v8": "^4.1.7",
-    "tsx": "^4.21.0",
+    "supertest": "^7.2.2",
     "typescript": "^6.0.3",
     "vitest": "^4.1.7"
   }

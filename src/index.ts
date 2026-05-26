@@ -3,8 +3,9 @@ import { config as loadDotenv } from 'dotenv';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { readFileSync } from 'fs';
-import { fileURLToPath } from 'url';
-import { dirname, join } from 'path';
+import { fileURLToPath, pathToFileURL } from 'url';
+import { dirname, join, resolve } from 'path';
+import { createHttpServer } from './http/server.js';
 
 // Load .env from the package root (one level up from build/ or src/).
 // Works regardless of cwd — Claude Desktop spawns from /, dev runs from anywhere.
@@ -47,76 +48,122 @@ function loadResource(filename: string): string {
   return readFileSync(join(__dirname, '..', 'src', 'resources', filename), 'utf-8');
 }
 
-const server = new McpServer({
-  name: 'product-validation',
-  version: '0.1.0',
-});
+/**
+ * Factory — builds a fresh McpServer with all 13 tools, 5 prompts, and 3 resources
+ * registered in the canonical order. Each HTTP session must call this to get its own
+ * McpServer instance, because the underlying SDK Server's `_transport` field is sticky
+ * once `connect()` runs: a second `connect()` on the same instance throws
+ * "Already connected to a transport. Call close() before connecting to a new transport,
+ * or use a separate Protocol instance per connection." Stdio mode calls this once at
+ * boot (a single long-lived process owns one transport for its lifetime).
+ */
+export function createMcpServer(): McpServer {
+  const server = new McpServer({
+    name: 'product-validation',
+    version: '0.1.0',
+  });
 
-// Resources — loaded fresh per request (not at import time)
-server.resource('source-tier-bias', 'resource://source-tier-bias', async () => ({
-  contents: [
-    {
-      uri: 'resource://source-tier-bias',
-      mimeType: 'text/markdown',
-      text: loadResource('source-tier-bias.md'),
-    },
-  ],
-}));
+  // Resources — loaded fresh per request (not at import time)
+  server.resource('source-tier-bias', 'resource://source-tier-bias', async () => ({
+    contents: [
+      {
+        uri: 'resource://source-tier-bias',
+        mimeType: 'text/markdown',
+        text: loadResource('source-tier-bias.md'),
+      },
+    ],
+  }));
 
-server.resource('tool-to-gate-map', 'resource://tool-to-gate-map', async () => ({
-  contents: [
-    {
-      uri: 'resource://tool-to-gate-map',
-      mimeType: 'text/markdown',
-      text: loadResource('tool-to-gate-map.md'),
-    },
-  ],
-}));
+  server.resource('tool-to-gate-map', 'resource://tool-to-gate-map', async () => ({
+    contents: [
+      {
+        uri: 'resource://tool-to-gate-map',
+        mimeType: 'text/markdown',
+        text: loadResource('tool-to-gate-map.md'),
+      },
+    ],
+  }));
 
-server.resource('evaluation-lens-matrix', 'resource://evaluation-lens-matrix', async () => ({
-  contents: [
-    {
-      uri: 'resource://evaluation-lens-matrix',
-      mimeType: 'text/markdown',
-      text: loadResource('evaluation-lens-matrix.md'),
-    },
-  ],
-}));
+  server.resource('evaluation-lens-matrix', 'resource://evaluation-lens-matrix', async () => ({
+    contents: [
+      {
+        uri: 'resource://evaluation-lens-matrix',
+        mimeType: 'text/markdown',
+        text: loadResource('evaluation-lens-matrix.md'),
+      },
+    ],
+  }));
 
-// Register tools
-registerFindClosestCompetitor(server);
-registerReadCompetitorChangelog(server);
-registerMapCompetitiveWeaknesses(server);
-registerScanProductHuntLaunches(server);
-registerGetCategoryFailureModes(server);
-registerFindYCRFSAlignment(server);
-registerFindPricingAnchors(server);
-registerCheckBigTechEncroachment(server);
-registerFindWhyNowSignals(server);
-registerEstimateDemandSignals(server);
-registerFindPublicRevenueSignals(server);
-registerAssessPlatformDependency(server);
-registerFinalizeValidationReport(server);
+  // Register tools
+  registerFindClosestCompetitor(server);
+  registerReadCompetitorChangelog(server);
+  registerMapCompetitiveWeaknesses(server);
+  registerScanProductHuntLaunches(server);
+  registerGetCategoryFailureModes(server);
+  registerFindYCRFSAlignment(server);
+  registerFindPricingAnchors(server);
+  registerCheckBigTechEncroachment(server);
+  registerFindWhyNowSignals(server);
+  registerEstimateDemandSignals(server);
+  registerFindPublicRevenueSignals(server);
+  registerAssessPlatformDependency(server);
+  registerFinalizeValidationReport(server);
 
-// Register prompts
-registerValidateIdeaPrompt(server);
-registerSteelmanAgainstPrompt(server);
-registerRunSingleGatePrompt(server);
-registerGenerateTestCardsPrompt(server);
-registerQuickKillCheckPrompt(server);
+  // Register prompts
+  registerValidateIdeaPrompt(server);
+  registerSteelmanAgainstPrompt(server);
+  registerRunSingleGatePrompt(server);
+  registerGenerateTestCardsPrompt(server);
+  registerQuickKillCheckPrompt(server);
 
-async function main(): Promise<void> {
-  const transport = new StdioServerTransport();
-  await server.connect(transport);
-  console.error('ProductValidation MCP Server running on stdio');
-  console.error(
-    'Tools: find_closest_competitor, read_competitor_changelog, map_competitive_weaknesses, scan_producthunt_launches, get_category_failure_modes, find_yc_rfs_alignment, find_pricing_anchors, check_big_tech_encroachment, find_why_now_signals, estimate_demand_signals, find_public_revenue_signals, assess_platform_dependency, finalize_validation_report'
-  );
-  console.error('Prompts: validate_idea, steelman_against, run_single_gate, generate_test_cards, quick_kill_check');
-  console.error('Resources: source-tier-bias, tool-to-gate-map, evaluation-lens-matrix');
+  return server;
 }
 
-main().catch((error) => {
-  console.error('Fatal error in main():', error);
+async function main(): Promise<void> {
+  // Transport selection — see PLAN.md T02 + R4. Stdio is the default; HTTP is opt-in via
+  // the MCP_TRANSPORT env var. The default-path behavior MUST stay identical to pre-Phase-03
+  // because the existing Claude Desktop config and scripts/assert-fomi-run.ts both rely on it.
+  const transportMode = process.env['MCP_TRANSPORT'];
+
+  if (transportMode === undefined || transportMode === '' || transportMode === 'stdio') {
+    const server = createMcpServer();
+    const transport = new StdioServerTransport();
+    await server.connect(transport);
+    console.error('ProductValidation MCP Server running on stdio');
+    console.error(
+      'Tools: find_closest_competitor, read_competitor_changelog, map_competitive_weaknesses, scan_producthunt_launches, get_category_failure_modes, find_yc_rfs_alignment, find_pricing_anchors, check_big_tech_encroachment, find_why_now_signals, estimate_demand_signals, find_public_revenue_signals, assess_platform_dependency, finalize_validation_report'
+    );
+    console.error('Prompts: validate_idea, steelman_against, run_single_gate, generate_test_cards, quick_kill_check');
+    console.error('Resources: source-tier-bias, tool-to-gate-map, evaluation-lens-matrix');
+    return;
+  }
+
+  if (transportMode === 'http') {
+    const port = Number.parseInt(process.env['PORT'] ?? '3000', 10);
+    // Per-session factory — see D-03-7. A single shared McpServer cannot serve
+    // multiple HTTP sessions because the SDK Server's transport binding is sticky.
+    const { listen } = createHttpServer(createMcpServer);
+    listen(port);
+    console.error(`ProductValidation MCP Server running on HTTP :${port}`);
+    return;
+  }
+
+  console.error(
+    `Invalid MCP_TRANSPORT value: '${transportMode}'. Expected 'stdio' (or unset) or 'http'.`
+  );
   process.exit(1);
-});
+}
+
+// Only run main() when this file is the entrypoint (node build/index.js or tsx src/index.ts).
+// Guarded so test files can `import { createMcpServer } from '../index.js'` without
+// spawning the stdio server as a side effect.
+const isEntrypoint =
+  process.argv[1] !== undefined &&
+  import.meta.url === pathToFileURL(resolve(process.argv[1])).href;
+
+if (isEntrypoint) {
+  main().catch((error) => {
+    console.error('Fatal error in main():', error);
+    process.exit(1);
+  });
+}

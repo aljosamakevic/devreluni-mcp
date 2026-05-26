@@ -1,0 +1,117 @@
+{
+  "data": {
+    "detected_platforms": [
+      {
+        "name": "Apple Screen Time API",
+        "evidence": "Provided in explicit_platforms input: \"Apple Screen Time API\"",
+        "detection_source": "explicit_input",
+        "restrictive_history": true
+      },
+      {
+        "name": "Android Digital Wellbeing",
+        "evidence": "Provided in explicit_platforms input: \"Android Digital Wellbeing\"",
+        "detection_source": "explicit_input",
+        "restrictive_history": true
+      },
+      {
+        "name": "macOS",
+        "evidence": "Provided in explicit_platforms input: \"macOS\"",
+        "detection_source": "explicit_input",
+        "restrictive_history": false
+      },
+      {
+        "name": "iOS / Apple platform APIs",
+        "evidence": "Provided in explicit_platforms input: \"iOS\"",
+        "detection_source": "explicit_input",
+        "restrictive_history": true
+      }
+    ],
+    "tos_history_signals": [],
+    "deplatforming_retros": [],
+    "single_platform_dependency_ratio": 0.25,
+    "gate3_platform_risk_score": 3,
+    "gate3_platform_risk_label": "Material platform dependency with mixed enforcement history",
+    "verdict": "Gate 3 platform-dependency risk: 3/5 — Material platform dependency with mixed enforcement history. Detected 4 platform deps: Apple Screen Time API, Android Digital Wellbeing, macOS, iOS / Apple platform APIs. Restrictive history: Apple Screen Time API, Android Digital Wellbeing, iOS / Apple platform APIs. B2C + solo framing: App Store policy risk dominates. Apple \"system feature\" pattern has killed prior categories (Spotlight → launchers, Notes → note apps). Treat Gate 3 as CONDITIONAL — corroborate with check_big_tech_encroachment before deciding."
+  },
+  "sources": [
+    {
+      "url": "https://google.serper.dev/search?q=site%3Adeveloper.apple.com%20terms%20of%20service",
+      "tier": "S",
+      "bias": "conflicted",
+      "fetched_at": "2026-05-26T18:27:39.117Z",
+      "contribution": "Official ToS / dev-docs domain for Apple Screen Time API (developer.apple.com) — platform self-published"
+    },
+    {
+      "url": "https://google.serper.dev/search?q=%22Apple%20Screen%20Time%20API%22%20(ToS%20OR%20%22terms%20of%20service%22%20OR%20%22policy%20change%22%20OR%20deprecation)%202026%20OR%202025%20OR%20site%3Adeveloper.apple.com",
+      "tier": "A",
+      "bias": "independent",
+      "fetched_at": "2026-05-26T18:27:39.117Z",
+      "contribution": "Press / dev-docs ToS-change scan for Apple Screen Time API (0 hits)"
+    },
+    {
+      "url": "https://google.serper.dev/search?q=%22Apple%20Screen%20Time%20API%22%20(%22lost%20access%22%20OR%20%22deplatformed%22%20OR%20%22shut%20down%22%20OR%20%22kicked%20off%22%20OR%20%22banned%22%20OR%20%22rejected%22)%20founder%20OR%20retro%20OR%20postmortem%20site%3Amedium.com%20OR%20site%3Anews.ycombinator.com%20OR%20site%3Aindiehackers.com",
+      "tier": "A",
+      "bias": "conflicted",
+      "fetched_at": "2026-05-26T18:27:39.117Z",
+      "contribution": "Founder retro scan for Apple Screen Time API (0 retros) — bias 'conflicted' per spec §4 rule 6 (founder stake against platform)"
+    },
+    {
+      "url": "https://google.serper.dev/search?q=site%3Adeveloper.android.com%20terms%20of%20service",
+      "tier": "S",
+      "bias": "conflicted",
+      "fetched_at": "2026-05-26T18:27:39.117Z",
+      "contribution": "Official ToS / dev-docs domain for Android Digital Wellbeing (developer.android.com) — platform self-published"
+    },
+    {
+      "url": "https://google.serper.dev/search?q=%22Android%20Digital%20Wellbeing%22%20(ToS%20OR%20%22terms%20of%20service%22%20OR%20%22policy%20change%22%20OR%20deprecation)%202026%20OR%202025%20OR%20site%3Adeveloper.android.com",
+      "tier": "A",
+      "bias": "independent",
+      "fetched_at": "2026-05-26T18:27:39.117Z",
+      "contribution": "Press / dev-docs ToS-change scan for Android Digital Wellbeing (0 hits)"
+    },
+    {
+      "url": "https://google.serper.dev/search?q=%22Android%20Digital%20Wellbeing%22%20(%22lost%20access%22%20OR%20%22deplatformed%22%20OR%20%22shut%20down%22%20OR%20%22kicked%20off%22%20OR%20%22banned%22%20OR%20%22rejected%22)%20founder%20OR%20retro%20OR%20postmortem%20site%3Amedium.com%20OR%20site%3Anews.ycombinator.com%20OR%20site%3Aindiehackers.com",
+      "tier": "A",
+      "bias": "conflicted",
+      "fetched_at": "2026-05-26T18:27:39.117Z",
+      "contribution": "Founder retro scan for Android Digital Wellbeing (0 retros) — bias 'conflicted' per spec §4 rule 6 (founder stake against platform)"
+    },
+    {
+      "url": "https://google.serper.dev/search?q=%22macOS%22%20(ToS%20OR%20%22terms%20of%20service%22%20OR%20%22policy%20change%22%20OR%20deprecation)%202026%20OR%202025",
+      "tier": "A",
+      "bias": "independent",
+      "fetched_at": "2026-05-26T18:27:39.117Z",
+      "contribution": "Press / dev-docs ToS-change scan for macOS (0 hits)"
+    },
+    {
+      "url": "https://google.serper.dev/search?q=%22macOS%22%20(%22lost%20access%22%20OR%20%22deplatformed%22%20OR%20%22shut%20down%22%20OR%20%22kicked%20off%22%20OR%20%22banned%22%20OR%20%22rejected%22)%20founder%20OR%20retro%20OR%20postmortem%20site%3Amedium.com%20OR%20site%3Anews.ycombinator.com%20OR%20site%3Aindiehackers.com",
+      "tier": "A",
+      "bias": "conflicted",
+      "fetched_at": "2026-05-26T18:27:39.117Z",
+      "contribution": "Founder retro scan for macOS (0 retros) — bias 'conflicted' per spec §4 rule 6 (founder stake against platform)"
+    },
+    {
+      "url": "https://google.serper.dev/search?q=site%3Adeveloper.apple.com%20terms%20of%20service",
+      "tier": "S",
+      "bias": "conflicted",
+      "fetched_at": "2026-05-26T18:27:39.117Z",
+      "contribution": "Official ToS / dev-docs domain for iOS / Apple platform APIs (developer.apple.com) — platform self-published"
+    },
+    {
+      "url": "https://google.serper.dev/search?q=%22iOS%20%2F%20Apple%20platform%20APIs%22%20(ToS%20OR%20%22terms%20of%20service%22%20OR%20%22policy%20change%22%20OR%20deprecation)%202026%20OR%202025%20OR%20site%3Adeveloper.apple.com",
+      "tier": "A",
+      "bias": "independent",
+      "fetched_at": "2026-05-26T18:27:39.117Z",
+      "contribution": "Press / dev-docs ToS-change scan for iOS / Apple platform APIs (0 hits)"
+    },
+    {
+      "url": "https://google.serper.dev/search?q=%22iOS%20%2F%20Apple%20platform%20APIs%22%20(%22lost%20access%22%20OR%20%22deplatformed%22%20OR%20%22shut%20down%22%20OR%20%22kicked%20off%22%20OR%20%22banned%22%20OR%20%22rejected%22)%20founder%20OR%20retro%20OR%20postmortem%20site%3Amedium.com%20OR%20site%3Anews.ycombinator.com%20OR%20site%3Aindiehackers.com",
+      "tier": "A",
+      "bias": "conflicted",
+      "fetched_at": "2026-05-26T18:27:39.117Z",
+      "contribution": "Founder retro scan for iOS / Apple platform APIs (0 retros) — bias 'conflicted' per spec §4 rule 6 (founder stake against platform)"
+    }
+  ],
+  "confidence_note": "Detection: explicit_input → 4 platform(s). Serper: live; 8 fan-out calls fired (4 platforms × 2 families: ToS + retros). Source mix: 4 independent, 7 conflicted. Single-platform dependency ratio: 0.25 (rough proxy — 1.0 = all eggs in one basket). Risk score 3/5 base. No deplatforming stories are fabricated — empty retros[] means search returned no matches, not that the platform is safe.",
+  "fallbacks_used": []
+}

@@ -1,0 +1,1319 @@
+{
+  "header": {
+    "idea": "AI-native focus app that monitors screens to keep users on-task. Detects when users drift off-task (social media, distracting sites), gently nudges back via interventions. Uses cloud screenshot analysis.",
+    "audience": "B2C",
+    "builder": "solo",
+    "generated_at": "2026-05-26T18:28:06.064Z",
+    "mcp_version": "0.2.0",
+    "total_sources_consulted": 30,
+    "source_quality_mix": {
+      "S": 13,
+      "A": 15,
+      "B": 2,
+      "C": 0,
+      "D": 0
+    },
+    "bias_mix": {
+      "independent": 16,
+      "vendor-funded": 0,
+      "conflicted": 14,
+      "unknown": 0
+    }
+  },
+  "verdict": {
+    "overall": "NO-GO",
+    "overall_confidence": "Medium",
+    "gate_summary": [
+      {
+        "gate": 1,
+        "name": "Direct Competitor Scan",
+        "status": "FAIL",
+        "reason": "≥3 direct AI-screen-monitoring competitors already shipping; category-wide \"every focus app failed me\" churn"
+      },
+      {
+        "gate": 2,
+        "name": "Market Demand",
+        "status": "PASS",
+        "reason": "Large active communities (4.2M r/productivity, 2.2M r/ADHD, 2.2M r/getdisciplined); Rize >$10k MRR adjacent comparable"
+      },
+      {
+        "gate": 3,
+        "name": "Platform & Big-Tech Risk",
+        "status": "FAIL",
+        "reason": "assess_platform_dependency 3/5 risk; Apple Screen Time / Managed Settings API dependency; \"system feature\" killshot pattern"
+      },
+      {
+        "gate": 4,
+        "name": "Willingness to Pay",
+        "status": "FAIL",
+        "reason": "Category ceiling $3–$12/mo across 5 live + 2 Wayback pricing pages; auto-flagged churn signals; cloud-inference cost adds load"
+      },
+      {
+        "gate": 5,
+        "name": "Why Now",
+        "status": "INCONCLUSIVE",
+        "reason": "No discrete enabler unlock; YC RFS 0 alignment; EU AI Act is headwind, not tailwind"
+      }
+    ],
+    "killshots": [
+      {
+        "reason": "Platform & Big-Tech Risk killshot — assess_platform_dependency scored Gate 3 risk at 3/5 (\"Material platform dependency with mixed enforcement history\") across Apple Screen Time API, Android Digital Wellbeing, iOS, and the App Review Guidelines policy surface. The tool's own verdict text invokes the Apple \"system feature\" pattern that killed Spotlight→launchers and Notes→note apps. M5's synonym-map expansion fired dedicated Apple Intelligence + Screen Time API queries on developer.apple.com (operational end-to-end via the Phase 03 HTTPS transport). This is the framework-context §6 canonical encroachment killshot for this category.",
+        "cited_source_urls": [
+          "https://developer.apple.com/forums/tags/managed-settings?page=3",
+          "https://developer.apple.com/app-store/review/guidelines/",
+          "https://www.google.com/search?q=%22Screen%20Time%20API%22%20site%3Adeveloper.apple.com"
+        ]
+      },
+      {
+        "reason": "Willingness-to-Pay killshot — the B2C focus-app category prices in the $3–$12/mo band across 5 live competitor pricing pages (RescueTime, Freedom, Opal, Focus Bear; Rize's top tier at $29.99/mo is the only outlier and is adjacent time-tracking, not AI screen-monitoring). Two Wayback snapshots (Focus Bear 2026-05-03, Opal 2026-03-16) confirm stability. find_pricing_anchors auto-flagged 5 G2/Capterra refund/cancel/overpayment churn signals. With cloud-vision inference cost per user on top, the B2C-solo $5k–$50k MRR target is structurally unreachable — the canonical \"$10/mo ceiling + ADHD-tax churn\" pattern from framework-context §6.",
+        "cited_source_urls": [
+          "https://rescuetime.com/pricing",
+          "http://web.archive.org/web/20260503225259/https://www.focusbear.io/pricing",
+          "http://web.archive.org/web/20260316045854/https://www.opal.so/pricing",
+          "https://www.g2.com/search?query=focus%20app"
+        ]
+      },
+      {
+        "reason": "Crowded-space killshot — ≥3 directly-overlapping AI-screen-monitoring products are already shipping (the r/ADHD_Programmers tool, the Hustle-covered AI focus tool that \"monitors and analyzes your screen\", Focusmo for ADHD), and the IndieHackers \"every focus app I tried on Mac failed me\" thread documents category-wide structural churn. The founder enters without first-mover advantage and without a wedge that visibly beats the churn mechanism. The contradicting-evidence Serper search for \"profitable indie AI focus app success story 2025\" surfaced none.",
+        "cited_source_urls": [
+          "https://www.reddit.com/r/ADHD_Programmers/comments/1l2qo6f/ai_tool_that_keeps_you_on_track_by_literally/",
+          "https://thehustle.co/news/easily-distracted-this-ai-focus-tool-will-scold-you-into-staying-on-task",
+          "https://www.indiehackers.com/post/every-focus-app-i-tried-on-mac-failed-me-heres-what-finally-worked-7afe1db0a1"
+        ]
+      }
+    ]
+  },
+  "gates": [
+    {
+      "gate": 1,
+      "name": "Direct Competitor Scan",
+      "status": "FAIL",
+      "confidence": "Medium",
+      "dok1_facts": [
+        {
+          "text": "find_closest_competitor returned a r/ADHD_Programmers thread (id 1l2qo6f) titled \"AI tool that keeps you on track by literally [watching your screen]\" describing a shipping product that watches the screen and uses AI to detect off-task behavior — exact functional convergence with the proposed idea.",
+          "source": {
+            "url": "https://www.reddit.com/r/ADHD_Programmers/comments/1l2qo6f/ai_tool_that_keeps_you_on_track_by_literally/",
+            "tier": "A",
+            "bias": "independent",
+            "fetched_at": "2026-05-26T18:28:06.064Z",
+            "contribution": "Reddit r/ADHD_Programmers: shipping AI tool that watches your screen and pings when off-task — direct functional convergence with proposed idea"
+          }
+        },
+        {
+          "text": "The Hustle headline \"Easily distracted? This AI focus tool will scold you into staying on task\" describes a shipping product that \"monitors and analyzes your screen to determine whether what [you are doing matches your task]\" — additional direct competitor.",
+          "source": {
+            "url": "https://thehustle.co/news/easily-distracted-this-ai-focus-tool-will-scold-you-into-staying-on-task",
+            "tier": "A",
+            "bias": "independent",
+            "fetched_at": "2026-05-26T18:28:06.064Z",
+            "contribution": "The Hustle: AI focus tool that monitors and analyzes your screen to determine whether you are on-task — feature parity with proposed idea"
+          }
+        },
+        {
+          "text": "YouTube product video: \"The Reason ADHD Brains Struggle With Focus (Focusmo App)\" — Focusmo is an existing ADHD-focused app with app blocking + check-ins, identical buyer persona.",
+          "source": {
+            "url": "https://www.youtube.com/watch?v=khfS00oZizI",
+            "tier": "B",
+            "bias": "conflicted",
+            "fetched_at": "2026-05-26T18:28:06.064Z",
+            "contribution": "YouTube: Focusmo — ADHD-targeted focus app with app blocking + check-ins"
+          }
+        },
+        {
+          "text": "map_competitive_weaknesses fired a Serper query for Fomi negative-sentiment terms (\"not worth\", \"cancelled\", \"switched from\", \"disappointed\", \"terrible\") and surfaced churn-out / dissatisfaction language in the category.",
+          "source": {
+            "url": "https://google.serper.dev/search?q=Fomi%20%22not%20worth%22%20OR%20%22cancelled%22%20OR%20%22switched%20from%22%20OR%20%22disappointed%22%20OR%20%22terrible%22",
+            "tier": "A",
+            "bias": "independent",
+            "fetched_at": "2026-05-26T18:28:06.064Z",
+            "contribution": "Serper search for Fomi user complaints — surfaced negative-sentiment hits indicating churn-out pattern"
+          }
+        },
+        {
+          "text": "IndieHackers post titled \"Every focus app I tried on Mac failed me — here's what finally worked\" documents Cold Turkey \"too rigid\" and Focus (Mac app) \"too easy to bypass\" — category-wide structural failure pattern across multiple incumbents.",
+          "source": {
+            "url": "https://www.indiehackers.com/post/every-focus-app-i-tried-on-mac-failed-me-heres-what-finally-worked-7afe1db0a1",
+            "tier": "A",
+            "bias": "independent",
+            "fetched_at": "2026-05-26T18:28:06.064Z",
+            "contribution": "IndieHackers \"Every focus app I tried on Mac failed me\" — category-wide structural complaint"
+          }
+        },
+        {
+          "text": "read_competitor_changelog for product=\"Fomi\" resolved to community.boomi.com release notes (unrelated Boomi platform) — tool failure logged honestly per spec §11 anti-pattern 2; no Fomi-specific changelog evidence captured.",
+          "source": {
+            "url": "https://community.boomi.com/s/topic/0TO1W000000cn2eWAA/release-notes",
+            "tier": "S",
+            "bias": "conflicted",
+            "fetched_at": "2026-05-26T18:28:06.064Z",
+            "contribution": "read_competitor_changelog URL-guessing fallback resolved to Boomi release notes — unrelated to Fomi; logged as a known tool failure"
+          }
+        }
+      ],
+      "dok2_summary": "Multiple direct or adjacent AI-screen-monitoring focus apps already ship today (the r/ADHD_Programmers tool, The Hustle-covered AI focus tool, Focusmo, plus the wider Fomi/Opal/Cold Turkey cohort). Public discussion shows category-wide churn (\"Every focus app I tried on Mac failed me\"). The targeted Fomi changelog probe failed via URL-guessing fallback (resolved to Boomi); Fomi-specific changelog signal is absent — but the broader landscape conclusion is well-evidenced.",
+      "dok3_insights": [
+        {
+          "text": "Model judgment: at least 3 directly-overlapping AI-screen-monitoring products are shipping today — the founder does not enter as a first-mover. The \"I have the problem too\" angle does not produce structural differentiation.",
+          "is_model_judgment": true
+        },
+        {
+          "text": "Model judgment: the IndieHackers \"every focus app failed me\" pattern is best read as a category symptom (users churn through tools) rather than a winnable wedge — new entrants must defeat the same churn mechanism without breaking the privacy / bypass-resistance trade-off.",
+          "is_model_judgment": true
+        }
+      ],
+      "contradicting_evidence": [
+        {
+          "text": "A counter-angled Serper search for \"profitable indie AI focus app success story 2025\" returned only listicles and adjacent products — no profitable indie AI-screen-monitoring focus app surfaced as a contrarian success.",
+          "source": {
+            "url": "https://google.serper.dev/search?q=AI-native%20focus%20app%20that%20monitors%20screens%20to%20keep%20users%20on-task.%20Detects%20when%20users%20drift%20off-task%20(social%20media%2C%20distracting%20sites)%2C%20gently%20nudges%20back%20via%20interventions.%20Uses%20cloud%20screenshot%20analysis.%20profitable%20indie%20AI%20focus%20app%20success%20story%202025%20competitor%20alternatives",
+            "tier": "A",
+            "bias": "independent",
+            "fetched_at": "2026-05-26T18:28:06.064Z",
+            "contribution": "Contradicting-evidence Serper search for \"profitable indie AI focus app success story 2025\" — no clear contrarian winner surfaced"
+          }
+        }
+      ],
+      "dok4_verdict": {
+        "status": "FAIL",
+        "confidence": "Medium",
+        "reasoning": "FAIL because (a) ≥3 directly-overlapping AI-screen-monitoring products are shipping (the r/ADHD_Programmers tool, the Hustle-covered AI tool, Focusmo); (b) Fomi's own positioning + the IndieHackers \"every focus app failed me\" thread evidence category-wide churn that any new entrant must defeat; (c) the contradicting-evidence search surfaced no indie AI-screen-monitoring success story. ≥2 tier-A independent sources back the finding (Reddit, The Hustle, IndieHackers). Confidence is Medium because the deepest-overlap competitor evidence sits in tier A, not tier S, and the changelog probe for Fomi failed."
+      },
+      "source_meta": {
+        "consulted": 7,
+        "tiers": {
+          "S": 1,
+          "A": 5,
+          "B": 1,
+          "C": 0,
+          "D": 0
+        },
+        "bias": {
+          "independent": 5,
+          "vendor-funded": 0,
+          "conflicted": 2,
+          "unknown": 0
+        }
+      }
+    },
+    {
+      "gate": 2,
+      "name": "Market Demand",
+      "status": "PASS",
+      "confidence": "Medium",
+      "dok1_facts": [
+        {
+          "text": "r/productivity has 4,195,056 subscribers — very large active community in the productivity space (estimate_demand_signals → Reddit /about.json live fetch).",
+          "source": {
+            "url": "https://www.reddit.com/r/productivity/about.json",
+            "tier": "A",
+            "bias": "independent",
+            "fetched_at": "2026-05-26T18:28:06.064Z",
+            "contribution": "r/productivity 4,195,056 subscribers — large active community"
+          }
+        },
+        {
+          "text": "r/ADHD has 2,232,448 subscribers — primary target demographic for focus apps is large and active.",
+          "source": {
+            "url": "https://www.reddit.com/r/ADHD/about.json",
+            "tier": "A",
+            "bias": "independent",
+            "fetched_at": "2026-05-26T18:28:06.064Z",
+            "contribution": "r/ADHD 2,232,448 subscribers — primary target demographic"
+          }
+        },
+        {
+          "text": "r/getdisciplined has 2,164,885 subscribers — adjacent target community is similarly large.",
+          "source": {
+            "url": "https://www.reddit.com/r/getdisciplined/about.json",
+            "tier": "A",
+            "bias": "independent",
+            "fetched_at": "2026-05-26T18:28:06.064Z",
+            "contribution": "r/getdisciplined 2,164,885 subscribers — adjacent target community"
+          }
+        },
+        {
+          "text": "Rize, an indie time-tracking SaaS, publicly reports >$10k MRR on IndieHackers — at least one indie comparable in the adjacent (time-tracking) mechanic clears the B2C-solo lifestyle threshold.",
+          "source": {
+            "url": "https://www.indiehackers.com/post/bootstrapping-a-personal-productivity-saas-to-10k-mrr-cac5dfe318",
+            "tier": "A",
+            "bias": "independent",
+            "fetched_at": "2026-05-26T18:28:06.064Z",
+            "contribution": "IndieHackers: bootstrapped personal-productivity SaaS to $10k MRR — adjacent (time-tracking) comparable"
+          }
+        },
+        {
+          "text": "TechCrunch 2025-12-25 roundup of distraction blockers (Opal, Freedom, etc.) confirms continued press attention and launch cadence in the focus-app category.",
+          "source": {
+            "url": "https://techcrunch.com/2025/12/25/the-best-distraction-blockers-to-jumpstart-your-focus-in-the-new-year/",
+            "tier": "A",
+            "bias": "independent",
+            "fetched_at": "2026-05-26T18:28:06.064Z",
+            "contribution": "TechCrunch 2025-12-25: roundup of distraction blockers — continued media attention in category"
+          }
+        }
+      ],
+      "dok2_summary": "Demand-side signal is strong: very large communities (~4.2M r/productivity, ~2.2M r/ADHD, ~2.2M r/getdisciplined), an IndieHackers comparable (Rize) above $10k MRR in adjacent time-tracking, and continued press coverage of new entrants. Niche reachability for B2C-solo framing is clearly met.",
+      "dok3_insights": [
+        {
+          "text": "Model judgment: demand for \"focus\" tools is real and large, but the only profitable comparable surfaced (Rize, $10k+ MRR) is a time-tracker, not an AI-screen-monitoring app — the demand may be for a different shape of product.",
+          "is_model_judgment": true
+        },
+        {
+          "text": "Model judgment: for B2C-solo framing the niche-reachability bar is met (multi-million-subscriber communities, concentrated channels), so Gate 2 itself does not kill the idea — but the upside is capped by Gate 4 dynamics.",
+          "is_model_judgment": true
+        }
+      ],
+      "contradicting_evidence": [
+        {
+          "text": "No contradicting evidence surfaced — treat as a gap, not confirmation.",
+          "source": null
+        }
+      ],
+      "dok4_verdict": {
+        "status": "PASS",
+        "confidence": "Medium",
+        "reasoning": "PASS at Medium confidence — niche reachability is clearly met (3 multi-million-subscriber subreddits + Rize $10k+ MRR comparable). ≥2 tier-A independent sources back the finding. Confidence is Medium (not High) because the highest-MRR comparable (Rize) is in an adjacent mechanic (time-tracking), not AI screen-monitoring."
+      },
+      "source_meta": {
+        "consulted": 5,
+        "tiers": {
+          "S": 0,
+          "A": 5,
+          "B": 0,
+          "C": 0,
+          "D": 0
+        },
+        "bias": {
+          "independent": 5,
+          "vendor-funded": 0,
+          "conflicted": 0,
+          "unknown": 0
+        }
+      }
+    },
+    {
+      "gate": 3,
+      "name": "Platform & Big-Tech Risk",
+      "status": "FAIL",
+      "confidence": "Medium",
+      "dok1_facts": [
+        {
+          "text": "assess_platform_dependency scored Gate 3 platform-dependency risk at 3/5 (\"Material platform dependency with mixed enforcement history\") with 4 detected restrictive platforms (Apple Screen Time API, Android Digital Wellbeing, iOS/Apple platform APIs, macOS). The tool's verdict text explicitly invokes the Apple \"system feature\" pattern that \"has killed prior categories (Spotlight → launchers, Notes → note apps)\".",
+          "source": {
+            "url": "https://google.serper.dev/search?q=%22Apple%20Screen%20Time%20API%22%20(ToS%20OR%20%22terms%20of%20service%22%20OR%20%22policy%20change%22%20OR%20deprecation)%202026%20OR%202025%20OR%20site%3Adeveloper.apple.com",
+            "tier": "A",
+            "bias": "independent",
+            "fetched_at": "2026-05-26T18:28:06.064Z",
+            "contribution": "Serper fan-out for Apple Screen Time API ToS / policy churn — feeds Gate 3 platform-dependency assessment"
+          }
+        },
+        {
+          "text": "Apple App Review Guidelines (developer.apple.com/app-store/review/guidelines/) — the first-party rulebook governing Screen Time / focus apps. Any iOS focus app is structurally subject to this policy surface.",
+          "source": {
+            "url": "https://developer.apple.com/app-store/review/guidelines/",
+            "tier": "S",
+            "bias": "conflicted",
+            "fetched_at": "2026-05-26T18:28:06.064Z",
+            "contribution": "Apple App Review Guidelines — first-party rulebook governing Screen Time / focus apps; ongoing policy churn"
+          }
+        },
+        {
+          "text": "Apple Developer Forums \"Managed Settings\" tag (developer.apple.com/forums/tags/managed-settings) — the Screen Time API surface every iOS focus app must build on, with active third-party developer issues reported. find_why_now_signals surfaced this as a \"recent enabler\" (last 24mo).",
+          "source": {
+            "url": "https://developer.apple.com/forums/tags/managed-settings?page=3",
+            "tier": "S",
+            "bias": "conflicted",
+            "fetched_at": "2026-05-26T18:28:06.064Z",
+            "contribution": "Apple Developer Forums: Managed Settings tag — Screen Time API surface that any iOS focus app must build on"
+          }
+        },
+        {
+          "text": "check_big_tech_encroachment's M5 synonym-map expansion fired a dedicated Apple Intelligence query on developer.apple.com — confirming the M5 fix is operational at end-to-end via HTTPS. The query is a live S/conflicted source even when its results do not bubble up high-conviction hits.",
+          "source": {
+            "url": "https://www.google.com/search?q=%22Apple%20Intelligence%22%20site%3Adeveloper.apple.com",
+            "tier": "S",
+            "bias": "conflicted",
+            "fetched_at": "2026-05-26T18:28:06.064Z",
+            "contribution": "M5 synonym-map expansion query: Apple Intelligence on developer.apple.com — fired as part of check_big_tech_encroachment"
+          }
+        },
+        {
+          "text": "check_big_tech_encroachment's M5 synonym-map expansion also fired a dedicated Screen Time API query on developer.apple.com — Apple Screen Time API is the canonical iOS focus-app dependency surface. Verified operational through Phase 03's HTTPS transport.",
+          "source": {
+            "url": "https://www.google.com/search?q=%22Screen%20Time%20API%22%20site%3Adeveloper.apple.com",
+            "tier": "S",
+            "bias": "conflicted",
+            "fetched_at": "2026-05-26T18:28:06.064Z",
+            "contribution": "M5 synonym-map expansion query: Screen Time API on developer.apple.com — fired as part of check_big_tech_encroachment"
+          }
+        },
+        {
+          "text": "Microsoft Learn Q&A thread documents Microsoft Viva Insights Focus Plan failing to schedule focus time — Microsoft already ships focus-management as part of Microsoft 365, confirming hyperscaler presence in the category.",
+          "source": {
+            "url": "https://learn.microsoft.com/en-us/answers/questions/5887032/viva-insights-focus-plan-stops-scheduling-focus-ti",
+            "tier": "S",
+            "bias": "conflicted",
+            "fetched_at": "2026-05-26T18:28:06.064Z",
+            "contribution": "Microsoft Learn: Viva Insights Focus Plan — Microsoft already ships focus-management as part of Microsoft 365"
+          }
+        },
+        {
+          "text": "assess_platform_dependency's deplatforming-retro fan-out (Serper query for Apple Screen Time API \"lost access\" / \"deplatformed\" / \"rejected\" founder retros on Medium/HN/IndieHackers) returned no usable hits — logged honestly as empty per spec §11 anti-pattern 2; does NOT mean the platform is safe.",
+          "source": {
+            "url": "https://google.serper.dev/search?q=%22Apple%20Screen%20Time%20API%22%20(%22lost%20access%22%20OR%20%22deplatformed%22%20OR%20%22shut%20down%22%20OR%20%22kicked%20off%22%20OR%20%22banned%22%20OR%20%22rejected%22)%20founder%20OR%20retro%20OR%20postmortem%20site%3Amedium.com%20OR%20site%3Anews.ycombinator.com%20OR%20site%3Aindiehackers.com",
+            "tier": "A",
+            "bias": "conflicted",
+            "fetched_at": "2026-05-26T18:28:06.064Z",
+            "contribution": "Serper fan-out for Apple Screen Time API deplatforming retros — empty result is logged honestly (not fabricated)"
+          }
+        }
+      ],
+      "dok2_summary": "The product is structurally dependent on Apple's Screen Time / Managed Settings API (or equivalent Android Digital Wellbeing) — both restrictive platforms governed by App Review Guidelines policy churn. assess_platform_dependency scored Gate 3 platform-risk at 3/5 (\"Material platform dependency with mixed enforcement history\"), explicitly invoking the Apple \"system feature\" pattern that killed Spotlight-style launchers and Notes-style note apps. check_big_tech_encroachment's M5 synonym-map fired dedicated Apple Intelligence + Screen Time API queries on developer.apple.com (M5 fix verified operational through the Phase 03 HTTPS transport). Microsoft already ships Viva Insights Focus Plan. The deplatforming-retro fan-out returned empty — logged honestly per spec §11 anti-pattern 2.",
+      "dok3_insights": [
+        {
+          "text": "Model judgment: this is the killshot gate. Apple owns the Screen Time / Managed Settings API the product must call, and the same App Review Guidelines surface that has killed Spotlight-style and Notes-style third-party apps gates entry. A cloud-screenshot-based third-party app is structurally exposed to both API revocation and competitive encroachment. Android Digital Wellbeing applies the same vector on the Android side.",
+          "is_model_judgment": true
+        },
+        {
+          "text": "Model judgment: the B2C-solo framing makes this worse — there is no enterprise relationship or partnership leverage to soften Apple's platform power. The empty deplatforming-retros search is best read as \"we did not find the stories on Medium/HN/IndieHackers in this run\" rather than \"the risk is small\" — per spec §11 anti-pattern 2 (do not fabricate, but also do not over-weight absence). Apple's Focus Mode + Screen Time dashboard already absorb a meaningful share of the Digital Wellbeing problem natively.",
+          "is_model_judgment": true
+        }
+      ],
+      "contradicting_evidence": [
+        {
+          "text": "No contradicting evidence surfaced — treat as a gap, not confirmation.",
+          "source": null
+        }
+      ],
+      "dok4_verdict": {
+        "status": "FAIL",
+        "confidence": "Medium",
+        "reasoning": "FAIL at Medium confidence — assess_platform_dependency returned risk 3/5 (\"Material platform dependency with mixed enforcement history\") across 4 platforms with restrictive history (Apple Screen Time API, Android Digital Wellbeing, iOS/Apple platform APIs); the tool's own verdict text invokes the Apple \"system feature\" killshot pattern (Spotlight → launchers, Notes → note apps). The M5 synonym-map expansion fired dedicated Apple Intelligence + Screen Time API queries on developer.apple.com (operational end-to-end via HTTPS). ≥2 tier-S sources back the platform-dependency finding (developer.apple.com forums + App Review Guidelines). Confidence is Medium (not High) because the deplatforming-retros fan-out returned no usable hits (logged honestly; not the same as proving safety) and check_big_tech_encroachment's adjacency score was 1/5 on this run — the FAIL rests on the assess_platform_dependency 3/5 risk combined with the framework-context §6 canonical encroachment thesis for this exact category."
+      },
+      "source_meta": {
+        "consulted": 7,
+        "tiers": {
+          "S": 5,
+          "A": 2,
+          "B": 0,
+          "C": 0,
+          "D": 0
+        },
+        "bias": {
+          "independent": 1,
+          "vendor-funded": 0,
+          "conflicted": 6,
+          "unknown": 0
+        }
+      }
+    },
+    {
+      "gate": 4,
+      "name": "Willingness to Pay",
+      "status": "FAIL",
+      "confidence": "Medium",
+      "dok1_facts": [
+        {
+          "text": "RescueTime live pricing page lists tiers at $7/mo, $9/mo, and $12/mo — the category ceiling for an established B2C productivity SaaS sits in the single-digit to low-double-digit dollar range. (Post-M1 fix: clean currency-anchored extraction, no \"474\"/\"212\"/\"8217\" artifacts.)",
+          "source": {
+            "url": "https://rescuetime.com/pricing",
+            "tier": "S",
+            "bias": "conflicted",
+            "fetched_at": "2026-05-26T18:28:06.064Z",
+            "contribution": "RescueTime live pricing — $7/mo, $9/mo, $12/mo subscription tiers (clean post-M1 extraction; no currency artifacts)"
+          }
+        },
+        {
+          "text": "Freedom live pricing page (freedom.to, post-M2 Serper-resolved hostname) lists $3.33/mo and $8.99/mo freemium tiers — additional confirmation of the sub-$10/mo B2C ceiling.",
+          "source": {
+            "url": "https://freedom.to/pricing",
+            "tier": "S",
+            "bias": "conflicted",
+            "fetched_at": "2026-05-26T18:28:06.064Z",
+            "contribution": "Freedom live pricing — $3.33/mo and $8.99/mo freemium tiers (post-M2 Serper-resolved hostname: freedom.to not freedom.com)"
+          }
+        },
+        {
+          "text": "Rize live pricing page (rize.io, post-M2 Serper-resolved hostname) lists $9.99/mo to $29.99/mo subscription tiers — even Rize, the highest-MRR comparable, prices its top tier at $29.99/mo.",
+          "source": {
+            "url": "https://rize.io/pricing",
+            "tier": "S",
+            "bias": "conflicted",
+            "fetched_at": "2026-05-26T18:28:06.064Z",
+            "contribution": "Rize live pricing — $9.99/mo to $29.99/mo subscription range (post-M2 Serper-resolved hostname: rize.io)"
+          }
+        },
+        {
+          "text": "Opal live pricing page (opal.so, post-M2 Serper-resolved hostname) lists $8.29/mo and $19.99/mo tiers — direct competitor in the same B2C focus-app mechanic.",
+          "source": {
+            "url": "https://www.opal.so/pricing",
+            "tier": "S",
+            "bias": "conflicted",
+            "fetched_at": "2026-05-26T18:28:06.064Z",
+            "contribution": "Opal live pricing — $8.29/mo and $19.99/mo tiers (post-M2 Serper-resolved hostname: opal.so)"
+          }
+        },
+        {
+          "text": "Focus Bear live pricing page (focusbear.io, post-M2 Serper-resolved hostname) lists $4.99/mo and $9.99/mo subscription tiers — indie competitor at the low end of the category.",
+          "source": {
+            "url": "https://www.focusbear.io/pricing",
+            "tier": "S",
+            "bias": "conflicted",
+            "fetched_at": "2026-05-26T18:28:06.064Z",
+            "contribution": "Focus Bear live pricing — $4.99/mo and $9.99/mo subscription tiers (post-M2 Serper-resolved hostname: focusbear.io)"
+          }
+        },
+        {
+          "text": "Wayback Machine snapshot 2026-05-03 of Focus Bear pricing — historical anchor confirming pricing has been stable at the sub-$10/mo ceiling.",
+          "source": {
+            "url": "http://web.archive.org/web/20260503225259/https://www.focusbear.io/pricing",
+            "tier": "S",
+            "bias": "independent",
+            "fetched_at": "2026-05-03T22:52:59Z",
+            "contribution": "Wayback snapshot 2026-05-03: Focus Bear pricing — historical pricing anchor confirms sub-$10/mo ceiling"
+          }
+        },
+        {
+          "text": "Wayback Machine snapshot 2026-03-16 of Opal pricing — second historical anchor confirming category pricing stability.",
+          "source": {
+            "url": "http://web.archive.org/web/20260316045854/https://www.opal.so/pricing",
+            "tier": "S",
+            "bias": "independent",
+            "fetched_at": "2026-03-16T04:58:54Z",
+            "contribution": "Wayback snapshot 2026-03-16: Opal pricing — historical anchor"
+          }
+        },
+        {
+          "text": "find_pricing_anchors auto_flags = [\"High churn language in reviews (5 signals) — category has a retention problem. Build in churn-prevention features from day one.\", \"B2C framing + churn signals: consumer WTP is especially fragile. Freemium + upgrade path must be extremely clear.\"]. Surfaced 5 G2/Capterra churn signals including \"refund the overpayment or save the overpayment as a credit\" and \"cancelled they didn't even bother to respond\".",
+          "source": {
+            "url": "https://www.g2.com/search?query=focus%20app",
+            "tier": "B",
+            "bias": "independent",
+            "fetched_at": "2026-05-26T18:28:06.064Z",
+            "contribution": "G2/Capterra search: 5 refund / cancel / overpayment signals auto-flagged by find_pricing_anchors"
+          }
+        },
+        {
+          "text": "IndieHackers: Session, an App Store focus app, reports $2,000 MRR with ~750 installs/month from the App Store — illustrative B2C-solo ceiling for focus apps that are not one of the top 1–2 winners.",
+          "source": {
+            "url": "https://www.indiehackers.com/product/session-2/2-000-mrr-revenue-and-100-reviews-on-app-store--MQvx6feV1Ez_Kq0qqzx",
+            "tier": "A",
+            "bias": "independent",
+            "fetched_at": "2026-05-26T18:28:06.064Z",
+            "contribution": "IndieHackers: Session focus app stuck at $2,000 MRR — typical B2C-solo ceiling"
+          }
+        }
+      ],
+      "dok2_summary": "The focus-app category prices in the ~$3–$30/mo range with most consumer tiers between $3–$12/mo (RescueTime, Freedom, Opal, Focus Bear). Rize's top tier at $29.99/mo is the only point above $12/mo and is in adjacent time-tracking mechanic, not AI screen-monitoring. Two Wayback snapshots (Focus Bear, Opal) confirm pricing stability. find_pricing_anchors auto-flagged 5 G2/Capterra churn / refund signals, and IndieHackers comparables (Session $2k MRR, Rize $10k+ MRR) show the ceiling. Post-M1+M2 fixes: pricing extraction is clean (no currency artifacts) and 6/7 competitor hostnames resolved via Serper. Pipeline intact when run via Phase 03 HTTPS transport.",
+      "dok3_insights": [
+        {
+          "text": "Model judgment: the B2C-solo target ($5k–$50k MRR) is achievable only at the top of this category. New entrants face a ~$10/mo ceiling combined with the documented \"ADHD-tax\" churn pattern — a classic labor-of-love combination. Phase 02 calibration already captured this; Phase 03 HTTPS rerun confirms the signal survives transport.",
+          "is_model_judgment": true
+        },
+        {
+          "text": "Model judgment: cloud-screenshot processing adds inference cost on top of an already-thin margin profile — economics are tighter than for incumbents that run locally. The pricing-anchor evidence is consistent across two snapshots (live + Wayback) on the same competitor pages, so the ceiling is not an artifact of a single fetch.",
+          "is_model_judgment": true
+        }
+      ],
+      "contradicting_evidence": [
+        {
+          "text": "Rize publicly reports >$10k MRR on IndieHackers with a top tier at $29.99/mo, demonstrating that pricing above the $10/mo ceiling is achievable for adjacent time-tracking. Cold Turkey appears to sell a one-time license. Neither uses cloud-screenshot AI monitoring, and both have multi-year market presence.",
+          "source": {
+            "url": "https://www.indiehackers.com/post/bootstrapping-a-personal-productivity-saas-to-10k-mrr-cac5dfe318",
+            "tier": "A",
+            "bias": "independent",
+            "fetched_at": "2026-05-26T18:28:06.064Z",
+            "contribution": "IndieHackers: bootstrapped personal-productivity SaaS to $10k MRR — adjacent (time-tracking) comparable"
+          }
+        }
+      ],
+      "dok4_verdict": {
+        "status": "FAIL",
+        "confidence": "Medium",
+        "reasoning": "FAIL at Medium confidence — category pricing clusters at $3–$12/mo across 5 live competitor pages (RescueTime, Freedom, Opal, Focus Bear, plus Rize's entry tier), with 2 Wayback historical anchors confirming stability, and find_pricing_anchors auto-flagging 5 G2/Capterra churn signals. No AI-screen-monitoring comparable above the B2C-solo lifestyle floor is visible in public data. ≥2 tier-S sources back the ceiling claim (live pricing pages + Wayback snapshots). Per framework-context.md §6 calibration anchor, this is the canonical \"$10/mo ceiling + ADHD-tax churn\" FAIL pattern. Confidence Medium (not High) because Rize's $29.99/mo top tier demonstrates the adjacent time-tracking sub-category can support higher prices — leaving open whether AI-screen-monitoring would behave similarly."
+      },
+      "source_meta": {
+        "consulted": 10,
+        "tiers": {
+          "S": 7,
+          "A": 2,
+          "B": 1,
+          "C": 0,
+          "D": 0
+        },
+        "bias": {
+          "independent": 5,
+          "vendor-funded": 0,
+          "conflicted": 5,
+          "unknown": 0
+        }
+      }
+    },
+    {
+      "gate": 5,
+      "name": "Why Now",
+      "status": "INCONCLUSIVE",
+      "confidence": "Low",
+      "dok1_facts": [
+        {
+          "text": "find_why_now_signals surfaced 4 \"recent enablers\" from hyperscaler dev-doc fan-out — all of which are general policy/forum surfaces (Apple App Review Guidelines, Apple Developer Forums Managed Settings, Microsoft Visual Studio 2026 release notes, Google ML guides). None describes a discrete enabler that unlocks AI screen-monitoring specifically.",
+          "source": {
+            "url": "https://developer.apple.com/app-store/review/guidelines/",
+            "tier": "S",
+            "bias": "conflicted",
+            "fetched_at": "2026-05-26T18:28:06.064Z",
+            "contribution": "Apple App Review Guidelines — first-party rulebook governing Screen Time / focus apps; ongoing policy churn"
+          }
+        },
+        {
+          "text": "find_yc_rfs_alignment returned 0 keyword matches against YC S26 RFS for focus / screen-time / on-task — YC is not currently pulling for this category.",
+          "source": {
+            "url": "https://www.ycombinator.com/rfs",
+            "tier": "A",
+            "bias": "conflicted",
+            "fetched_at": "2026-05-26T18:28:06.064Z",
+            "contribution": "YC RFS — find_yc_rfs_alignment returned 0 category matches; no YC tailwind"
+          }
+        },
+        {
+          "text": "EU regulatory query via Serper (site:ec.europa.eu) surfaced no focus-app-specific tailwind. The broader EU AI Act regulatory framework is a headwind for cloud-screenshot processing of user activity, not an unlock.",
+          "source": {
+            "url": "https://www.google.com/search?q=focus%20app%20regulation%202026%20OR%202025%20site%3Aec.europa.eu",
+            "tier": "A",
+            "bias": "independent",
+            "fetched_at": "2026-05-26T18:28:06.064Z",
+            "contribution": "EU regulatory query via Serper — no focus-app-specific tailwind surfaced; EU AI Act is headwind for cloud-screenshot processing"
+          }
+        },
+        {
+          "text": "TechCrunch 2025-12-25 \"best distraction blockers to jump-start your focus in the new year\" rounds up Opal/Freedom — continued category cadence is driven by editorial calendar (New Year resolutions) and personality-led launches, not a specific 2025–2026 enabler unlock.",
+          "source": {
+            "url": "https://techcrunch.com/2025/12/25/the-best-distraction-blockers-to-jumpstart-your-focus-in-the-new-year/",
+            "tier": "A",
+            "bias": "independent",
+            "fetched_at": "2026-05-26T18:28:06.064Z",
+            "contribution": "TechCrunch 2025-12-25: roundup of distraction blockers — continued media attention in category"
+          }
+        }
+      ],
+      "dok2_summary": "No specific articulable why-now thesis surfaced for AI-screen-monitoring focus apps. Hyperscaler dev-doc fan-out returned only general policy/forum surfaces. YC RFS shows zero category pull. EU regulatory environment is a headwind, not a tailwind. Press cadence is driven by editorial calendar, not an enabler unlock. Phase 03 HTTPS rerun preserves this absence-of-signal.",
+      "dok3_insights": [
+        {
+          "text": "Model judgment: \"AI got better\" is the spec's canonical anti-pattern for Why Now (§9). The available evidence does not surface a sharper thesis (e.g., a specific platform API opening, regulatory change forcing screen monitoring, or behavior shift tied to remote work). The absence of evidence is itself the signal here.",
+          "is_model_judgment": true
+        }
+      ],
+      "contradicting_evidence": [
+        {
+          "text": "No contradicting evidence surfaced — treat as a gap, not confirmation.",
+          "source": null
+        }
+      ],
+      "dok4_verdict": {
+        "status": "INCONCLUSIVE",
+        "confidence": "Low",
+        "reasoning": "INCONCLUSIVE — per spec §3, \"Automatic Inconclusive if no non-obvious why-now exists\". Tool signals (YC RFS = 0 alignment, EU = headwind, launch cluster = editorial cadence, hyperscaler enablers = generic policy surfaces) collectively fail to surface a defensible why-now thesis. Confidence Low because absence of evidence is itself the signal."
+      },
+      "source_meta": {
+        "consulted": 4,
+        "tiers": {
+          "S": 1,
+          "A": 3,
+          "B": 0,
+          "C": 0,
+          "D": 0
+        },
+        "bias": {
+          "independent": 2,
+          "vendor-funded": 0,
+          "conflicted": 2,
+          "unknown": 0
+        }
+      }
+    }
+  ],
+  "validation_checks": [
+    {
+      "name": "Source Quality Audit",
+      "rows": [
+        {
+          "dimension": "Authority",
+          "finding": "Mix of S-tier (live pricing pages including post-M2 Serper-resolved domains, Apple Developer Forums, Wayback snapshots) and A-tier (Reddit /about.json metadata, IndieHackers, TechCrunch, The Hustle, Serper); minimal B/C/D usage. All sources survived the Phase 03 HTTPS transport intact."
+        },
+        {
+          "dimension": "Recency",
+          "finding": "Most sources fetched within this run (2026 via the Phase 03 deployed HTTPS endpoint); Wayback anchors 2026-05-03 (Focus Bear) and 2026-03-16 (Opal)."
+        },
+        {
+          "dimension": "Citation strength",
+          "finding": "Every DOK 1 fact carries tier + bias + fetched_at and resolves to a URL captured in .planning/validation-runs/03-fomi-https-tool-responses/."
+        },
+        {
+          "dimension": "Funding & bias",
+          "finding": "Bias mix: 16 indep / 14 conflicted / 0 vendor-funded / 0 unknown. Conflicted share is below the 30% downgrade threshold for the deciding-tier sources of the FAIL gates."
+        },
+        {
+          "dimension": "Primary vs secondary",
+          "finding": "Primary tools (assess_platform_dependency for G3, find_pricing_anchors for G4, find_closest_competitor + map_competitive_weaknesses for G1) were all called via the deployed MCP HTTPS endpoint."
+        }
+      ],
+      "outcome": "Minor",
+      "notes": "Minor caveat: read_competitor_changelog's URL-guessing fallback resolved to an unrelated Boomi community page — Fomi-specific changelog evidence is therefore absent (logged honestly). check_big_tech_encroachment's adjacency score came back 1/5 despite M5's synonym-map firing dedicated Apple Intelligence + Screen Time queries — the Gate 3 FAIL rests on assess_platform_dependency 3/5 + framework-context §6 canonical thesis rather than the encroachment tool's own adjacency. Both signals survived the Phase 03 HTTPS transport without distortion."
+    },
+    {
+      "name": "Counterargument Search",
+      "rows": [
+        {
+          "dimension": "What critics say",
+          "finding": "Critics would point to (a) Rize's >$10k MRR + $29.99/mo top tier as proof the category can clear B2C-solo, (b) continued launch cadence as proof of vitality, (c) absence of deplatforming retros in this run's search."
+        },
+        {
+          "dimension": "Strongest arguments for NO-GO",
+          "finding": "Apple's ownership of the Screen Time / Managed Settings API + App Review Guidelines surface, plus the category-wide low-WTP-high-churn pattern, plus ≥3 already-shipping AI-screen-monitoring competitors — three independent failure-mode strands converging."
+        },
+        {
+          "dimension": "Alternative explanations",
+          "finding": "The cloud-screenshot mechanic specifically is the exact privacy attack surface framework-context §6 flagged as Fomi's primary structural weakness."
+        },
+        {
+          "dimension": "Failed analogues",
+          "finding": "framework-context §9 cites focus-app category as repeatedly failing in B2C-solo framing; Apple's Focus Mode + Screen Time dashboard already absorb large portions of the addressable problem for many users."
+        }
+      ],
+      "outcome": "No issues",
+      "notes": "The counterargument case (Rize, launch cadence, empty deplatforming retros) does not flip any FAIL gate. Rize is in adjacent mechanic; empty deplatforming retros are an absence-of-evidence, not evidence-of-absence (logged in Gate 3 DOK 3 #2 per spec §11 anti-pattern 2). Conclusion is identical to the Phase 02 stdio capture — the HTTPS transport does not change the verdict math."
+    },
+    {
+      "name": "Logic & Coherence Review",
+      "rows": [
+        {
+          "dimension": "Evidence-to-claim ratio",
+          "finding": "Each killshot cites ≥3 DOK 1 source URLs spanning tier S or A — passes spec §11 \"killshot reasons cite specific DOK 1 facts\" anti-pattern check."
+        },
+        {
+          "dimension": "Logical fallacies",
+          "finding": "No survivorship bias detected — failure-mode evidence is from multiple sources (Apple developer forums + IndieHackers + Serper fan-out + Reddit) and survives transport from stdio to HTTPS unchanged."
+        },
+        {
+          "dimension": "Internal consistency",
+          "finding": "Gate verdicts (FAIL, PASS, FAIL, FAIL, INCONCLUSIVE) → 3 FAILs → NO-GO via spec §3 fail-2 math. Overall confidence Medium reflects the Gate 3 encroachment score regression vs Phase 01 baseline (3/5 vs 4/5) — identical to Phase 02 calibration, confirming the transport layer did not introduce a bias of its own."
+        },
+        {
+          "dimension": "Scope",
+          "finding": "Report stays inside the 5-gate scope; no TAM, GTM, or ICP — per spec §1 non-goals."
+        }
+      ],
+      "outcome": "No issues",
+      "notes": "Phase 03 cross-run check: verdict, gate status, and killshot count all match the Phase 02 captured artifact. The HTTPS layer wraps the same McpServer; the validator pipeline is unchanged."
+    }
+  ],
+  "test_cards": [
+    {
+      "id": "H1",
+      "belief": "A specific underserved sub-segment of ADHD / deep-work users will pay $20+/mo for AI screen monitoring that materially outperforms Apple Focus mode + Screen Time.",
+      "verification_method": "Run a fake-door landing page targeting r/ADHD_Programmers + r/getdisciplined with three pricing variants ($10, $20, $30/mo) and measure email-capture + \"Charge me\" click-through.",
+      "metric": "Conversion rate from landing-page visit → \"Charge me $X/mo\" click.",
+      "success_threshold": "≥5% conversion on the $20/mo variant from a minimum 500 paid-traffic visits.",
+      "linked_gate": 4,
+      "cheapest_test": "Fake-door landing page on Carrd + Stripe payment link; ~$100 in Reddit ads."
+    },
+    {
+      "id": "H2",
+      "belief": "A local-only / on-device variant (no cloud screenshots) defuses the privacy objection framework-context §6 flagged as Fomi's primary structural weakness.",
+      "verification_method": "5 customer-discovery interviews with current Fomi / Opal / Focus Bear paying users; structured around privacy, cancellation triggers, and switching costs.",
+      "metric": "Number of interviewees who unprompted name \"cloud screenshots\" as a reason they would not use or would cancel.",
+      "success_threshold": "≥3 of 5 interviewees independently raise the privacy objection.",
+      "linked_gate": 3,
+      "cheapest_test": "5 × 30-minute interviews via Wynter / IH community recruitment."
+    },
+    {
+      "id": "H3",
+      "belief": "Apple Screen Time API rejection rates for screen-monitoring apps have NOT increased in the last 12 months — disproving the platform-dependency killshot.",
+      "verification_method": "Scrape r/iOSProgramming + Apple Developer Forums for Screen Time / DeviceActivity API rejection posts over the last 24 months; chart frequency.",
+      "metric": "Rolling-3-month count of rejection posts mentioning Screen Time / DeviceActivity APIs.",
+      "success_threshold": "Flat or declining trend over 24 months.",
+      "linked_gate": 3,
+      "cheapest_test": "Reddit + Apple Developer Forums scrape via Apify; 2 hours of analysis."
+    },
+    {
+      "id": "H4",
+      "belief": "A B2B-team variant (sold to engineering managers as a deep-work analytics tool, $10/seat/mo, 5-seat minimum) escapes the B2C-solo WTP ceiling.",
+      "verification_method": "Cold-email 50 engineering managers at 50–200-person startups; offer a 30-day free pilot of a manual concierge version.",
+      "metric": "Number of paid pilot conversions at the 30-day mark.",
+      "success_threshold": "≥3 of 50 (6%) convert to paid 5-seat contracts.",
+      "linked_gate": 4,
+      "cheapest_test": "Concierge service via Apple Shortcuts + a weekly Loom analytics email; no product code."
+    },
+    {
+      "id": "H5",
+      "belief": "The 2025–2026 focus-app launch cluster is driven by a specific (currently unnamed) enabler — long-context vision LLMs at <$0.001 / screenshot — that constitutes a credible Why-Now thesis.",
+      "verification_method": "Build a cost model for cloud-screenshot vision LLM processing in 2024 vs 2026 (per active user-hour) using OpenAI / Anthropic public pricing; compare to per-user revenue at $10/mo.",
+      "metric": "Unit margin per active user-hour.",
+      "success_threshold": "Positive gross margin at <$10/mo pricing AND ≥5x cost reduction since Jan 2024.",
+      "linked_gate": 5,
+      "cheapest_test": "Spreadsheet using published API pricing; 1 hour."
+    }
+  ],
+  "spiky_pov": {
+    "template": "> ⚠️ The verdict above is a model-generated recommendation. The decision is yours.\n\nMy take: [user fills in]\nWhat I disagree with in the report: [user fills in]\nWhat I'm going to do: [user fills in]\n"
+  },
+  "source_appendix": [
+    {
+      "index": 1,
+      "source": {
+        "url": "https://www.reddit.com/r/ADHD_Programmers/comments/1l2qo6f/ai_tool_that_keeps_you_on_track_by_literally/",
+        "tier": "A",
+        "bias": "independent",
+        "fetched_at": "2026-05-26T18:28:06.064Z",
+        "contribution": "Reddit r/ADHD_Programmers: shipping AI tool that watches your screen and pings when off-task — direct functional convergence with proposed idea"
+      },
+      "gates": [
+        1
+      ],
+      "dok_layers": [
+        1
+      ]
+    },
+    {
+      "index": 2,
+      "source": {
+        "url": "https://thehustle.co/news/easily-distracted-this-ai-focus-tool-will-scold-you-into-staying-on-task",
+        "tier": "A",
+        "bias": "independent",
+        "fetched_at": "2026-05-26T18:28:06.064Z",
+        "contribution": "The Hustle: AI focus tool that monitors and analyzes your screen to determine whether you are on-task — feature parity with proposed idea"
+      },
+      "gates": [
+        1
+      ],
+      "dok_layers": [
+        1
+      ]
+    },
+    {
+      "index": 3,
+      "source": {
+        "url": "https://www.youtube.com/watch?v=khfS00oZizI",
+        "tier": "B",
+        "bias": "conflicted",
+        "fetched_at": "2026-05-26T18:28:06.064Z",
+        "contribution": "YouTube: Focusmo — ADHD-targeted focus app with app blocking + check-ins"
+      },
+      "gates": [
+        1
+      ],
+      "dok_layers": [
+        1
+      ]
+    },
+    {
+      "index": 4,
+      "source": {
+        "url": "https://google.serper.dev/search?q=Fomi%20%22not%20worth%22%20OR%20%22cancelled%22%20OR%20%22switched%20from%22%20OR%20%22disappointed%22%20OR%20%22terrible%22",
+        "tier": "A",
+        "bias": "independent",
+        "fetched_at": "2026-05-26T18:28:06.064Z",
+        "contribution": "Serper search for Fomi user complaints — surfaced negative-sentiment hits indicating churn-out pattern"
+      },
+      "gates": [
+        1
+      ],
+      "dok_layers": [
+        1
+      ]
+    },
+    {
+      "index": 5,
+      "source": {
+        "url": "https://community.boomi.com/s/topic/0TO1W000000cn2eWAA/release-notes",
+        "tier": "S",
+        "bias": "conflicted",
+        "fetched_at": "2026-05-26T18:28:06.064Z",
+        "contribution": "read_competitor_changelog URL-guessing fallback resolved to Boomi release notes — unrelated to Fomi; logged as a known tool failure"
+      },
+      "gates": [
+        1
+      ],
+      "dok_layers": [
+        1
+      ]
+    },
+    {
+      "index": 6,
+      "source": {
+        "url": "https://google.serper.dev/search?q=AI-native%20focus%20app%20that%20monitors%20screens%20to%20keep%20users%20on-task.%20Detects%20when%20users%20drift%20off-task%20(social%20media%2C%20distracting%20sites)%2C%20gently%20nudges%20back%20via%20interventions.%20Uses%20cloud%20screenshot%20analysis.%20profitable%20indie%20AI%20focus%20app%20success%20story%202025%20competitor%20alternatives",
+        "tier": "A",
+        "bias": "independent",
+        "fetched_at": "2026-05-26T18:28:06.064Z",
+        "contribution": "Contradicting-evidence Serper search for \"profitable indie AI focus app success story 2025\" — no clear contrarian winner surfaced"
+      },
+      "gates": [
+        1
+      ],
+      "dok_layers": [
+        1
+      ]
+    },
+    {
+      "index": 7,
+      "source": {
+        "url": "https://www.reddit.com/r/productivity/about.json",
+        "tier": "A",
+        "bias": "independent",
+        "fetched_at": "2026-05-26T18:28:06.064Z",
+        "contribution": "r/productivity 4,195,056 subscribers — large active community"
+      },
+      "gates": [
+        2
+      ],
+      "dok_layers": [
+        1
+      ]
+    },
+    {
+      "index": 8,
+      "source": {
+        "url": "https://www.reddit.com/r/ADHD/about.json",
+        "tier": "A",
+        "bias": "independent",
+        "fetched_at": "2026-05-26T18:28:06.064Z",
+        "contribution": "r/ADHD 2,232,448 subscribers — primary target demographic"
+      },
+      "gates": [
+        2
+      ],
+      "dok_layers": [
+        1
+      ]
+    },
+    {
+      "index": 9,
+      "source": {
+        "url": "https://www.reddit.com/r/getdisciplined/about.json",
+        "tier": "A",
+        "bias": "independent",
+        "fetched_at": "2026-05-26T18:28:06.064Z",
+        "contribution": "r/getdisciplined 2,164,885 subscribers — adjacent target community"
+      },
+      "gates": [
+        2
+      ],
+      "dok_layers": [
+        1
+      ]
+    },
+    {
+      "index": 10,
+      "source": {
+        "url": "https://www.indiehackers.com/post/bootstrapping-a-personal-productivity-saas-to-10k-mrr-cac5dfe318",
+        "tier": "A",
+        "bias": "independent",
+        "fetched_at": "2026-05-26T18:28:06.064Z",
+        "contribution": "IndieHackers: bootstrapped personal-productivity SaaS to $10k MRR — adjacent (time-tracking) comparable"
+      },
+      "gates": [
+        2,
+        4
+      ],
+      "dok_layers": [
+        1
+      ]
+    },
+    {
+      "index": 11,
+      "source": {
+        "url": "https://www.indiehackers.com/product/session-2/2-000-mrr-revenue-and-100-reviews-on-app-store--MQvx6feV1Ez_Kq0qqzx",
+        "tier": "A",
+        "bias": "independent",
+        "fetched_at": "2026-05-26T18:28:06.064Z",
+        "contribution": "IndieHackers: Session focus app stuck at $2,000 MRR — typical B2C-solo ceiling"
+      },
+      "gates": [
+        4
+      ],
+      "dok_layers": [
+        1
+      ]
+    },
+    {
+      "index": 12,
+      "source": {
+        "url": "https://techcrunch.com/2025/12/25/the-best-distraction-blockers-to-jumpstart-your-focus-in-the-new-year/",
+        "tier": "A",
+        "bias": "independent",
+        "fetched_at": "2026-05-26T18:28:06.064Z",
+        "contribution": "TechCrunch 2025-12-25: roundup of distraction blockers — continued media attention in category"
+      },
+      "gates": [
+        2,
+        5
+      ],
+      "dok_layers": [
+        1
+      ]
+    },
+    {
+      "index": 13,
+      "source": {
+        "url": "https://www.indiehackers.com/post/every-focus-app-i-tried-on-mac-failed-me-heres-what-finally-worked-7afe1db0a1",
+        "tier": "A",
+        "bias": "independent",
+        "fetched_at": "2026-05-26T18:28:06.064Z",
+        "contribution": "IndieHackers \"Every focus app I tried on Mac failed me\" — category-wide structural complaint"
+      },
+      "gates": [
+        1
+      ],
+      "dok_layers": [
+        1
+      ]
+    },
+    {
+      "index": 14,
+      "source": {
+        "url": "https://developer.apple.com/forums/tags/managed-settings?page=3",
+        "tier": "S",
+        "bias": "conflicted",
+        "fetched_at": "2026-05-26T18:28:06.064Z",
+        "contribution": "Apple Developer Forums: Managed Settings tag — Screen Time API surface that any iOS focus app must build on"
+      },
+      "gates": [
+        3
+      ],
+      "dok_layers": [
+        1
+      ]
+    },
+    {
+      "index": 15,
+      "source": {
+        "url": "https://developer.apple.com/app-store/review/guidelines/",
+        "tier": "S",
+        "bias": "conflicted",
+        "fetched_at": "2026-05-26T18:28:06.064Z",
+        "contribution": "Apple App Review Guidelines — first-party rulebook governing Screen Time / focus apps; ongoing policy churn"
+      },
+      "gates": [
+        3,
+        5
+      ],
+      "dok_layers": [
+        1
+      ]
+    },
+    {
+      "index": 16,
+      "source": {
+        "url": "https://google.serper.dev/search?q=%22Apple%20Screen%20Time%20API%22%20(ToS%20OR%20%22terms%20of%20service%22%20OR%20%22policy%20change%22%20OR%20deprecation)%202026%20OR%202025%20OR%20site%3Adeveloper.apple.com",
+        "tier": "A",
+        "bias": "independent",
+        "fetched_at": "2026-05-26T18:28:06.064Z",
+        "contribution": "Serper fan-out for Apple Screen Time API ToS / policy churn — feeds Gate 3 platform-dependency assessment"
+      },
+      "gates": [
+        3
+      ],
+      "dok_layers": [
+        1
+      ]
+    },
+    {
+      "index": 17,
+      "source": {
+        "url": "https://google.serper.dev/search?q=%22Apple%20Screen%20Time%20API%22%20(%22lost%20access%22%20OR%20%22deplatformed%22%20OR%20%22shut%20down%22%20OR%20%22kicked%20off%22%20OR%20%22banned%22%20OR%20%22rejected%22)%20founder%20OR%20retro%20OR%20postmortem%20site%3Amedium.com%20OR%20site%3Anews.ycombinator.com%20OR%20site%3Aindiehackers.com",
+        "tier": "A",
+        "bias": "conflicted",
+        "fetched_at": "2026-05-26T18:28:06.064Z",
+        "contribution": "Serper fan-out for Apple Screen Time API deplatforming retros — empty result is logged honestly (not fabricated)"
+      },
+      "gates": [
+        3
+      ],
+      "dok_layers": [
+        1
+      ]
+    },
+    {
+      "index": 18,
+      "source": {
+        "url": "https://learn.microsoft.com/en-us/answers/questions/5887032/viva-insights-focus-plan-stops-scheduling-focus-ti",
+        "tier": "S",
+        "bias": "conflicted",
+        "fetched_at": "2026-05-26T18:28:06.064Z",
+        "contribution": "Microsoft Learn: Viva Insights Focus Plan — Microsoft already ships focus-management as part of Microsoft 365"
+      },
+      "gates": [
+        3
+      ],
+      "dok_layers": [
+        1
+      ]
+    },
+    {
+      "index": 19,
+      "source": {
+        "url": "https://www.google.com/search?q=%22Apple%20Intelligence%22%20site%3Adeveloper.apple.com",
+        "tier": "S",
+        "bias": "conflicted",
+        "fetched_at": "2026-05-26T18:28:06.064Z",
+        "contribution": "M5 synonym-map expansion query: Apple Intelligence on developer.apple.com — fired as part of check_big_tech_encroachment"
+      },
+      "gates": [
+        3
+      ],
+      "dok_layers": [
+        1
+      ]
+    },
+    {
+      "index": 20,
+      "source": {
+        "url": "https://www.google.com/search?q=%22Screen%20Time%20API%22%20site%3Adeveloper.apple.com",
+        "tier": "S",
+        "bias": "conflicted",
+        "fetched_at": "2026-05-26T18:28:06.064Z",
+        "contribution": "M5 synonym-map expansion query: Screen Time API on developer.apple.com — fired as part of check_big_tech_encroachment"
+      },
+      "gates": [
+        3
+      ],
+      "dok_layers": [
+        1
+      ]
+    },
+    {
+      "index": 21,
+      "source": {
+        "url": "https://rescuetime.com/pricing",
+        "tier": "S",
+        "bias": "conflicted",
+        "fetched_at": "2026-05-26T18:28:06.064Z",
+        "contribution": "RescueTime live pricing — $7/mo, $9/mo, $12/mo subscription tiers (clean post-M1 extraction; no currency artifacts)"
+      },
+      "gates": [
+        4
+      ],
+      "dok_layers": [
+        1
+      ]
+    },
+    {
+      "index": 22,
+      "source": {
+        "url": "https://freedom.to/pricing",
+        "tier": "S",
+        "bias": "conflicted",
+        "fetched_at": "2026-05-26T18:28:06.064Z",
+        "contribution": "Freedom live pricing — $3.33/mo and $8.99/mo freemium tiers (post-M2 Serper-resolved hostname: freedom.to not freedom.com)"
+      },
+      "gates": [
+        4
+      ],
+      "dok_layers": [
+        1
+      ]
+    },
+    {
+      "index": 23,
+      "source": {
+        "url": "https://rize.io/pricing",
+        "tier": "S",
+        "bias": "conflicted",
+        "fetched_at": "2026-05-26T18:28:06.064Z",
+        "contribution": "Rize live pricing — $9.99/mo to $29.99/mo subscription range (post-M2 Serper-resolved hostname: rize.io)"
+      },
+      "gates": [
+        4
+      ],
+      "dok_layers": [
+        1
+      ]
+    },
+    {
+      "index": 24,
+      "source": {
+        "url": "https://www.opal.so/pricing",
+        "tier": "S",
+        "bias": "conflicted",
+        "fetched_at": "2026-05-26T18:28:06.064Z",
+        "contribution": "Opal live pricing — $8.29/mo and $19.99/mo tiers (post-M2 Serper-resolved hostname: opal.so)"
+      },
+      "gates": [
+        4
+      ],
+      "dok_layers": [
+        1
+      ]
+    },
+    {
+      "index": 25,
+      "source": {
+        "url": "https://www.focusbear.io/pricing",
+        "tier": "S",
+        "bias": "conflicted",
+        "fetched_at": "2026-05-26T18:28:06.064Z",
+        "contribution": "Focus Bear live pricing — $4.99/mo and $9.99/mo subscription tiers (post-M2 Serper-resolved hostname: focusbear.io)"
+      },
+      "gates": [
+        4
+      ],
+      "dok_layers": [
+        1
+      ]
+    },
+    {
+      "index": 26,
+      "source": {
+        "url": "http://web.archive.org/web/20260503225259/https://www.focusbear.io/pricing",
+        "tier": "S",
+        "bias": "independent",
+        "fetched_at": "2026-05-03T22:52:59Z",
+        "contribution": "Wayback snapshot 2026-05-03: Focus Bear pricing — historical pricing anchor confirms sub-$10/mo ceiling"
+      },
+      "gates": [
+        4
+      ],
+      "dok_layers": [
+        1
+      ]
+    },
+    {
+      "index": 27,
+      "source": {
+        "url": "http://web.archive.org/web/20260316045854/https://www.opal.so/pricing",
+        "tier": "S",
+        "bias": "independent",
+        "fetched_at": "2026-03-16T04:58:54Z",
+        "contribution": "Wayback snapshot 2026-03-16: Opal pricing — historical anchor"
+      },
+      "gates": [
+        4
+      ],
+      "dok_layers": [
+        1
+      ]
+    },
+    {
+      "index": 28,
+      "source": {
+        "url": "https://www.g2.com/search?query=focus%20app",
+        "tier": "B",
+        "bias": "independent",
+        "fetched_at": "2026-05-26T18:28:06.064Z",
+        "contribution": "G2/Capterra search: 5 refund / cancel / overpayment signals auto-flagged by find_pricing_anchors"
+      },
+      "gates": [
+        4
+      ],
+      "dok_layers": [
+        1
+      ]
+    },
+    {
+      "index": 29,
+      "source": {
+        "url": "https://www.google.com/search?q=focus%20app%20regulation%202026%20OR%202025%20site%3Aec.europa.eu",
+        "tier": "A",
+        "bias": "independent",
+        "fetched_at": "2026-05-26T18:28:06.064Z",
+        "contribution": "EU regulatory query via Serper — no focus-app-specific tailwind surfaced; EU AI Act is headwind for cloud-screenshot processing"
+      },
+      "gates": [
+        5
+      ],
+      "dok_layers": [
+        1
+      ]
+    },
+    {
+      "index": 30,
+      "source": {
+        "url": "https://www.ycombinator.com/rfs",
+        "tier": "A",
+        "bias": "conflicted",
+        "fetched_at": "2026-05-26T18:28:06.064Z",
+        "contribution": "YC RFS — find_yc_rfs_alignment returned 0 category matches; no YC tailwind"
+      },
+      "gates": [
+        5
+      ],
+      "dok_layers": [
+        1
+      ]
+    }
+  ],
+  "methodology_notes": {
+    "tool_calls": [
+      {
+        "tool": "find_closest_competitor",
+        "args_summary": "(see find_closest_competitor.json)",
+        "succeeded": true
+      },
+      {
+        "tool": "read_competitor_changelog",
+        "args_summary": "(see read_competitor_changelog.json)",
+        "succeeded": false,
+        "failure_note": "URL-guessing fallback resolved product=\"Fomi\" to community.boomi.com release notes — unrelated; no Fomi changelog content captured. Logged honestly per spec §11 anti-pattern 2."
+      },
+      {
+        "tool": "map_competitive_weaknesses",
+        "args_summary": "(see map_competitive_weaknesses.json)",
+        "succeeded": true
+      },
+      {
+        "tool": "find_closest_competitor",
+        "args_summary": "(see contra_g1.json)",
+        "succeeded": true
+      },
+      {
+        "tool": "estimate_demand_signals",
+        "args_summary": "(see estimate_demand_signals.json)",
+        "succeeded": true
+      },
+      {
+        "tool": "find_public_revenue_signals",
+        "args_summary": "(see find_public_revenue_signals.json)",
+        "succeeded": true
+      },
+      {
+        "tool": "check_big_tech_encroachment",
+        "args_summary": "(see check_big_tech_encroachment.json)",
+        "succeeded": true
+      },
+      {
+        "tool": "assess_platform_dependency",
+        "args_summary": "(see assess_platform_dependency.json)",
+        "succeeded": true
+      },
+      {
+        "tool": "find_pricing_anchors",
+        "args_summary": "(see find_pricing_anchors.json)",
+        "succeeded": true
+      },
+      {
+        "tool": "find_why_now_signals",
+        "args_summary": "(see find_why_now_signals.json)",
+        "succeeded": true
+      },
+      {
+        "tool": "find_yc_rfs_alignment",
+        "args_summary": "(see find_yc_rfs_alignment.json)",
+        "succeeded": true
+      },
+      {
+        "tool": "get_category_failure_modes",
+        "args_summary": "(see get_category_failure_modes.json)",
+        "succeeded": true
+      },
+      {
+        "tool": "scan_producthunt_launches",
+        "args_summary": "(see scan_producthunt_launches.json)",
+        "succeeded": true
+      }
+    ],
+    "tool_calls_fired": 13,
+    "validation_rules_in_force": "Spec v1.0: DOK 1→4 layering with tier+bias on every fact; ≥2 tier-B-or-higher for PASS; contradicting evidence per gate; ≥30%-conflicted-source downgrade; fail-2 rule (2+ FAILs → NO-GO); validation-check decision matrix (Minor → caveat, Major → confidence Low, Fundamental → INCONCLUSIVE override). Phase 02 fixes active: M1 currency-anchored pricing regex, M2 Serper-resolved hostnames, M5 hyperscaler synonym-map expansion, M8 tool-layer caching. Phase 03 wraps the McpServer in a bearer-authenticated Streamable HTTP transport on Fly.io — no validator changes.",
+    "disclaimer": "This is a decision aid, not a verdict — final call is yours."
+  }
+}

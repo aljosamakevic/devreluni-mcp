@@ -1,0 +1,15 @@
+[
+  "find_closest_competitor",
+  "read_competitor_changelog",
+  "map_competitive_weaknesses",
+  "scan_producthunt_launches",
+  "get_category_failure_modes",
+  "find_yc_rfs_alignment",
+  "find_pricing_anchors",
+  "check_big_tech_encroachment",
+  "find_why_now_signals",
+  "estimate_demand_signals",
+  "find_public_revenue_signals",
+  "assess_platform_dependency",
+  "finalize_validation_report"
+]
