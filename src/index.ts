@@ -5,6 +5,7 @@ import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import { readFileSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
+import { createHttpServer } from './http/server.js';
 
 // Load .env from the package root (one level up from build/ or src/).
 // Works regardless of cwd — Claude Desktop spawns from /, dev runs from anywhere.
@@ -106,14 +107,35 @@ registerGenerateTestCardsPrompt(server);
 registerQuickKillCheckPrompt(server);
 
 async function main(): Promise<void> {
-  const transport = new StdioServerTransport();
-  await server.connect(transport);
-  console.error('ProductValidation MCP Server running on stdio');
+  // Transport selection — see PLAN.md T02 + R4. Stdio is the default; HTTP is opt-in via
+  // the MCP_TRANSPORT env var. The default-path behavior MUST stay identical to pre-Phase-03
+  // because the existing Claude Desktop config and scripts/assert-fomi-run.ts both rely on it.
+  const transportMode = process.env['MCP_TRANSPORT'];
+
+  if (transportMode === undefined || transportMode === '' || transportMode === 'stdio') {
+    const transport = new StdioServerTransport();
+    await server.connect(transport);
+    console.error('ProductValidation MCP Server running on stdio');
+    console.error(
+      'Tools: find_closest_competitor, read_competitor_changelog, map_competitive_weaknesses, scan_producthunt_launches, get_category_failure_modes, find_yc_rfs_alignment, find_pricing_anchors, check_big_tech_encroachment, find_why_now_signals, estimate_demand_signals, find_public_revenue_signals, assess_platform_dependency, finalize_validation_report'
+    );
+    console.error('Prompts: validate_idea, steelman_against, run_single_gate, generate_test_cards, quick_kill_check');
+    console.error('Resources: source-tier-bias, tool-to-gate-map, evaluation-lens-matrix');
+    return;
+  }
+
+  if (transportMode === 'http') {
+    const port = Number.parseInt(process.env['PORT'] ?? '3000', 10);
+    const { listen } = createHttpServer(server);
+    listen(port);
+    console.error(`ProductValidation MCP Server running on HTTP :${port}`);
+    return;
+  }
+
   console.error(
-    'Tools: find_closest_competitor, read_competitor_changelog, map_competitive_weaknesses, scan_producthunt_launches, get_category_failure_modes, find_yc_rfs_alignment, find_pricing_anchors, check_big_tech_encroachment, find_why_now_signals, estimate_demand_signals, find_public_revenue_signals, assess_platform_dependency, finalize_validation_report'
+    `Invalid MCP_TRANSPORT value: '${transportMode}'. Expected 'stdio' (or unset) or 'http'.`
   );
-  console.error('Prompts: validate_idea, steelman_against, run_single_gate, generate_test_cards, quick_kill_check');
-  console.error('Resources: source-tier-bias, tool-to-gate-map, evaluation-lens-matrix');
+  process.exit(1);
 }
 
 main().catch((error) => {
