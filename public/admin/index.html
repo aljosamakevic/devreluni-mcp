@@ -197,6 +197,213 @@
       </section>
     </main>
 
-    <!-- T29 wires the vanilla JS that calls /admin/api/* and renders the tables. -->
+    <script>
+      // Phase 03 T29 — admin dashboard wiring.
+      //
+      // Vanilla JS, no framework. On load:
+      //   * fetch /admin/api/tokens + /admin/api/usage and render tables
+      //   * issue form POSTs /admin/api/tokens, shows plaintext in a
+      //     one-time modal (warns it won't be shown again), then re-fetches.
+      //   * revoke buttons DELETE the token, then re-fetch.
+      //
+      // credentials: 'include' carries the Basic-auth credentials the browser
+      // captured when loading this page. No tokens stored in localStorage.
+
+      (function () {
+        'use strict';
+
+        var tokensWrap = document.getElementById('tokens-table-wrap');
+        var usageWrap = document.getElementById('usage-table-wrap');
+        var issueForm = document.getElementById('issue-form');
+        var issueEmail = document.getElementById('issue-email');
+
+        function esc(s) {
+          if (s === null || s === undefined) return '';
+          return String(s)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+        }
+
+        function fmtDate(iso) {
+          if (!iso) return '—';
+          try {
+            return new Date(iso).toLocaleString();
+          } catch (e) {
+            return iso;
+          }
+        }
+
+        function renderTokens(rows) {
+          if (!rows || rows.length === 0) {
+            tokensWrap.innerHTML = '<div class="empty">No tokens issued yet.</div>';
+            return;
+          }
+          var html = '<table>'
+            + '<thead><tr>'
+            + '<th>ID</th><th>Prefix</th><th>Email</th><th>Created</th>'
+            + '<th>Last used</th><th>Status</th><th></th>'
+            + '</tr></thead><tbody>';
+          for (var i = 0; i < rows.length; i++) {
+            var r = rows[i];
+            var rowClass = r.status === 'revoked' ? 'revoked' : '';
+            var revokeBtn = r.status === 'active'
+              ? '<button class="danger" data-revoke-id="' + esc(r.id) + '">Revoke</button>'
+              : '';
+            html += '<tr class="' + rowClass + '">'
+              + '<td>' + esc(r.id) + '</td>'
+              + '<td>' + esc(r.prefix) + '…</td>'
+              + '<td>' + esc(r.email) + '</td>'
+              + '<td>' + esc(fmtDate(r.created_at)) + '</td>'
+              + '<td>' + esc(fmtDate(r.last_used_at)) + '</td>'
+              + '<td><span class="status-badge ' + esc(r.status) + '">' + esc(r.status) + '</span></td>'
+              + '<td>' + revokeBtn + '</td>'
+              + '</tr>';
+          }
+          html += '</tbody></table>';
+          tokensWrap.innerHTML = html;
+
+          // Wire revoke buttons.
+          var btns = tokensWrap.querySelectorAll('button[data-revoke-id]');
+          for (var b = 0; b < btns.length; b++) {
+            btns[b].addEventListener('click', onRevokeClick);
+          }
+        }
+
+        function renderUsage(rows) {
+          if (!rows || rows.length === 0) {
+            usageWrap.innerHTML = '<div class="empty">No usage logged yet.</div>';
+            return;
+          }
+          var html = '<table>'
+            + '<thead><tr>'
+            + '<th>When</th><th>Email</th><th>Tool</th>'
+            + '<th>Status</th><th>Duration (ms)</th>'
+            + '</tr></thead><tbody>';
+          for (var i = 0; i < rows.length; i++) {
+            var r = rows[i];
+            html += '<tr>'
+              + '<td>' + esc(fmtDate(r.created_at)) + '</td>'
+              + '<td>' + esc(r.email || '—') + '</td>'
+              + '<td>' + esc(r.tool_name) + '</td>'
+              + '<td><span class="status-badge ' + esc(r.status) + '">' + esc(r.status) + '</span></td>'
+              + '<td>' + esc(r.duration_ms) + '</td>'
+              + '</tr>';
+          }
+          html += '</tbody></table>';
+          usageWrap.innerHTML = html;
+        }
+
+        function loadTokens() {
+          return fetch('/admin/api/tokens', { credentials: 'include' })
+            .then(function (res) {
+              if (!res.ok) throw new Error('tokens fetch failed: ' + res.status);
+              return res.json();
+            })
+            .then(renderTokens)
+            .catch(function (err) {
+              tokensWrap.innerHTML = '<div class="empty">Failed to load tokens: ' + esc(err.message) + '</div>';
+            });
+        }
+
+        function loadUsage() {
+          return fetch('/admin/api/usage', { credentials: 'include' })
+            .then(function (res) {
+              if (!res.ok) throw new Error('usage fetch failed: ' + res.status);
+              return res.json();
+            })
+            .then(renderUsage)
+            .catch(function (err) {
+              usageWrap.innerHTML = '<div class="empty">Failed to load usage: ' + esc(err.message) + '</div>';
+            });
+        }
+
+        function showTokenModal(plaintext) {
+          var backdrop = document.createElement('div');
+          backdrop.className = 'modal-backdrop';
+          backdrop.innerHTML =
+            '<div class="modal" role="dialog" aria-labelledby="modal-title">'
+              + '<h3 id="modal-title">New token issued</h3>'
+              + '<div class="warning">Save this token now — it will not be shown again. The server stores only a hash.</div>'
+              + '<div class="token-display" id="modal-token"></div>'
+              + '<div class="actions">'
+                + '<button type="button" id="modal-copy">Copy</button>'
+                + '<button type="button" id="modal-close">Close</button>'
+              + '</div>'
+            + '</div>';
+          document.body.appendChild(backdrop);
+          // Plaintext is set via textContent (never innerHTML) to avoid any
+          // possibility of injection from a server-controlled string.
+          document.getElementById('modal-token').textContent = plaintext;
+
+          var copyBtn = document.getElementById('modal-copy');
+          var closeBtn = document.getElementById('modal-close');
+          copyBtn.addEventListener('click', function () {
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+              navigator.clipboard.writeText(plaintext).then(function () {
+                copyBtn.textContent = 'Copied';
+                setTimeout(function () { copyBtn.textContent = 'Copy'; }, 1500);
+              });
+            }
+          });
+          closeBtn.addEventListener('click', function () {
+            document.body.removeChild(backdrop);
+          });
+        }
+
+        function onIssueSubmit(ev) {
+          ev.preventDefault();
+          var email = (issueEmail.value || '').trim();
+          if (!email) return;
+          fetch('/admin/api/tokens', {
+            method: 'POST',
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: email })
+          })
+            .then(function (res) {
+              if (!res.ok) {
+                return res.json().then(function (body) {
+                  throw new Error(body.reason || ('http_' + res.status));
+                });
+              }
+              return res.json();
+            })
+            .then(function (body) {
+              issueEmail.value = '';
+              showTokenModal(body.token);
+              return loadTokens();
+            })
+            .catch(function (err) {
+              alert('Failed to issue token: ' + err.message);
+            });
+        }
+
+        function onRevokeClick(ev) {
+          var id = ev.currentTarget.getAttribute('data-revoke-id');
+          if (!id) return;
+          if (!confirm('Revoke token ' + id + '? Active sessions using it will start failing.')) {
+            return;
+          }
+          fetch('/admin/api/tokens/' + encodeURIComponent(id), {
+            method: 'DELETE',
+            credentials: 'include'
+          })
+            .then(function (res) {
+              if (!res.ok) throw new Error('revoke failed: ' + res.status);
+              return loadTokens();
+            })
+            .catch(function (err) {
+              alert('Revoke failed: ' + err.message);
+            });
+        }
+
+        issueForm.addEventListener('submit', onIssueSubmit);
+        loadTokens();
+        loadUsage();
+      })();
+    </script>
   </body>
 </html>
