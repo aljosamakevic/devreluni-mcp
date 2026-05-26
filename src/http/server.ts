@@ -157,11 +157,16 @@ export function createHttpServer(mcpServer: McpServer): HttpServerHandle {
     res.status(405).set('Allow', 'POST').send('Method Not Allowed');
   });
 
-  // Route ordering reserved for downstream tasks:
+  // Route ordering (mount order matters — first match wins):
   //   GET /health        — T03 (Stream A)
+  //   POST /mcp          — T01 + T07 + T13 + T14 (auth/rate-limit/usage-log gated)
+  //   GET /mcp           — 405 method-not-allowed
   //   GET /admin/*       — T27/T28 (Stream F), basic-auth gated
   //   GET /              — T26 (Stream F), express.static('public')
-  // Static mount MUST be wired LAST so it doesn't shadow named routes.
+  // Static mount MUST be wired LAST so it doesn't shadow named routes
+  // (notably /health and /mcp). express.static('public') serves public/index.html
+  // for GET / and any other file under public/ (e.g. public/favicon.ico).
+  app.use(express.static('public'));
 
   return {
     app,
