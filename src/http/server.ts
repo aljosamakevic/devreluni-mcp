@@ -16,6 +16,8 @@ import { createMcpExpressApp } from '@modelcontextprotocol/sdk/server/express.js
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
 import { isInitializeRequest } from '@modelcontextprotocol/sdk/types.js';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import { authRequired } from '../auth/middleware.js';
+import '../auth/types.js'; // side-effect: declaration merge for req.tokenId.
 
 // Resolve package version once at module load — health endpoint reports it.
 const PACKAGE_VERSION: string = (() => {
@@ -58,7 +60,8 @@ export function createHttpServer(mcpServer: McpServer): HttpServerHandle {
     });
   });
 
-  app.post('/mcp', async (req: Request, res: Response) => {
+  // T07 — authRequired guards POST /mcp ONLY (not /health, not /admin, not /).
+  app.post('/mcp', authRequired, async (req: Request, res: Response) => {
     try {
       const sessionId =
         typeof req.headers['mcp-session-id'] === 'string'
