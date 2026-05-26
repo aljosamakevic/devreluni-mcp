@@ -19,6 +19,7 @@ import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { authRequired } from '../auth/middleware.js';
 import { rateLimit } from '../ratelimit/middleware.js';
 import { usageLogHook } from './usage-logger.js';
+import { logger } from '../lib/logger.js';
 import '../auth/types.js'; // side-effect: declaration merge for req.tokenId.
 
 // Resolve package version once at module load — health endpoint reports it.
@@ -109,7 +110,7 @@ export function createHttpServer(mcpServer: McpServer): HttpServerHandle {
         id: null,
       });
     } catch (error) {
-      console.error('Error handling MCP request:', error);
+      logger.error({ err: error instanceof Error ? error.message : String(error) }, 'mcp_request_error');
       if (!res.headersSent) {
         res.status(500).json({
           jsonrpc: '2.0',

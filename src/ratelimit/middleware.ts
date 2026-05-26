@@ -16,6 +16,7 @@
 import type { Request, Response, NextFunction } from 'express';
 import { getDb } from '../db/connection.js';
 import { checkPerTokenLimit } from './per-token.js';
+import { logger } from '../lib/logger.js';
 import '../auth/types.js'; // declaration merge for req.tokenId.
 
 export function rateLimit(req: Request, res: Response, next: NextFunction): void {
@@ -43,16 +44,19 @@ export function rateLimit(req: Request, res: Response, next: NextFunction): void
         .run(tokenId, tokenName, new Date().toISOString());
     } catch (err) {
       // Logging-only — even if the audit insert fails, the 429 still goes out.
-      console.error('[rate-limit] failed to record rate_limited row:', err);
+      logger.error(
+        { err: err instanceof Error ? err.message : String(err) },
+        'rate_limit_audit_insert_failed'
+      );
     }
 
-    console.warn(
-      JSON.stringify({
-        level: 'warn',
+    logger.warn(
+      {
         event: 'rate_limit_per_token_exceeded',
         token_id: tokenId,
         retry_after_sec: check.retryAfterSec,
-      })
+      },
+      'rate_limit_per_token_exceeded'
     );
 
     res.setHeader('Retry-After', String(check.retryAfterSec));

@@ -1,5 +1,6 @@
 import type { ToolSource } from '../types.js';
 import { checkGlobalSerperLimit, recordSerperCall } from '../ratelimit/global.js';
+import { logger } from './logger.js';
 
 export interface SerperOrganicResult {
   title: string;
@@ -44,13 +45,13 @@ export async function serperSearch(query: string, num = 10): Promise<SerperOrgan
   const cap = checkGlobalSerperLimit();
   if (!cap.allowed) {
     lastCallWasCapped = true;
-    console.warn(
-      JSON.stringify({
-        level: 'warn',
+    logger.warn(
+      {
         event: 'serper_global_cap_hit',
         retry_after_sec: cap.retryAfterSec,
         fallback: SERPER_GLOBAL_CAP_FALLBACK,
-      })
+      },
+      'serper_global_cap_hit'
     );
     return getSerperStub(query);
   }
@@ -75,7 +76,10 @@ export async function serperSearch(query: string, num = 10): Promise<SerperOrgan
     recordSerperCall();
     return data.organic ?? [];
   } catch (err) {
-    console.error('[serper.ts] serperSearch error:', err);
+    logger.error(
+      { err: err instanceof Error ? err.message : String(err) },
+      'serper_search_error'
+    );
     return getSerperStub(query);
   }
 }
