@@ -8,11 +8,27 @@
 
 import { randomUUID } from 'node:crypto';
 import type { Server as HttpServer } from 'node:http';
+import { readFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import express, { type Express, type Request, type Response } from 'express';
 import { createMcpExpressApp } from '@modelcontextprotocol/sdk/server/express.js';
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
 import { isInitializeRequest } from '@modelcontextprotocol/sdk/types.js';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+
+// Resolve package version once at module load — health endpoint reports it.
+const PACKAGE_VERSION: string = (() => {
+  try {
+    const here = dirname(fileURLToPath(import.meta.url));
+    // build/http/server.js → ../../package.json ; src/http/server.ts → ../../package.json
+    const pkgPath = join(here, '..', '..', 'package.json');
+    const pkg = JSON.parse(readFileSync(pkgPath, 'utf8')) as { version?: string };
+    return pkg.version ?? '0.0.0';
+  } catch {
+    return '0.0.0';
+  }
+})();
 
 export interface HttpServerHandle {
   app: Express;
@@ -27,6 +43,20 @@ export function createHttpServer(mcpServer: McpServer): HttpServerHandle {
 
   // In-memory map keyed by mcp-session-id header. Stateful mode.
   const transports: Record<string, StreamableHTTPServerTransport> = {};
+
+  // GET /health — Fly healthcheck endpoint. Always 200; subsystem failures surface in
+  // the body's `status` field ("degraded") rather than as a non-2xx (per PLAN T03 design).
+  // T22 enriches this with DB + cache + last-error timestamp.
+  app.get('/health', (_req: Request, res: Response) => {
+    res.status(200).json({
+      status: 'ok',
+      version: PACKAGE_VERSION,
+      uptime_s: Math.floor(process.uptime()),
+      db_ok: true, // Phase 03 T22 wires this to a real SQLite SELECT 1 check.
+      transport: 'http',
+      checked_at: new Date().toISOString(),
+    });
+  });
 
   app.post('/mcp', async (req: Request, res: Response) => {
     try {
