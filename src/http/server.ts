@@ -43,7 +43,22 @@ export interface HttpServerHandle {
   listen: (port: number) => HttpServer;
 }
 
-export function createHttpServer(mcpServer: McpServer): HttpServerHandle {
+/**
+ * Build an Express app that serves the MCP Streamable-HTTP transport.
+ *
+ * `getServer` is a factory — called ONCE per initialize request to produce a fresh
+ * McpServer bound to that session's transport. A single shared McpServer cannot
+ * service multiple sessions: the SDK Server's `_transport` field is sticky after the
+ * first `connect()`, and a second `connect()` throws
+ *   "Already connected to a transport. Call close() before connecting to a new transport,
+ *    or use a separate Protocol instance per connection."
+ * (See D-03-7 in .planning/phases/03-multitenant-https/deferred-items.md.)
+ *
+ * Mirrors the SDK example at
+ *   node_modules/@modelcontextprotocol/sdk/dist/esm/examples/server/jsonResponseStreamableHttp.js:8-92
+ * (`const getServer = () => { ... }; const server = getServer(); await server.connect(transport);`).
+ */
+export function createHttpServer(getServer: () => McpServer): HttpServerHandle {
   // host '0.0.0.0' for Fly.io — containers can't bind 127.0.0.1 and serve external traffic.
   // createMcpExpressApp already wires express.json() and (for localhost hosts) DNS-rebind protection.
   const app = createMcpExpressApp({ host: '0.0.0.0' });
@@ -125,7 +140,10 @@ export function createHttpServer(mcpServer: McpServer): HttpServerHandle {
           },
         });
 
-        await mcpServer.connect(transport);
+        // Fresh McpServer per session — see D-03-7. Reusing a single instance
+        // throws "Already connected to a transport" on the SECOND initialize.
+        const session = getServer();
+        await session.connect(transport);
         await transport.handleRequest(req, res, req.body);
         return;
       }

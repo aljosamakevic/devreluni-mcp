@@ -277,3 +277,107 @@ is never exercised.
 
 **Spec compliance:** Phase 03 Out-of-Scope bullet 11 ("`bin.weather`
 cleanup — `package.json` scaffold leftover; Phase 04 (D-03-6)").
+
+---
+
+## D-03-7 — Singleton `McpServer` cannot accept a second HTTP session
+
+**Discovered during:** T-final-3b (HTTPS Fomi regression capture against the
+live Fly deploy). The capture-script smoke opened exactly one MCP session and
+passed, but a hand-test that re-`initialize`'d against the same Fly instance
+returned **HTTP 500 with `"Already connected to a transport"`** on the second
+client connect.
+
+**Issue:** The HTTP transport at `src/http/server.ts:128` calls
+`mcpServer.connect(transport)` on every new-session branch (line 116 — the
+`!sessionId && isInitializeRequest(req.body)` path). The `mcpServer`
+parameter is the same singleton `McpServer` constructed once at
+`src/index.ts:51` and handed to `createHttpServer(server)` at
+`src/index.ts:129`. The MCP SDK forbids connecting a single `McpServer` to
+more than one transport at a time, so the second session's `connect()`
+throws and the request 500s.
+
+**Behavior:** Production-impact bug for the HTTP transport, but masked in
+every artifact shipped under Phase 03:
+
+  - The T-final-3b regression smoke (`scripts/capture-fomi-via-https.ts`)
+    opens one session, runs the orchestrator, and exits — the second-session
+    path is never exercised.
+  - `scripts/assert-fomi-run.ts` (the 6/6 PASS golden harness) runs against
+    a static JSON artifact and does not touch the HTTP transport at all.
+  - The stdio path is unaffected — stdio calls `server.connect(transport)`
+    exactly once at `src/index.ts:117` and never again.
+
+The bug bites the moment a second real user (or the same user reconnecting
+after a network blip / Claude Desktop restart) hits `POST /mcp` with a fresh
+session-id. Result: every session past the first 500s, indefinitely, until
+the Fly instance is restarted (which only resets the count to 1).
+
+**Canonical SDK fix pattern** (already shipped in the SDK source we depend
+on): `node_modules/@modelcontextprotocol/sdk/dist/esm/examples/server/jsonResponseStreamableHttp.js:92-93`
+constructs a fresh `McpServer` via a `getServer()` factory on every
+new-session branch and connects that fresh server to the new transport.
+
+**What unblocks resolution:**
+
+  1. Extract a `createMcpServerInstance(): McpServer` factory from
+     `src/index.ts:51-107` (the singleton construction at line 51 plus the
+     3 resource registers + 13 tool registers + 5 prompt registers).
+     Probable home: `src/server/factory.ts`.
+  2. Keep stdio mode calling the factory exactly **once** at boot
+     (`const server = createMcpServerInstance()` before
+     `server.connect(stdioTransport)` at line 117). Byte-identical
+     behavior — the stdio path must stay locked because
+     `scripts/assert-fomi-run.ts` and every currently-onboarded Claude
+     Desktop config depend on it.
+  3. Change `createHttpServer(server)` at `src/index.ts:129` to
+     `createHttpServer(createMcpServerInstance)` — i.e. pass the factory,
+     not an instance. Update `createHttpServer`'s signature at
+     `src/http/server.ts:46` to take `factory: () => McpServer` and call
+     `const mcpServer = factory()` inside the new-session branch (before
+     constructing the `StreamableHTTPServerTransport` at line 117). The
+     `await mcpServer.connect(transport)` at line 128 then connects a
+     fresh server to the fresh transport.
+
+**Constraints (inviolate):**
+
+  - Phase 01 inviolate files MUST NOT be touched: `src/validation/`,
+    `src/lib/bias.ts`, `src/prompts/validate-idea.ts`,
+    `src/tools/finalize-validation-report.ts`.
+  - `scripts/assert-fomi-run.ts` (default invocation, no flags) MUST still
+    exit 0 — the stdio path's tool/prompt/resource registration must be
+    byte-identical post-factory-extraction.
+  - All 135 vitest cases + the Fomi smoke MUST still pass.
+
+**Verification:**
+
+  - Add a vitest case that boots an in-process Express app via
+    `createHttpServer(factory)`, opens **two** MCP sessions in series, and
+    asserts both `initialize` responses succeed (no 500, distinct
+    session-ids).
+  - On the live Fly deploy, run two back-to-back
+    `scripts/capture-fomi-via-https.ts` invocations (or a smaller
+    initialize-twice smoke) and confirm neither 500s. Capture the
+    transcript as the resolution artifact.
+
+**Files touched (if/when resolved):**
+
+  - `src/index.ts` — extract registration block (lines 51-107) into the
+    factory; stdio path uses `createMcpServerInstance()` once.
+  - `src/http/server.ts` — `createHttpServer` signature takes a factory;
+    new-session branch calls `factory()` then `mcpServer.connect(transport)`.
+  - New: `src/server/factory.ts` (or equivalent module) — exports
+    `createMcpServerInstance()`.
+  - New vitest case under `tests/` covering the two-session scenario.
+
+**Disposition:** Phase 03.1 hotfix from `phase-v3-1-server-factory` branched
+off `main` **after Phase 03 merges** — small phase, ~3 atomic commits
+(factory extraction + http wire-up + redeploy verification). If no real
+users are onboarded between Phase 03 merge and the start of Phase 04, this
+folds cleanly into Phase 04 instead. Either way: do not let the bug reach a
+second concurrent / reconnecting user.
+
+**Spec compliance:** Phase 03 multi-tenant transport requirement (PLAN.md
+T01 — HTTP transport supports multiple concurrent sessions); CONCERNS.md
+Phase 01 inviolate-files rule (factory extraction must preserve byte-identical
+registration order).

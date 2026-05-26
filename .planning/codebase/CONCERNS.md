@@ -294,6 +294,15 @@ The following entries were discovered (or settled at PLAN-CHECK time) during Pha
 **Why deferred:** Renaming or removing `bin` is a `package.json` mutation that touches the publish surface; Phase 03 scope was strictly the HTTPS transport stack, so a `package.json` cleanup belongs in Phase 04 alongside other hygiene fixes.
 **Suggested fix:** Phase 04 cleanup. Rename `bin.weather` → `bin.vetoed-mcp` (or remove entirely if not publishing to npm). Update `docs/HOSTED_SETUP.md` if the canonical local invocation changes.
 
+### D-03-7 — Singleton `McpServer` cannot accept a second HTTP session
+
+**Discovered during:** Phase 03 T-final-3b (HTTPS Fomi regression capture against live Fly deploy). The smoke opened one session and passed; a manual re-`initialize` against the same instance returned HTTP 500 `"Already connected to a transport"`.
+**File:** `src/http/server.ts:128` (`mcpServer.connect(transport)` on the new-session branch); `src/index.ts:51` (singleton `new McpServer(...)`); `src/index.ts:129` (`createHttpServer(server)` hands over the singleton).
+**Symptom:** The HTTP transport reuses one `McpServer` instance across sessions. The MCP SDK forbids connecting a single `McpServer` to >1 transport at a time, so the second `POST /mcp` initialize request 500s, and every subsequent session also 500s until the Fly instance is restarted.
+**Impact:** Production-impact for the HTTP transport — bites the moment a second concurrent user appears OR the first user's Claude Desktop reconnects after a network blip. Masked in every Phase 03 artifact: `scripts/capture-fomi-via-https.ts` only opens one session; `scripts/assert-fomi-run.ts` (6/6 PASS) runs against a static JSON file and doesn't touch HTTP at all. Stdio path is unaffected.
+**Why deferred:** Discovered post-PLAN-execute at T-final-3b; the Phase 03 merge gate (6/6 assert + 9/9 transport smokes) does not exercise the second-session path. The fix is small (factory extraction + http wire-up + redeploy verify ≈ 3 atomic commits) but requires its own PR so it can be reviewed against the byte-identical-stdio constraint without bundling unrelated work.
+**Suggested fix:** Extract `createMcpServerInstance(): McpServer` from `src/index.ts:51-107` (singleton construction + 3 resources + 13 tools + 5 prompts) into `src/server/factory.ts`. Stdio mode calls the factory once at boot (preserves byte-identical behavior — `scripts/assert-fomi-run.ts` MUST still exit 0). Change `createHttpServer`'s signature to take a factory and call it inside the new-session branch before constructing the transport. Canonical pattern: `node_modules/@modelcontextprotocol/sdk/dist/esm/examples/server/jsonResponseStreamableHttp.js:92-93`. Add a vitest case opening two in-process sessions in series. Disposition: Phase 03.1 hotfix from `phase-v3-1-server-factory` (off `main` after Phase 03 merges), OR fold into Phase 04 iff no real users are onboarded first. Full disposition: `.planning/phases/03-multitenant-https/deferred-items.md` D-03-7.
+
 ---
 
 *Concerns audit: 2026-05-20*
