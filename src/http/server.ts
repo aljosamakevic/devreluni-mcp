@@ -19,7 +19,8 @@ import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { authRequired } from '../auth/middleware.js';
 import { rateLimit } from '../ratelimit/middleware.js';
 import { usageLogHook } from './usage-logger.js';
-import { logger } from '../lib/logger.js';
+import { logger, getLastErrorAt } from '../lib/logger.js';
+import { getDb } from '../db/connection.js';
 import '../auth/types.js'; // side-effect: declaration merge for req.tokenId.
 
 // Resolve package version once at module load — health endpoint reports it.
@@ -51,13 +52,39 @@ export function createHttpServer(mcpServer: McpServer): HttpServerHandle {
 
   // GET /health — Fly healthcheck endpoint. Always 200; subsystem failures surface in
   // the body's `status` field ("degraded") rather than as a non-2xx (per PLAN T03 design).
-  // T22 enriches this with DB + cache + last-error timestamp.
+  // T22 enriches with three subsystem fields:
+  //   - db_ok: SELECT 1 against getDb(); false if it throws.
+  //   - last_error_at: ring-buffer (cap 1) populated by logger.error fires; null on boot.
+  //   - cache_hit_rate: cacheStats() if exported by src/lib/cache.ts; null otherwise.
+  //     Phase 03 deferred per D-03-1 (PLAN line 716) — cache module currently has no
+  //     hit/miss counters; Phase 04 candidate. Field returns null until instrumented.
+  // HTTP status stays 200 even when degraded so Fly healthcheck passes; degradation
+  // is signalled via `status: "degraded"` in the body.
   app.get('/health', (_req: Request, res: Response) => {
+    let dbOk = false;
+    try {
+      const row = getDb().prepare('SELECT 1 AS ok').get() as { ok?: number } | undefined;
+      dbOk = row?.ok === 1;
+    } catch {
+      dbOk = false;
+    }
+
+    // cache_hit_rate is deferred (D-03-1). Always null until Phase 04
+    // instruments src/lib/cache.ts with hit/miss counters.
+    const cacheHitRate: number | null = null;
+
+    const lastErrorAt = getLastErrorAt();
+
+    const degraded = !dbOk;
+    const status = degraded ? 'degraded' : 'ok';
+
     res.status(200).json({
-      status: 'ok',
+      status,
       version: PACKAGE_VERSION,
       uptime_s: Math.floor(process.uptime()),
-      db_ok: true, // Phase 03 T22 wires this to a real SQLite SELECT 1 check.
+      db_ok: dbOk,
+      last_error_at: lastErrorAt,
+      cache_hit_rate: cacheHitRate,
       transport: 'http',
       checked_at: new Date().toISOString(),
     });

@@ -101,8 +101,34 @@ function scrubString(s: string): string {
   return s;
 }
 
+// Phase 03 T22 — in-memory ring buffer (capacity 1) tracking the timestamp
+// of the most recent `logger.error(...)` call. Resets to null on boot.
+// GET /health surfaces this as `last_error_at`. The `error` level number
+// in pino is 50; anything >= 50 (error, fatal) bumps the timestamp.
+let lastErrorAt: string | null = null;
+const ERROR_LEVEL = 50;
+
+export function getLastErrorAt(): string | null {
+  return lastErrorAt;
+}
+
+export function __resetLastErrorAtForTests(): void {
+  lastErrorAt = null;
+}
+
 export const logger = pino({
   level: process.env['LOG_LEVEL'] ?? 'info',
+  hooks: {
+    // logMethod fires before the log line is emitted. We use it ONLY to
+    // sniff the level number and bump lastErrorAt — it does not transform
+    // arguments. Always delegates to method.apply(this, args) untouched.
+    logMethod(args, method, level) {
+      if (level >= ERROR_LEVEL) {
+        lastErrorAt = new Date().toISOString();
+      }
+      return method.apply(this, args);
+    },
+  },
   redact: {
     // Top-level forms catch `{ authorization: '...' }`; `*.foo` forms catch
     // nested `{ req: { authorization: '...' } }`. See header comment.
