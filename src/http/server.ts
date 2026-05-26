@@ -22,6 +22,7 @@ import { registerAdminApi } from './admin-api.js';
 import { rateLimit } from '../ratelimit/middleware.js';
 import { usageLogHook } from './usage-logger.js';
 import { logger, getLastErrorAt } from '../lib/logger.js';
+import { cacheStats } from '../lib/cache.js';
 import { getDb } from '../db/connection.js';
 import '../auth/types.js'; // side-effect: declaration merge for req.tokenId.
 
@@ -86,9 +87,10 @@ export function createHttpServer(getServer: () => McpServer): HttpServerHandle {
       dbOk = false;
     }
 
-    // cache_hit_rate is deferred (D-03-1). Always null until Phase 04
-    // instruments src/lib/cache.ts with hit/miss counters.
-    const cacheHitRate: number | null = null;
+    // D-03-1 (resolved): cacheStats() returns live hit/miss counters from
+    // src/lib/cache.ts. hit_rate is null until the first cacheGet invocation
+    // (distinguishes "0/0 unknown" from "0/N legit-zero").
+    const cacheHitRate: number | null = cacheStats().hit_rate;
 
     const lastErrorAt = getLastErrorAt();
 
