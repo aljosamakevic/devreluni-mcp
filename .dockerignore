@@ -1,0 +1,33 @@
+# Build/dev artifacts
+node_modules
+build
+coverage
+
+# Planning + VCS metadata
+.planning
+.git
+.gitignore
+.github
+
+# Local secrets / databases
+.env
+.env.*
+vetoed.db
+vetoed.db-*
+vetoed*.db
+vetoed*.db-*
+
+# Test sources (compiled types ship in build/)
+**/*.test.ts
+vitest.config.ts
+vitest.config.*
+
+# Editor / IDE / OS noise
+.DS_Store
+.idea
+.vscode
+.claude
+
+# Docker meta (don't recurse into self)
+Dockerfile
+.dockerignore
