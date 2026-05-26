@@ -18,6 +18,7 @@ import { isInitializeRequest } from '@modelcontextprotocol/sdk/types.js';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { authRequired } from '../auth/middleware.js';
 import { adminAuthRequired } from '../auth/admin-middleware.js';
+import { registerAdminApi } from './admin-api.js';
 import { rateLimit } from '../ratelimit/middleware.js';
 import { usageLogHook } from './usage-logger.js';
 import { logger, getLastErrorAt } from '../lib/logger.js';
@@ -159,16 +160,16 @@ export function createHttpServer(mcpServer: McpServer): HttpServerHandle {
   });
 
   // T27 — Admin dashboard. Path-prefix middleware gates everything under /admin
-  // (HTML + future API in T28). adminAuthRequired fails closed with HTTP 500
-  // when ADMIN_PASSWORD is unset/empty/short — never silently allows.
+  // (HTML + API). adminAuthRequired fails closed with HTTP 500 when
+  // ADMIN_PASSWORD is unset/empty/short — never silently allows.
   // Mount order under /admin:
   //   1. adminAuthRequired (this line)
-  //   2. /admin/api/* routes (registered by T28 via registerAdminApi)
+  //   2. /admin/api/* routes (T28, via registerAdminApi)
   //   3. express.static('public/admin') for the HTML
-  // T28's API routes register AFTER this middleware so they inherit the gate
-  // automatically. Static serve is mounted last so the API routes win on
-  // /admin/api/* paths.
+  // The API routes register AFTER the gate so they inherit auth. Static
+  // serve mounts LAST so explicit API routes win on /admin/api/* paths.
   app.use('/admin', adminAuthRequired);
+  registerAdminApi(app, getDb());
   app.use('/admin', express.static('public/admin'));
 
   // Route ordering (mount order matters — first match wins):
