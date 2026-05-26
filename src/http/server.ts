@@ -18,6 +18,7 @@ import { isInitializeRequest } from '@modelcontextprotocol/sdk/types.js';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { authRequired } from '../auth/middleware.js';
 import { rateLimit } from '../ratelimit/middleware.js';
+import { usageLogHook } from './usage-logger.js';
 import '../auth/types.js'; // side-effect: declaration merge for req.tokenId.
 
 // Resolve package version once at module load — health endpoint reports it.
@@ -66,7 +67,11 @@ export function createHttpServer(mcpServer: McpServer): HttpServerHandle {
   //        transport handler. Per-token cap responds 429 + Retry-After here;
   //        the global Serper cap lives inside src/lib/serper.ts (graceful
   //        degradation, no 429).
-  app.post('/mcp', authRequired, rateLimit, async (req: Request, res: Response) => {
+  // T14 — usageLogHook wraps res.write/res.end so we can record one usage_log
+  //        row per tools/call request after the transport finishes. It runs
+  //        AFTER rateLimit so 429 responses are skipped (T13 already recorded
+  //        the rate_limited audit row — never double-count).
+  app.post('/mcp', authRequired, rateLimit, usageLogHook, async (req: Request, res: Response) => {
     try {
       const sessionId =
         typeof req.headers['mcp-session-id'] === 'string'
