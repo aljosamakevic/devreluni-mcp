@@ -130,3 +130,119 @@ To stream live and filter at the same time:
 ```
 flyctl logs -a vetoed-mcp | grep -F 'serper_global_cap'
 ```
+
+---
+
+## 5. Secrets rotation
+
+Rotate any one of the four application secrets — `SERPER_API_KEY`,
+`PRODUCTHUNT_API_KEY`, `GITHUB_TOKEN`, `ADMIN_PASSWORD` — by re-running
+the corresponding command from section 1.2 with the new value. Use
+the same syntax shown there (`flyctl secrets set <KEY>=<NEW_VALUE>`,
+one secret per invocation). `ADMIN_PASSWORD` must remain at least 12
+chars or the admin middleware fails-closed.
+
+Each invocation of that command:
+
+- Encrypts the value in Fly's secret store.
+- Triggers a rolling restart of all machines (one at a time so the
+  service stays up). The next process boot reads the new value via
+  `process.env`.
+- Brief 5–15s window of partial-cluster restart; the
+  `/health` endpoint stays 200 throughout because at least one
+  machine is always live.
+
+Rotation cadence: opportunistic (after a suspected leak) or
+quarterly. `ADMIN_PASSWORD` rotates whenever an operator who knows
+it leaves the project.
+
+---
+
+## 6. Admin CLI runbook (canonical — in-container path)
+
+The admin CLI ships inside the runtime image (per T16 / C3). The
+canonical operator path is `flyctl ssh console` into a live machine
+and run `npm run admin` against the production DB on the mounted
+`/data` volume:
+
+```
+flyctl ssh console -a vetoed-mcp
+# inside the container:
+cd /app && npm run admin -- list-tokens
+```
+
+Available subcommands (see `scripts/admin.ts` for full flags):
+
+```
+cd /app && npm run admin -- issue-token --email=alice@example.com
+cd /app && npm run admin -- list-tokens
+cd /app && npm run admin -- revoke-token pv_a1b2c
+cd /app && npm run admin -- revoke-token 42         # numeric id
+```
+
+`issue-token` prints the plaintext `pv_<…>` token EXACTLY ONCE. Copy
+it to the requesting user immediately; after that only the 7-char
+prefix `pv_xxxxx` is ever visible in `list-tokens`.
+
+---
+
+## 7. Alternative admin path (advanced — `flyctl proxy`)
+
+Only use this fallback if `flyctl ssh console` is unavailable
+(e.g., the machine is wedged on a network issue but the volume
+is still mountable elsewhere). Proxy the production DB to localhost
+and run the admin CLI against the proxied SQLite file via a
+file copy:
+
+```
+# Copy the live DB locally via SFTP over flyctl ssh
+flyctl ssh sftp shell -a vetoed-mcp
+get /data/vetoed.db ./vetoed.db
+exit
+
+# Run admin CLI against the local copy (READ-ONLY equivalents only —
+# writes do not flow back without an explicit `put`):
+VETOED_DB_PATH=./vetoed.db npm run admin -- list-tokens
+```
+
+This path is read-only-safe; do NOT `issue-token` or `revoke-token`
+against the local copy unless you immediately upload the mutated
+DB back to `/data/vetoed.db` and restart the app. The canonical
+SSH-console path (section 6) avoids the upload step entirely.
+
+---
+
+## 8. Token revocation
+
+Revocation uses the admin CLI from section 6; no secret rotation
+needed:
+
+```
+flyctl ssh console -a vetoed-mcp
+cd /app && npm run admin -- revoke-token pv_a1b2c   # by prefix
+# OR
+cd /app && npm run admin -- revoke-token 42         # by numeric id
+```
+
+A revoked token's next call against `POST /mcp` returns
+`401 unauthorized` with body
+`{ error: 'unauthorized', reason: 'invalid_or_revoked_token' }`.
+No restart required — the change takes effect on the next request
+because token validation reads `status='active'` on every call.
+
+---
+
+## 9. Verify rotation
+
+After any of the above (secrets rotation, admin CLI mutation,
+revocation), confirm the service is healthy:
+
+```
+curl https://getvetoed.com/health
+# expected: HTTP/2 200 with body
+# {"status":"ok","version":"...","db_ok":true,...}
+```
+
+If `db_ok` is `false`, the volume mount likely failed or the DB
+file is locked — inspect with `flyctl logs -a vetoed-mcp` and
+`flyctl volumes list -a vetoed-mcp`.
