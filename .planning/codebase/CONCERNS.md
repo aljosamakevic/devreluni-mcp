@@ -223,4 +223,78 @@ H1–H5 share one fix: **a structured report-validator step** that runs *after* 
 
 ---
 
+## Phase 03 Deferred Items (2026-05-26)
+
+Phase 03 (Multi-Tenant HTTPS Transport) shipped the HTTPS transport / auth / rate-limit / persistence / observability / landing / admin-dashboard stack as a wrapper around the existing `McpServer`. The transport layer was added without touching Phase 01's inviolate validator pipeline or Phase 02's tool-quality fixes — no Phase 01 or Phase 02 RESOLVED entry above is modified.
+
+The following entries were discovered (or settled at PLAN-CHECK time) during Phase 03 and tracked for future revisit. See `.planning/phases/03-multitenant-https/deferred-items.md` for the full disposition narrative for each.
+
+**Branch nomenclature:** Phase 03 shipped from `phase-v3` → `main`. Future phases use `phase-vN` (no underscores, no trailing version suffix beyond N).
+
+### D-03-1 — Cache hit-rate instrumentation deferred
+
+**Discovered during:** Phase 03 T22 (enrich `/health` with subsystem fields).
+**File:** `src/http/server.ts` (health handler) + `src/lib/cache.ts` (uninstrumented).
+**Symptom:** `/health` returns `cache_hit_rate: null` because `src/lib/cache.ts` has no hit/miss counters. T22 wired the field but left it null pending instrumentation.
+**Impact:** No observability into cache effectiveness. The Phase 02 cache wiring (cold 11.7s → warm 0ms) works, but operationally we can't see hit-rate drift if a future refactor accidentally bypasses the cache.
+**Why deferred:** Adding hit/miss counters + a `cacheStats()` export is a separate concern from the HTTPS transport layer. Scope-bounded for Phase 04.
+**Suggested fix:** Add `hits` + `misses` counters to `src/lib/cache.ts`'s `get`/`set` paths; export `cacheStats(): { hits, misses, hit_rate }`. Wire into T22's health handler so `cache_hit_rate` returns a real number.
+
+### D-03-1-a — Global Serper cap = graceful degradation at `src/lib/serper.ts`, NOT a 429 from the HTTP layer
+
+**Discovered during:** Phase 03 PLAN-CHECK v0.1 → v0.2 (concern C7 disposition).
+**File:** `src/lib/serper.ts` (graceful-degradation site); `src/ratelimit/global.ts` (cap check); `src/ratelimit/middleware.ts` (does NOT pre-check the global cap).
+**Symptom (by design):** When the 1,500-call UTC-day Serper cap fires, downstream tools surface `fallbacks_used: ['serper_global_cap']` in the response envelope, source tier downgrades to D / bias unknown — same shape as when the API key is absent. The HTTP layer returns 200, not 429. 429 is reserved exclusively for the per-token cap (T11/T13).
+**Impact:** Honors spec §11 anti-pattern 2 (never fail silently — gap surfaced honestly) + §7 graceful degradation. Trade-off: from the admin's perspective there is no HTTP-status signal that the global cap fired; observability comes from log greps (`serper_global_cap`) and the response envelope, not from response codes.
+**Why deferred:** The 429-style global cap surface is rejected for v1; revisit only if operational experience shows the log/envelope signal is insufficient.
+**Suggested fix (if revisited):** Add an `X-Vetoed-Global-Cap-Hit: true` advisory header on responses that touched the cap, OR expose `/admin/api/serper-status` to surface today's count. Don't change the 200-status semantics — that contract is locked.
+
+### D-03-2 — Token prefix is the first 7 chars (`pv_xxxxx`), NOT the last 4
+
+**Discovered during:** Phase 03 PLAN-CHECK v0.1 → v0.2 (concern C8 disposition).
+**File:** `src/auth/tokens.ts` (issue/list paths); CONTEXT.md v0.2 (canonical).
+**Symptom:** CONTEXT.md v0.1 said "last 4 chars" for the stored token prefix; v0.2 settles on **first 7 chars** so the `pv_` discriminator is preserved in the prefix and the prefix is grep-friendly (`grep pv_a1b2c logs/*` finds a specific token's audit trail).
+**Impact:** None at code level — no tokens were issued under v0.1's "last 4" rule (the schema landed at v0.2 already). This entry documents the decision so a future reader doesn't try to "fix" the prefix to match an out-of-date doc.
+**Why deferred:** Settled in v0.2; tracked here so the decision is grep-findable. No code change required.
+**Suggested fix:** None. The first-7-char prefix is the lock-in; `grep -nE "substring\(0,\s*7\)|slice\(0,\s*7\)" src/auth/tokens.ts` enforces the contract.
+
+### D-03-3 — Single-region deploy; multi-region deferred
+
+**Discovered during:** Phase 03 CONTEXT.md decision 3 (Fly.io hosting, "One region to start (probably IAD or LHR)").
+**File:** `fly.toml` (`primary_region = "iad"`).
+**Symptom:** Phase 03 ships from a single Fly region (IAD). Users in Europe / APAC will see additional ~100–200ms latency on every `tools/call`.
+**Impact:** Latency is acceptable for `validate_idea` (LLM-orchestrated, multi-second runtime — single-region overhead is noise). For lighter `tools/call` workloads it's noticeable; not blocking.
+**Why deferred:** Multi-region requires per-region SQLite replication (LiteFS) or a Postgres migration. Out-of-scope per CONTEXT.md ("until latency complaints emerge").
+**Suggested fix:** Phase 04 candidate gated on user feedback. Likely route: LiteFS for SQLite, OR migrate persistence to Postgres + Fly's managed Postgres in a primary region with read replicas.
+
+### D-03-4 — Tool-call-level rate limit (vs prompt-level); T11 threshold = 400 calls/day
+
+**Discovered during:** Phase 03 PLAN-CHECK v0.1 → v0.2 (concern C6 disposition).
+**File:** `src/ratelimit/per-token.ts` (file-header math comment).
+**Symptom:** The MCP server cannot observe a "prompt invocation" — prompts are LLM-side orchestration; only `tools/call` requests cross the wire. So the per-token rate limit is enforced at the tool-call layer, not the prompt layer.
+**Impact:** Threshold math (documented verbatim in `src/ratelimit/per-token.ts` file header AND `docs/HOSTED_SETUP.md`): 20 `validate_idea` runs/day × 20 tool calls/run (spec §11 UPPER bound) = **400 tool calls / day / token**. Typical (~13 tool calls/run) = ~30 runs / day. A user hitting the 400-call ceiling has usually run ~30 typical validations — well past the 20-run guarantee. The user-facing budget headline ("20 runs/day") holds at the spec upper bound.
+**Why deferred:** Revisit only if user feedback shows the tool-call ceiling maps awkwardly to the user-facing run budget. The mapping is documented in `docs/HOSTED_SETUP.md` Section 4.
+**Suggested fix (if revisited):** Add a `validate_idea`-completion sentinel signal (e.g., a final `tools/call` to `finalize_validation_report` triggers a per-run counter increment) and rate-limit at both layers. Adds plumbing but tightens the user-visible budget. Phase 04 candidate.
+
+### D-03-5 — Self-serve email-collection form vs mailto CTA
+
+**Discovered during:** Phase 03 CONTEXT.md decision 4 (Stream F1 landing) + R7 (minimum-viable copy).
+**File:** `public/index.html` (mailto CTA target).
+**Symptom:** Landing page CTA is `<a href="mailto:aljosa@getvetoed.com?subject=Vetoed%20access%20request">Request access</a>` — no in-page form, no automation.
+**Impact:** Manual admin step per signup (Aljosa runs `flyctl ssh console -a vetoed-mcp` → `npm run admin -- issue-token --email=...` → emails the token back). Acceptable at v1 user volume.
+**Why deferred:** Self-serve onboarding requires an OAuth provider (Google sign-in) or a magic-link email flow. Both are Phase 04 per CONTEXT.md out-of-scope.
+**Suggested fix:** Phase 04 candidate (per CONTEXT.md: "OAuth 2.1 / Sign-in-with-Google — Phase 04 if user count > 50").
+
+### D-03-6 — `bin.weather` scaffold leftover in `package.json`
+
+**Discovered during:** Phase 03 PLAN-CHECK v0.1 → v0.2 (OQ3 resolution).
+**File:** `package.json` (`"bin": { "weather": "./build/index.js" }`).
+**Symptom:** The `bin.weather` field is a Phase 00 scaffold leftover from the initial weather-MCP demo. The package's actual purpose is product-idea validation, not weather; the `weather` bin name is misleading.
+**Impact:** Cosmetic only. Claude Desktop configs point at the absolute path of `build/index.js`, not the `bin` alias, so the leftover doesn't break anything in practice. But `npm install -g .` would install a `weather` command, which is wrong.
+**Why deferred:** Renaming or removing `bin` is a `package.json` mutation that touches the publish surface; Phase 03 scope was strictly the HTTPS transport stack, so a `package.json` cleanup belongs in Phase 04 alongside other hygiene fixes.
+**Suggested fix:** Phase 04 cleanup. Rename `bin.weather` → `bin.vetoed-mcp` (or remove entirely if not publishing to npm). Update `docs/HOSTED_SETUP.md` if the canonical local invocation changes.
+
+---
+
 *Concerns audit: 2026-05-20*
+*Phase 03 deferred-items audit: 2026-05-26*
