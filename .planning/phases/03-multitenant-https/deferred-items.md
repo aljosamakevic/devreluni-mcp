@@ -245,15 +245,90 @@ threshold).
      - Token-issue automation (reuses T06 `issueToken`).
      - Token-display page (one-time render with copy-to-clipboard).
 
-**Files touched (if/when resolved):**
+**Files touched (resolved):**
 
-  - `public/index.html` — replace mailto with form.
-  - `src/http/server.ts` — new `POST /signup` route (rate-limited, email-validated).
-  - `src/auth/tokens.ts` — reused (`issueToken` is already the right shape).
-  - New email-sending integration (e.g., Resend / SES / Postmark).
+  - `src/db/schema.sql` — new `signup_requests` table + 2 indices
+    (status+created_at, email_normalized). Created on next boot via the
+    existing IF NOT EXISTS bootstrap in `getDb()`.
+  - `src/auth/signup-requests.ts` (new) — `createSignupRequest`,
+    `listSignupRequests`, `getSignupRequest`, `approveSignupRequest`,
+    `denySignupRequest`, `hashIp`. Dedup contract: pending OR approved row
+    for the same lowercased email returns `{ id: existing, deduped: true }`;
+    denied rows allow a new pending row (second chance). `approveSignupRequest`
+    is atomic (txn) — mints token via `issueToken`, binds `token_id`, flips
+    status. Returns the plaintext token ONCE so the email layer can include
+    it (never re-displayed).
+  - `src/auth/signup-requests.test.ts` (new) — 23 cases.
+  - `src/lib/email.ts` (new) — `sendApprovalEmail({ to, token, adminNote? })`
+    via Resend@6.12.4. Reads `RESEND_API_KEY` + `RESEND_FROM` (default
+    `Veto <noreply@getvetoed.com>`) at module load; fail-soft → if
+    `RESEND_API_KEY` missing, returns `{ ok: false, error: 'email_disabled' }`
+    without touching the network. 10s timeout via `Promise.race`. Subject
+    `"Welcome to Veto — your access token is inside"`; bodies include both
+    text + HTML, optional admin-note block at top, token in monospace +
+    plaintext for accessibility, copy-paste Claude Desktop config snippet
+    referencing `https://getvetoed.com/mcp`, link to `https://getvetoed.com/`.
+  - `src/lib/email.test.ts` (new) — 14 cases (mocks `resend`).
+  - `src/ratelimit/signup-ip.ts` (new) — per-IP rate limit, 5 attempts /
+    hour, fixed window, stored under key `signup:ip:<sha256-of-IP>` in the
+    existing `rate_limits` table. Single SQLite transaction.
+  - `src/http/server.ts` — `app.set('trust proxy', 1)` so `req.ip` honors
+    Fly's X-Forwarded-For; new public `POST /signup` route mounted BEFORE
+    `/mcp` and BEFORE the static-file middleware. Public surface — no
+    `authRequired`/`rateLimit`/`usageLogHook` in the chain. Handler:
+    honeypot `website` non-empty → silent 200; email RFC-5322-lite + ≤254
+    chars; referrer ≤500 chars; IP rate limit (429 + Retry-After on cap);
+    always 200 + standard success body otherwise (dedup is opaque to the
+    public surface). Errors logged via `logger.warn` / `logger.error`,
+    never `console.*`.
+  - `src/http/signup.test.ts` (new) — 12 cases.
+  - `src/http/admin-api.ts` — added 3 routes under the existing
+    `adminAuthRequired` gate: `GET /admin/api/signup-requests[?status=...]`,
+    `POST /admin/api/signup-requests/:id/approve`,
+    `POST /admin/api/signup-requests/:id/deny`. Approve calls
+    `approveSignupRequest` then `sendApprovalEmail`; even when the email
+    fails, the response is `200 { approved: true, token_prefix, email_sent:
+    false, email_error }` (DB is already flipped — operator can copy from
+    the DB manually).
+  - `src/http/admin-api.test.ts` — extended with 19 new cases (list filter,
+    approve happy + email-failure + 404 + 400, deny happy + 404 + 400 +
+    401 + 500 admin-disabled gate).
+  - `public/admin/index.html` — two new sections: "Access requests
+    (pending)" with Approve/Deny buttons + an approve-confirm modal
+    carrying an admin-note textarea; "Recently processed (last 20)" merging
+    approved + denied rows sorted by `status_changed_at` DESC. Toast helper
+    surfaces the email_sent + token-prefix outcome (warn-styled when the
+    email fails so the operator sees the error).
+  - `public/index.html` — both mailto CTAs replaced by a single inline
+    signup form (`<form id="signup-form">`) with email + referrer + honeypot
+    `website` (off-screen via `.signup-honeypot` rule, `tabindex="-1"`,
+    `aria-hidden="true"`). Inline `<script>` POSTs JSON to `/signup` and
+    renders success / 400 / 429 / network-error messages in a
+    `role="status"` element below the form. html-validate exits 0.
+  - `package.json` — added `resend@6.12.4` (pinned exact).
+  - `docs/OPERATIONS.md` — appended "Self-serve signup runbook" section
+    covering `RESEND_API_KEY` Fly-secret setup, dashboard usage, re-issue
+    flow when an email bounces, and direct `signup_requests` queries.
+
+**Status:** RESOLVED (Phase 04, 2026-06-05). New public HTTP surface =
+`POST /signup` only; `/health`, `/`, and the static landing files remain
+the only other public routes. `/mcp` stays `authRequired`-gated;
+`/admin/*` stays `adminAuthRequired`-gated.
+
+**Verification:**
+
+  - `npm run build` — clean.
+  - `npm test` — 209 / 209 across 18 files (was 141 / 141 across 15
+    pre-Phase-04; +68 new cases across `src/auth/signup-requests.test.ts`
+    (23), `src/lib/email.test.ts` (14), `src/http/signup.test.ts` (12),
+    `src/http/admin-api.test.ts` (+19 extension)).
+  - `npx tsx scripts/assert-fomi-run.ts` — 6 / 6 PASS (Stream G inviolate).
+  - `npx html-validate public/index.html public/admin/index.html` — exit 0.
 
 **Spec compliance:** CONTEXT.md Out-of-Scope bullet 4 ("Self-serve token
-request UX — mailto CTA is v1").
+request UX — mailto CTA is v1"); resolved without OAuth — the lighter
+in-app admin-approval queue satisfies the user-facing requirement while
+avoiding the third-party SSO dependency CONTEXT.md flagged as Phase 04+.
 
 ---
 
