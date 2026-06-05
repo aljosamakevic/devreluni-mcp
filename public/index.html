@@ -80,6 +80,80 @@
         border-radius: 3px;
         font-size: 14px;
       }
+
+      /* Phase 04 D-03-5 — signup form */
+      .signup-form {
+        margin: 18px 0 8px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+      .signup-form label {
+        font-weight: 600;
+        font-size: 14px;
+        color: var(--fg);
+      }
+      .signup-form input[type="email"],
+      .signup-form input[type="text"] {
+        padding: 12px 14px;
+        font-size: 16px;
+        border: 1px solid var(--rule);
+        border-radius: 4px;
+        background: #fff;
+        color: var(--fg);
+        font-family: inherit;
+        width: 100%;
+      }
+      .signup-form input[type="email"]:focus,
+      .signup-form input[type="text"]:focus {
+        outline: none;
+        border-color: var(--accent);
+      }
+      .signup-form button {
+        align-self: flex-start;
+        margin: 0;
+        padding: 12px 22px;
+        background: var(--accent);
+        color: #fff;
+        font-weight: 600;
+        font-family: inherit;
+        font-size: 16px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+      .signup-form button:hover { opacity: 0.92; }
+      .signup-form button:disabled { opacity: 0.6; cursor: wait; }
+      .signup-form .optional {
+        font-weight: 400;
+        color: var(--muted);
+      }
+      .signup-honeypot {
+        position: absolute;
+        left: -9999px;
+        top: -9999px;
+        height: 0;
+        width: 0;
+        overflow: hidden;
+      }
+      .signup-message {
+        margin: 8px 0 0;
+        font-size: 14px;
+        padding: 10px 12px;
+        border-radius: 4px;
+        display: none;
+      }
+      .signup-message.show { display: block; }
+      .signup-message.success {
+        background: #e9f5ec;
+        border: 1px solid #b9deca;
+        color: #1f5a2f;
+      }
+      .signup-message.error {
+        background: #fcecea;
+        border: 1px solid #f0b3aa;
+        color: #7a2820;
+      }
     </style>
   </head>
   <body>
@@ -93,10 +167,6 @@
         It returns a GO / NO-GO / CONDITIONAL GO verdict with citations &mdash;
         not vibes. The framework is designed to make confirmation bias
         structurally impossible.
-      </p>
-
-      <p>
-        <a class="cta" href="mailto:aljosa@getvetoed.com?subject=Veto%20access%20request">Request access</a>
       </p>
 
       <h2>How it works</h2>
@@ -165,12 +235,117 @@
       <h2>Get access</h2>
       <p>
         Veto is currently invite-only while shared API quotas stay manageable.
-        Email for a bearer token; paste it into your Claude Desktop config and
-        run <code>validate_idea</code> against your next idea.
+        Request a bearer token below; once approved, you'll get an email with
+        your token and a copy-paste snippet for your Claude Desktop config.
+        Then run <code>validate_idea</code> against your next idea.
       </p>
-      <p>
-        <a class="cta" href="mailto:aljosa@getvetoed.com?subject=Veto%20access%20request">Request access</a>
-      </p>
+
+      <form class="signup-form" id="signup-form" novalidate>
+        <div>
+          <label for="signup-email">Email</label>
+          <input
+            type="email"
+            id="signup-email"
+            name="email"
+            required
+            autocomplete="email"
+            placeholder="you@example.com"
+          >
+        </div>
+        <div>
+          <label for="signup-referrer">How did you hear about Veto? <span class="optional">(optional)</span></label>
+          <input
+            type="text"
+            id="signup-referrer"
+            name="referrer"
+            maxlength="500"
+            autocomplete="off"
+            placeholder="e.g. saw your post on HN"
+          >
+        </div>
+        <div class="signup-honeypot" aria-hidden="true">
+          <label for="signup-website">Website (leave blank)</label>
+          <input
+            type="text"
+            id="signup-website"
+            name="website"
+            autocomplete="off"
+            tabindex="-1"
+          >
+        </div>
+        <div>
+          <button type="submit" id="signup-submit">Request access</button>
+        </div>
+        <p class="signup-message" id="signup-message" role="status" aria-live="polite"></p>
+      </form>
+
+      <script>
+        // Phase 04 D-03-5 — inline signup form wiring.
+        // Posts JSON to /signup, displays a friendly result message below
+        // the form. No framework, no external deps.
+        (function () {
+          'use strict';
+          var form = document.getElementById('signup-form');
+          var submitBtn = document.getElementById('signup-submit');
+          var msgEl = document.getElementById('signup-message');
+
+          function showMessage(text, kind) {
+            msgEl.textContent = text;
+            msgEl.className = 'signup-message show ' + kind;
+          }
+          function clearMessage() {
+            msgEl.textContent = '';
+            msgEl.className = 'signup-message';
+          }
+
+          form.addEventListener('submit', function (ev) {
+            ev.preventDefault();
+            clearMessage();
+            submitBtn.disabled = true;
+
+            var email = (document.getElementById('signup-email').value || '').trim();
+            var referrer = (document.getElementById('signup-referrer').value || '').trim();
+            var website = (document.getElementById('signup-website').value || '').trim();
+
+            fetch('/signup', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ email: email, referrer: referrer, website: website })
+            })
+              .then(function (res) {
+                return res.json().then(function (body) {
+                  return { status: res.status, retryAfter: res.headers.get('Retry-After'), body: body };
+                });
+              })
+              .then(function (result) {
+                if (result.status === 200 && result.body && result.body.ok) {
+                  form.reset();
+                  showMessage(
+                    result.body.message || "Thanks — we'll review and get back to you within a day or two.",
+                    'success'
+                  );
+                } else if (result.status === 429) {
+                  var sec = result.body && result.body.retry_after_sec ? result.body.retry_after_sec : (result.retryAfter ? parseInt(result.retryAfter, 10) : 0);
+                  var mins = sec > 0 ? Math.ceil(sec / 60) : 0;
+                  showMessage(
+                    'Too many requests. Try again in about ' + (mins > 0 ? mins + ' minute' + (mins === 1 ? '' : 's') : 'a bit') + '.',
+                    'error'
+                  );
+                } else if (result.status === 400 && result.body && result.body.message) {
+                  showMessage(result.body.message, 'error');
+                } else {
+                  showMessage('Something went wrong. Please try again in a moment.', 'error');
+                }
+              })
+              .catch(function () {
+                showMessage('Network error. Please try again in a moment.', 'error');
+              })
+              .then(function () {
+                submitBtn.disabled = false;
+              });
+          });
+        })();
+      </script>
 
       <footer>
         <p>

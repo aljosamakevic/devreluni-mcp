@@ -246,3 +246,138 @@ curl https://getvetoed.com/health
 If `db_ok` is `false`, the volume mount likely failed or the DB
 file is locked — inspect with `flyctl logs -a vetoed-mcp` and
 `flyctl volumes list -a vetoed-mcp`.
+
+---
+
+## 10. Self-serve signup runbook (Phase 04, D-03-5)
+
+Phase 04 replaces the mailto CTA with an in-app signup queue. Users
+submit `POST /signup` from the landing-page form; pending requests show
+up in the admin dashboard at `https://getvetoed.com/admin`; approval
+issues a token via the existing `issueToken` and emails it through
+Resend.
+
+### 10.1 Set the Resend Fly secret
+
+The Resend API key is the only NEW production secret. Get it from the
+Resend dashboard (account → API Keys → Create) and set it once:
+
+```
+flyctl secrets set -a vetoed-mcp \
+  RESEND_API_KEY=re_<paste from dashboard>
+```
+
+Fly restarts the machine after a secret update — expected. Verify the
+deploy boot log does NOT contain the `resend_disabled` warning:
+
+```
+flyctl logs -a vetoed-mcp | grep -E "(resend_disabled|approval_email_failed)"
+# (no output is the healthy state)
+```
+
+If you see `event=resend_disabled` the key didn't land — re-run the
+secrets command and check `flyctl secrets list -a vetoed-mcp` for
+`RESEND_API_KEY`.
+
+Optional: customize the `From:` line with a Fly env var (not a secret —
+the literal `Veto <noreply@getvetoed.com>` is fine):
+
+```
+flyctl secrets set -a vetoed-mcp \
+  RESEND_FROM="Veto <hello@getvetoed.com>"
+```
+
+Default is `Veto <noreply@getvetoed.com>` if unset.
+
+### 10.2 Triage pending requests from the dashboard
+
+1. Open `https://getvetoed.com/admin`. Browser prompts for the Basic-auth
+   creds — same `ADMIN_USERNAME` + `ADMIN_PASSWORD` as the token UI.
+2. The "Access requests (pending)" section lists requests newest-first
+   with email + referrer (hover for the full text if truncated) +
+   timestamp.
+3. **Approve** opens a confirm modal with an optional admin-note
+   textarea. The note (if non-empty) renders above the standard email
+   template — use it for personalized greetings or capacity notes
+   ("welcoming you in a small batch this week"). Confirm to fire the
+   approval; the dashboard re-fetches and surfaces a toast with the
+   token prefix + email-sent status.
+4. **Deny** is silent — no email is sent. Use it for obvious bot
+   submissions that slipped past the honeypot, or for emails that fail
+   sanity-check ("test@test.test"). Denied users can submit a new
+   request later; the dedup rule treats denial as non-permanent.
+
+The "Recently processed (last 20)" section is read-only and shows the
+combined approved + denied rows sorted by `status_changed_at` DESC.
+
+### 10.3 Re-issue a token if the welcome email bounced
+
+If the approve toast shows `email failed (<reason>)` — typically
+`Recipient bounced` or a delivery error from Resend — the DB row IS
+already approved + a token IS already minted (idempotency contract).
+Two recovery paths:
+
+**(a) Resend manually using the existing token:** SSH in and query the
+DB to get the token plaintext... wait — the plaintext is NEVER stored.
+The token is unrecoverable post-approval. Instead, revoke the orphaned
+token and issue a fresh one via the admin CLI:
+
+```
+flyctl ssh console -a vetoed-mcp
+cd /app
+sqlite3 /data/vetoed.db \
+  "SELECT id, token_prefix, email FROM tokens WHERE email = '<user-email>' ORDER BY id DESC LIMIT 1;"
+# Note the id, then:
+npm run admin -- revoke-token --id=<that-id>
+npm run admin -- issue-token --email=<user-email>
+# Copy the plaintext output and email it manually.
+```
+
+**(b) Fix the email address upstream:** if the bounce was a typo, ask
+the user to re-submit via the form. The original approved row will not
+dedupe a new request from a DIFFERENT email; the bad row stays in the
+"approved" history.
+
+### 10.4 Read the signup_requests table directly
+
+Useful for forensics or bulk triage:
+
+```
+flyctl ssh console -a vetoed-mcp
+sqlite3 /data/vetoed.db
+```
+
+Inside the shell:
+
+```sql
+-- All pending requests, newest first.
+SELECT id, email, referrer, created_at FROM signup_requests
+WHERE status = 'pending' ORDER BY created_at DESC LIMIT 50;
+
+-- Today's submissions (any status).
+SELECT id, email, status, created_at, status_changed_at, admin_note
+FROM signup_requests
+WHERE created_at >= date('now') ORDER BY id DESC;
+
+-- Approved-with-failed-email candidates (no token_id row → manual
+-- intervention may be needed; this should be rare and only happens if
+-- the approval txn succeeded but the SDK call faulted).
+SELECT id, email, status_changed_at FROM signup_requests
+WHERE status = 'approved' AND token_id IS NULL;
+```
+
+The `ip_hash` column stores a sha256 of the source IP — raw IPs are
+never persisted. The per-IP rate limit (5 / hour) is enforced at the
+HTTP layer via `rate_limits` keys of the shape `signup:ip:<sha256>`.
+
+### 10.5 What's NOT covered here
+
+- Auto-approval / OAuth / Sign-in-with-Google — still Phase 04+ out of
+  scope per the original CONTEXT.md decision. The current admin-queue
+  flow is intentional friction while user volume stays manageable.
+- Token revocation flow — unchanged from Section 8 above.
+- Resend webhook handling (bounces, complaints) — not wired in v1. The
+  email_error surface in the dashboard is the only bounce signal today;
+  if bounce volume becomes meaningful, wire Resend's webhook to a new
+  `/webhook/resend` endpoint and surface failures into a "needs
+  attention" subsection.

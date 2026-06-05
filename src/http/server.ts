@@ -20,11 +20,22 @@ import { authRequired } from '../auth/middleware.js';
 import { adminAuthRequired } from '../auth/admin-middleware.js';
 import { registerAdminApi } from './admin-api.js';
 import { rateLimit } from '../ratelimit/middleware.js';
+import { checkAndIncrementSignupIp } from '../ratelimit/signup-ip.js';
+import { createSignupRequest, hashIp } from '../auth/signup-requests.js';
 import { usageLogHook } from './usage-logger.js';
 import { logger, getLastErrorAt } from '../lib/logger.js';
 import { cacheStats } from '../lib/cache.js';
 import { getDb } from '../db/connection.js';
 import '../auth/types.js'; // side-effect: declaration merge for req.tokenId.
+
+// Phase 04 D-03-5 — RFC-5322-lite email regex shared with the admin API.
+// Loose: anything@anything.anything with no whitespace. We're catching
+// obviously-broken input, not enforcing a strict spec.
+const SIGNUP_EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const SIGNUP_EMAIL_MAX_LEN = 254;
+const SIGNUP_REFERRER_MAX_LEN = 500;
+const SIGNUP_SUCCESS_MESSAGE =
+  "Thanks — we'll review and get back to you within a day or two.";
 
 // Resolve package version once at module load — health endpoint reports it.
 const PACKAGE_VERSION: string = (() => {
@@ -64,6 +75,13 @@ export function createHttpServer(getServer: () => McpServer): HttpServerHandle {
   // createMcpExpressApp already wires express.json() and (for localhost hosts) DNS-rebind protection.
   const app = createMcpExpressApp({ host: '0.0.0.0' });
   app.disable('x-powered-by');
+
+  // Phase 04 D-03-5: Fly's proxy puts the original client IP in X-Forwarded-For.
+  // trust proxy = 1 tells Express to honor exactly one upstream hop, so req.ip
+  // returns the real client IP (used to hash for the per-IP signup rate limit
+  // in /signup). Set to 1 (not true) so the rest of the chain is still
+  // treated as untrusted — limits header-spoofing surface.
+  app.set('trust proxy', 1);
 
   // In-memory map keyed by mcp-session-id header. Stateful mode.
   const transports: Record<string, StreamableHTTPServerTransport> = {};
@@ -107,6 +125,98 @@ export function createHttpServer(getServer: () => McpServer): HttpServerHandle {
       transport: 'http',
       checked_at: new Date().toISOString(),
     });
+  });
+
+  // Phase 04 D-03-5 — Public self-serve access-request endpoint.
+  //
+  // PUBLIC: NO authRequired/rateLimit/usageLogHook in the chain. This is
+  // the third (and only new) public route after /health and / (static).
+  //
+  // Contract (from CONTEXT.md decision 4 follow-up):
+  //   - Honeypot input named `website`: if non-empty, log a warn and return
+  //     200 success silently. Bots scraping the form often fill every input.
+  //   - Email RFC-5322-lite + ≤254 chars. Invalid → 400 invalid_email.
+  //   - Referrer optional, ≤500 chars. Over → 400 invalid_referrer.
+  //   - Per-IP rate limit 5/hour (hashed IP, signup:ip:<sha256> key in
+  //     rate_limits). Cap → 429 + Retry-After.
+  //   - createSignupRequest handles dedup; we always return the same
+  //     friendly success body so we never leak "this email already exists".
+  app.post('/signup', (req: Request, res: Response) => {
+    try {
+      const body = (req.body ?? {}) as {
+        email?: unknown;
+        referrer?: unknown;
+        website?: unknown;
+      };
+
+      // Honeypot: silently drop with 200 success. Bots fill every input;
+      // a hidden `website` input that's non-empty is a strong signal.
+      // We do NOT touch the rate-limit counter or the DB — the response
+      // looks identical to a successful submission so the bot can't
+      // distinguish honeypot-trip from real success.
+      if (typeof body.website === 'string' && body.website.trim().length > 0) {
+        logger.warn(
+          { event: 'signup_honeypot_tripped' },
+          'signup honeypot tripped — silently dropping'
+        );
+        res.status(200).json({ ok: true, message: SIGNUP_SUCCESS_MESSAGE });
+        return;
+      }
+
+      const rawEmail = typeof body.email === 'string' ? body.email.trim() : '';
+      if (rawEmail.length === 0 || rawEmail.length > SIGNUP_EMAIL_MAX_LEN || !SIGNUP_EMAIL_REGEX.test(rawEmail)) {
+        res.status(400).json({
+          error: 'invalid_email',
+          message: 'Please enter a valid email address.',
+        });
+        return;
+      }
+
+      const rawReferrer = typeof body.referrer === 'string' ? body.referrer : '';
+      if (rawReferrer.length > SIGNUP_REFERRER_MAX_LEN) {
+        res.status(400).json({
+          error: 'invalid_referrer',
+          message: `Please keep the "how did you hear" note under ${SIGNUP_REFERRER_MAX_LEN} characters.`,
+        });
+        return;
+      }
+
+      // Per-IP rate limit. req.ip honors trust-proxy=1, so on Fly this is
+      // the original X-Forwarded-For client IP. Local dev returns 127.0.0.1.
+      const ipSource = typeof req.ip === 'string' && req.ip.length > 0 ? req.ip : 'unknown';
+      const ipHash = hashIp(ipSource);
+      const limit = checkAndIncrementSignupIp(ipHash);
+      if (!limit.allowed) {
+        logger.warn(
+          { event: 'signup_rate_limited', retry_after_sec: limit.retryAfterSec },
+          'signup_rate_limited'
+        );
+        res.setHeader('Retry-After', String(limit.retryAfterSec));
+        res.status(429).json({
+          error: 'rate_limited',
+          message: "Whoa — slow down. Try again in a bit.",
+          retry_after_sec: limit.retryAfterSec,
+        });
+        return;
+      }
+
+      // createSignupRequest handles dedup against pending/approved rows.
+      // We always return the same friendly success body regardless of
+      // dedup so the public surface never leaks "this email is in the system".
+      createSignupRequest({
+        email: rawEmail,
+        referrer: rawReferrer.length > 0 ? rawReferrer : null,
+        ipHash,
+      });
+
+      res.status(200).json({ ok: true, message: SIGNUP_SUCCESS_MESSAGE });
+    } catch (err) {
+      logger.error(
+        { err: err instanceof Error ? err.message : String(err) },
+        'signup_handler_error'
+      );
+      res.status(500).json({ error: 'internal_error' });
+    }
   });
 
   // T07 — authRequired guards POST /mcp ONLY (not /health, not /admin, not /).

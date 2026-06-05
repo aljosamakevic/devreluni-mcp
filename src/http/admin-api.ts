@@ -20,6 +20,12 @@
 import type { Express, Request, Response } from 'express';
 import type Database from 'better-sqlite3';
 import { listTokens, issueToken, revokeToken } from '../auth/tokens.js';
+import {
+  approveSignupRequest,
+  denySignupRequest,
+  listSignupRequests,
+} from '../auth/signup-requests.js';
+import { sendApprovalEmail } from '../lib/email.js';
 import { logger } from '../lib/logger.js';
 
 // RFC-5322-lite: anything@anything.anything with no whitespace.
@@ -96,6 +102,117 @@ export function registerAdminApi(app: Express, db: Database.Database): void {
       logger.error(
         { err: err instanceof Error ? err.message : String(err) },
         'admin_api_revoke_token_error'
+      );
+      res.status(500).json({ error: 'internal_error' });
+    }
+  });
+
+  // --- Phase 04 D-03-5 — Signup-request admin endpoints ---
+  //
+  // All three inherit the adminAuthRequired gate via the /admin path-prefix
+  // mount in src/http/server.ts — no per-route auth check needed here.
+
+  // GET /admin/api/signup-requests
+  //   Optional ?status=pending|approved|denied filter (default: pending).
+  //   Returns up to 100 rows ordered by created_at DESC.
+  app.get('/admin/api/signup-requests', (req: Request, res: Response) => {
+    try {
+      const statusParam = typeof req.query['status'] === 'string' ? req.query['status'] : '';
+      let status: 'pending' | 'approved' | 'denied' = 'pending';
+      if (statusParam === 'approved' || statusParam === 'denied') status = statusParam;
+      else if (statusParam === '' || statusParam === 'pending') status = 'pending';
+      else {
+        res.status(400).json({ error: 'bad_request', reason: 'invalid_status' });
+        return;
+      }
+      const rows = listSignupRequests({ status, limit: 100 });
+      res.status(200).json(rows);
+    } catch (err) {
+      logger.error(
+        { err: err instanceof Error ? err.message : String(err) },
+        'admin_api_list_signup_requests_error'
+      );
+      res.status(500).json({ error: 'internal_error' });
+    }
+  });
+
+  // POST /admin/api/signup-requests/:id/approve
+  //   Body: { admin_note?: string | null }
+  //   Mints a token via approveSignupRequest (atomic), then attempts to send
+  //   the welcome email via sendApprovalEmail. Even if the email fails, the
+  //   DB is already flipped — we surface the email error so the operator can
+  //   copy the token from the DB manually (or revoke + reissue).
+  app.post('/admin/api/signup-requests/:id/approve', async (req: Request, res: Response) => {
+    const idParam = req.params['id'];
+    if (typeof idParam !== 'string' || !/^\d+$/.test(idParam)) {
+      res.status(400).json({ error: 'bad_request', reason: 'id_must_be_integer' });
+      return;
+    }
+    const id = Number(idParam);
+    const body = (req.body ?? {}) as { admin_note?: unknown };
+    let adminNote: string | null = null;
+    if (typeof body.admin_note === 'string' && body.admin_note.trim().length > 0) {
+      adminNote = body.admin_note.trim();
+    }
+    try {
+      const result = approveSignupRequest(id, adminNote);
+      if (!result) {
+        res.status(404).json({ error: 'not_found' });
+        return;
+      }
+      const { request: requestRow, tokenPlaintext, tokenPrefix } = result;
+      const emailResult = await sendApprovalEmail({
+        to: requestRow.email,
+        token: tokenPlaintext,
+        adminNote: requestRow.admin_note,
+      });
+      if (!emailResult.ok) {
+        logger.warn(
+          { event: 'approval_email_failed', signup_id: id, error: emailResult.error },
+          'approval_email_failed'
+        );
+        res.status(200).json({
+          approved: true,
+          token_prefix: tokenPrefix,
+          email_sent: false,
+          email_error: emailResult.error,
+        });
+        return;
+      }
+      res.status(200).json({
+        approved: true,
+        token_prefix: tokenPrefix,
+        email_sent: true,
+      });
+    } catch (err) {
+      logger.error(
+        { err: err instanceof Error ? err.message : String(err) },
+        'admin_api_approve_signup_request_error'
+      );
+      res.status(500).json({ error: 'internal_error' });
+    }
+  });
+
+  // POST /admin/api/signup-requests/:id/deny
+  //   No body required. Flips to denied; no email is sent.
+  app.post('/admin/api/signup-requests/:id/deny', (req: Request, res: Response) => {
+    const idParam = req.params['id'];
+    if (typeof idParam !== 'string' || !/^\d+$/.test(idParam)) {
+      res.status(400).json({ error: 'bad_request', reason: 'id_must_be_integer' });
+      return;
+    }
+    const id = Number(idParam);
+    try {
+      const result = denySignupRequest(id);
+      if (!result) {
+        res.status(404).json({ error: 'not_found' });
+        return;
+      }
+      res.status(200).json({ denied: true });
+    } catch (err) {
+      logger.error(
+        { err: err instanceof Error ? err.message : String(err) },
+        'admin_api_deny_signup_request_error'
       );
       res.status(500).json({ error: 'internal_error' });
     }
