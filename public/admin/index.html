@@ -165,6 +165,71 @@
       .status-badge.error { background: #3a1a1a; color: #e07a7a; }
       .status-badge.ok { background: #1a3a1a; color: #7ae07a; }
       .status-badge.rate_limited { background: #3a2a10; color: #e6c477; }
+      .status-badge.pending { background: #1a2a3a; color: #7aaee0; }
+      .status-badge.approved { background: #1a3a1a; color: #7ae07a; }
+      .status-badge.denied { background: #3a1a1a; color: #e07a7a; }
+
+      /* Phase 04 D-03-5 — signup queue styles */
+      .signup-actions {
+        display: flex;
+        gap: 6px;
+        flex-wrap: wrap;
+      }
+      .signup-actions button {
+        font-size: 12px;
+        padding: 4px 10px;
+      }
+      button.approve {
+        background: #2a7a2a;
+      }
+      button.approve:hover { background: #1f661f; }
+      .referrer-cell {
+        max-width: 220px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      textarea.admin-note {
+        width: 100%;
+        min-height: 80px;
+        padding: 10px;
+        background: #0b0d10;
+        color: #e6e6e6;
+        border: 1px solid #1f2933;
+        border-radius: 4px;
+        font-family: inherit;
+        font-size: 13px;
+        resize: vertical;
+      }
+      textarea.admin-note:focus {
+        outline: none;
+        border-color: #4a8fe0;
+      }
+      .modal .field-label {
+        display: block;
+        font-size: 12px;
+        color: #9aa4b1;
+        margin: 0 0 6px;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+      .toast {
+        position: fixed;
+        bottom: 24px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: #11161c;
+        border: 1px solid #1f2933;
+        color: #e6e6e6;
+        padding: 12px 18px;
+        border-radius: 6px;
+        font-size: 13px;
+        z-index: 200;
+        box-shadow: 0 4px 24px rgba(0, 0, 0, 0.5);
+        max-width: 480px;
+      }
+      .toast.error { border-color: #5a2a2a; color: #e07a7a; }
+      .toast.warn { border-color: #5a3a10; color: #e6c477; }
     </style>
   </head>
   <body>
@@ -186,6 +251,20 @@
         </form>
         <div id="tokens-table-wrap">
           <div class="empty">Loading tokens...</div>
+        </div>
+      </section>
+
+      <section id="signup-pending-section">
+        <h2>Access requests (pending)</h2>
+        <div id="signup-pending-wrap">
+          <div class="empty">Loading access requests...</div>
+        </div>
+      </section>
+
+      <section id="signup-processed-section">
+        <h2>Recently processed (last 20)</h2>
+        <div id="signup-processed-wrap">
+          <div class="empty">Loading...</div>
         </div>
       </section>
 
@@ -216,6 +295,8 @@
         var usageWrap = document.getElementById('usage-table-wrap');
         var issueForm = document.getElementById('issue-form');
         var issueEmail = document.getElementById('issue-email');
+        var signupPendingWrap = document.getElementById('signup-pending-wrap');
+        var signupProcessedWrap = document.getElementById('signup-processed-wrap');
 
         function esc(s) {
           if (s === null || s === undefined) return '';
@@ -353,6 +434,216 @@
           });
         }
 
+        // Phase 04 D-03-5 — signup queue wiring -----------------------------------
+
+        function showToast(message, kind) {
+          var t = document.createElement('div');
+          t.className = 'toast' + (kind ? ' ' + kind : '');
+          t.textContent = message;
+          document.body.appendChild(t);
+          setTimeout(function () {
+            if (t.parentNode) t.parentNode.removeChild(t);
+          }, 6000);
+        }
+
+        function renderSignupPending(rows) {
+          if (!rows || rows.length === 0) {
+            signupPendingWrap.innerHTML = '<div class="empty">No access requests pending.</div>';
+            return;
+          }
+          var html = '<table>'
+            + '<thead><tr>'
+            + '<th>ID</th><th>Email</th><th>Referrer</th>'
+            + '<th>Requested</th><th></th>'
+            + '</tr></thead><tbody>';
+          for (var i = 0; i < rows.length; i++) {
+            var r = rows[i];
+            var ref = r.referrer || '';
+            html += '<tr>'
+              + '<td>' + esc(r.id) + '</td>'
+              + '<td>' + esc(r.email) + '</td>'
+              + '<td class="referrer-cell" title="' + esc(ref) + '">' + esc(ref || '—') + '</td>'
+              + '<td>' + esc(fmtDate(r.created_at)) + '</td>'
+              + '<td><div class="signup-actions">'
+                + '<button class="approve" data-approve-id="' + esc(r.id) + '" data-email="' + esc(r.email) + '">Approve</button>'
+                + '<button class="danger" data-deny-id="' + esc(r.id) + '">Deny</button>'
+              + '</div></td>'
+              + '</tr>';
+          }
+          html += '</tbody></table>';
+          signupPendingWrap.innerHTML = html;
+
+          var approveBtns = signupPendingWrap.querySelectorAll('button[data-approve-id]');
+          for (var a = 0; a < approveBtns.length; a++) {
+            approveBtns[a].addEventListener('click', onApproveClick);
+          }
+          var denyBtns = signupPendingWrap.querySelectorAll('button[data-deny-id]');
+          for (var d = 0; d < denyBtns.length; d++) {
+            denyBtns[d].addEventListener('click', onDenyClick);
+          }
+        }
+
+        function renderSignupProcessed(rows) {
+          if (!rows || rows.length === 0) {
+            signupProcessedWrap.innerHTML = '<div class="empty">Nothing processed yet.</div>';
+            return;
+          }
+          var html = '<table>'
+            + '<thead><tr>'
+            + '<th>ID</th><th>Email</th><th>Status</th>'
+            + '<th>Decided</th><th>Note</th>'
+            + '</tr></thead><tbody>';
+          for (var i = 0; i < rows.length; i++) {
+            var r = rows[i];
+            html += '<tr>'
+              + '<td>' + esc(r.id) + '</td>'
+              + '<td>' + esc(r.email) + '</td>'
+              + '<td><span class="status-badge ' + esc(r.status) + '">' + esc(r.status) + '</span></td>'
+              + '<td>' + esc(fmtDate(r.status_changed_at)) + '</td>'
+              + '<td class="referrer-cell" title="' + esc(r.admin_note || '') + '">'
+                + esc(r.admin_note || '—')
+              + '</td>'
+              + '</tr>';
+          }
+          html += '</tbody></table>';
+          signupProcessedWrap.innerHTML = html;
+        }
+
+        function loadSignupPending() {
+          return fetch('/admin/api/signup-requests?status=pending', { credentials: 'include' })
+            .then(function (res) {
+              if (!res.ok) throw new Error('pending fetch failed: ' + res.status);
+              return res.json();
+            })
+            .then(renderSignupPending)
+            .catch(function (err) {
+              signupPendingWrap.innerHTML =
+                '<div class="empty">Failed to load access requests: ' + esc(err.message) + '</div>';
+            });
+        }
+
+        function loadSignupProcessed() {
+          // Fetch approved + denied separately, merge, sort by status_changed_at DESC, take 20.
+          return Promise.all([
+            fetch('/admin/api/signup-requests?status=approved', { credentials: 'include' }).then(function (r) {
+              return r.ok ? r.json() : [];
+            }),
+            fetch('/admin/api/signup-requests?status=denied', { credentials: 'include' }).then(function (r) {
+              return r.ok ? r.json() : [];
+            })
+          ])
+            .then(function (parts) {
+              var merged = parts[0].concat(parts[1]);
+              merged.sort(function (a, b) {
+                var ax = a.status_changed_at || a.created_at || '';
+                var bx = b.status_changed_at || b.created_at || '';
+                if (ax < bx) return 1;
+                if (ax > bx) return -1;
+                return 0;
+              });
+              renderSignupProcessed(merged.slice(0, 20));
+            })
+            .catch(function (err) {
+              signupProcessedWrap.innerHTML =
+                '<div class="empty">Failed to load processed: ' + esc(err.message) + '</div>';
+            });
+        }
+
+        function onApproveClick(ev) {
+          var id = ev.currentTarget.getAttribute('data-approve-id');
+          var email = ev.currentTarget.getAttribute('data-email');
+          if (!id) return;
+
+          // Build confirm modal with admin-note textarea.
+          var backdrop = document.createElement('div');
+          backdrop.className = 'modal-backdrop';
+          backdrop.innerHTML =
+            '<div class="modal" role="dialog" aria-labelledby="approve-modal-title">'
+              + '<h3 id="approve-modal-title">Approve access request</h3>'
+              + '<p>Issue a token for <strong></strong> and email it now?</p>'
+              + '<label class="field-label" for="approve-note">Optional admin note (renders above the standard email)</label>'
+              + '<textarea class="admin-note" id="approve-note" placeholder="e.g. Hey Alice — saw your tweet, welcome aboard."></textarea>'
+              + '<div class="actions" style="margin-top:16px;">'
+                + '<button type="button" id="approve-cancel" class="danger" style="font-size:14px;padding:8px 14px;">Cancel</button>'
+                + '<button type="button" id="approve-confirm" class="approve" style="font-size:14px;padding:8px 14px;">Approve &amp; email</button>'
+              + '</div>'
+            + '</div>';
+          document.body.appendChild(backdrop);
+          // textContent = safe insertion of the admin-controlled email value.
+          backdrop.querySelector('strong').textContent = email || '';
+
+          var note = document.getElementById('approve-note');
+          note.focus();
+          var cancelBtn = document.getElementById('approve-cancel');
+          var confirmBtn = document.getElementById('approve-confirm');
+
+          function close() {
+            if (backdrop.parentNode) backdrop.parentNode.removeChild(backdrop);
+          }
+
+          cancelBtn.addEventListener('click', close);
+          confirmBtn.addEventListener('click', function () {
+            confirmBtn.disabled = true;
+            confirmBtn.textContent = 'Approving...';
+            fetch('/admin/api/signup-requests/' + encodeURIComponent(id) + '/approve', {
+              method: 'POST',
+              credentials: 'include',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ admin_note: note.value || '' })
+            })
+              .then(function (res) {
+                if (!res.ok) {
+                  return res.json().then(function (body) {
+                    throw new Error(body.error || ('http_' + res.status));
+                  });
+                }
+                return res.json();
+              })
+              .then(function (body) {
+                close();
+                if (body.email_sent) {
+                  showToast('Approved ' + (email || id) + ' — token ' + body.token_prefix + '… emailed.');
+                } else {
+                  showToast(
+                    'Approved ' + (email || id) + ' — token ' + body.token_prefix + '… minted, but email failed (' + (body.email_error || 'unknown') + '). Copy from DB.',
+                    'warn'
+                  );
+                }
+                loadSignupPending();
+                loadSignupProcessed();
+                loadTokens();
+              })
+              .catch(function (err) {
+                close();
+                showToast('Approve failed: ' + err.message, 'error');
+              });
+          });
+        }
+
+        function onDenyClick(ev) {
+          var id = ev.currentTarget.getAttribute('data-deny-id');
+          if (!id) return;
+          if (!confirm('Mark this request as denied? No email will be sent.')) return;
+          fetch('/admin/api/signup-requests/' + encodeURIComponent(id) + '/deny', {
+            method: 'POST',
+            credentials: 'include'
+          })
+            .then(function (res) {
+              if (!res.ok) throw new Error('deny failed: ' + res.status);
+              return res.json();
+            })
+            .then(function () {
+              showToast('Request ' + id + ' denied.');
+              loadSignupPending();
+              loadSignupProcessed();
+            })
+            .catch(function (err) {
+              showToast('Deny failed: ' + err.message, 'error');
+            });
+        }
+
+        // --- end signup wiring ----------------------------------------------------
+
         function onIssueSubmit(ev) {
           ev.preventDefault();
           var email = (issueEmail.value || '').trim();
@@ -403,6 +694,8 @@
         issueForm.addEventListener('submit', onIssueSubmit);
         loadTokens();
         loadUsage();
+        loadSignupPending();
+        loadSignupProcessed();
       })();
     </script>
   </body>
