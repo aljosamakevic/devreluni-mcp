@@ -28,3 +28,26 @@ CREATE TABLE IF NOT EXISTS rate_limits (
   count INTEGER NOT NULL DEFAULT 0,
   window_start TEXT NOT NULL          -- ISO timestamp UTC midnight.
 );
+
+-- Phase 04 — Self-serve signup queue (D-03-5). One row per access request
+-- submitted via the public POST /signup endpoint. The admin dashboard reads
+-- the pending subset, approves (which issues a token + emails it via Resend)
+-- or denies (silent — no email). created_at/status_changed_at are ISO UTC.
+-- email + email_normalized are both lowercased on insert; we keep both columns
+-- for clarity even though they're identical today (a future case-insensitive
+-- normalize step beyond lowercase would diverge them).
+CREATE TABLE IF NOT EXISTS signup_requests (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  email TEXT NOT NULL,                  -- lowercased on insert
+  email_normalized TEXT NOT NULL,        -- same as email but explicit for clarity
+  referrer TEXT,                          -- optional "how did you hear" free text, ≤500 chars
+  ip_hash TEXT,                          -- sha256 of source IP at submission time
+  created_at TEXT NOT NULL,              -- ISO timestamp UTC
+  status TEXT NOT NULL DEFAULT 'pending' CHECK(status IN ('pending','approved','denied')),
+  status_changed_at TEXT,                -- ISO timestamp UTC when admin acted
+  admin_note TEXT,                       -- optional note included in approval email
+  token_id INTEGER REFERENCES tokens(id) -- set when approved
+);
+
+CREATE INDEX IF NOT EXISTS idx_signup_requests_status ON signup_requests(status, created_at);
+CREATE INDEX IF NOT EXISTS idx_signup_requests_email ON signup_requests(email_normalized);
