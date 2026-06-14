@@ -21,7 +21,14 @@ import { adminAuthRequired } from '../auth/admin-middleware.js';
 import { registerAdminApi } from './admin-api.js';
 import { rateLimit } from '../ratelimit/middleware.js';
 import { checkAndIncrementSignupIp } from '../ratelimit/signup-ip.js';
+import { checkAndIncrementMagicLinkIp } from '../ratelimit/magic-link-ip.js';
+import {
+  checkAndIncrementMagicLinkEmail,
+  hashEmailForRateLimit,
+} from '../ratelimit/magic-link-email.js';
 import { createSignupRequest, hashIp } from '../auth/signup-requests.js';
+import { issueMagicLink } from '../auth/magic-link.js';
+import { sendMagicLinkEmail } from '../lib/email.js';
 import { usageLogHook } from './usage-logger.js';
 import { logger, getLastErrorAt } from '../lib/logger.js';
 import { cacheStats } from '../lib/cache.js';
@@ -36,6 +43,14 @@ const SIGNUP_EMAIL_MAX_LEN = 254;
 const SIGNUP_REFERRER_MAX_LEN = 500;
 const SIGNUP_SUCCESS_MESSAGE =
   "Thanks — we'll review and get back to you within a day or two.";
+
+// Phase 05a D-03-5 — Magic-link request endpoint config.
+// Same email validation rules as /signup so a user who passes the magic-link
+// form can also pass the legacy /signup form. BASE_URL controls the host
+// portion of the verify URL embedded in the email — set in fly.toml [env]
+// (not a secret), defaults to the production host so local dev still works.
+const MAGIC_LINK_SUCCESS_MESSAGE = 'Check your inbox for a sign-in link.';
+const MAGIC_LINK_BASE_URL = process.env['BASE_URL'] ?? 'https://getvetoed.com';
 
 // Resolve package version once at module load — health endpoint reports it.
 const PACKAGE_VERSION: string = (() => {
@@ -214,6 +229,148 @@ export function createHttpServer(getServer: () => McpServer): HttpServerHandle {
       logger.error(
         { err: err instanceof Error ? err.message : String(err) },
         'signup_handler_error'
+      );
+      res.status(500).json({ error: 'internal_error' });
+    }
+  });
+
+  // Phase 05a D-03-5 — Public magic-link request endpoint.
+  //
+  // PUBLIC: NO authRequired/rateLimit/usageLogHook in the chain. Coexists
+  // with POST /signup (Phase 04 manual-approval path stays for backward
+  // compat / direct API callers). Both endpoints are mounted BEFORE the
+  // express.static fallthrough to avoid the static middleware shadowing them.
+  //
+  // Contract:
+  //   - Honeypot input named `website`: non-empty → 200 success silently,
+  //     no DB write, no rate-limit increment, no email sent.
+  //   - Email RFC-5322-lite + ≤254 chars. Invalid → 400 invalid_email.
+  //   - Per-IP rate limit (magic:ip:<sha256> key) 5/hour. Cap → 429.
+  //   - Per-email rate limit (magic:email:<sha256-of-lowercased-email>)
+  //     5/hour. Cap → 429. Check AFTER per-IP so spammers can't enumerate
+  //     "email exists" via 429-vs-200 differentiation (the per-IP cap
+  //     catches them first).
+  //   - issueMagicLink → embed the plaintext in the verify URL.
+  //   - sendMagicLinkEmail fire-and-forget: we don't await so a slow Resend
+  //     can't tie up the request. We always return the same
+  //     MAGIC_LINK_SUCCESS_MESSAGE regardless of email delivery outcome to
+  //     avoid leaking whether the address exists or Resend is up.
+  app.post('/auth/magic-link/request', (req: Request, res: Response) => {
+    try {
+      const body = (req.body ?? {}) as {
+        email?: unknown;
+        website?: unknown;
+      };
+
+      // Honeypot: silently drop. Same shape as /signup so bots see identical
+      // response patterns across both endpoints.
+      if (typeof body.website === 'string' && body.website.trim().length > 0) {
+        logger.warn(
+          { event: 'magic_link_honeypot_tripped' },
+          'magic link honeypot tripped — silently dropping'
+        );
+        res.status(200).json({ ok: true, message: MAGIC_LINK_SUCCESS_MESSAGE });
+        return;
+      }
+
+      const rawEmail = typeof body.email === 'string' ? body.email.trim() : '';
+      if (
+        rawEmail.length === 0 ||
+        rawEmail.length > SIGNUP_EMAIL_MAX_LEN ||
+        !SIGNUP_EMAIL_REGEX.test(rawEmail)
+      ) {
+        res.status(400).json({
+          error: 'invalid_email',
+          message: 'Please enter a valid email address.',
+        });
+        return;
+      }
+
+      // Per-IP rate limit (first — cheaper to hash one IP than one email,
+      // and the IP gate is the primary spam dampener).
+      const ipSource =
+        typeof req.ip === 'string' && req.ip.length > 0 ? req.ip : 'unknown';
+      const ipHash = hashIp(ipSource);
+      const ipLimit = checkAndIncrementMagicLinkIp(ipHash);
+      if (!ipLimit.allowed) {
+        logger.warn(
+          {
+            event: 'magic_link_rate_limited',
+            scope: 'ip',
+            retry_after_sec: ipLimit.retryAfterSec,
+          },
+          'magic_link_rate_limited'
+        );
+        res.setHeader('Retry-After', String(ipLimit.retryAfterSec));
+        res.status(429).json({
+          error: 'rate_limited',
+          reason: 'per_ip_limit_exceeded',
+          message: "Whoa — slow down. Try again in a bit.",
+          retry_after_sec: ipLimit.retryAfterSec,
+        });
+        return;
+      }
+
+      // Per-email rate limit. Backstop for distributed spam targeting one inbox.
+      const emailLimit = checkAndIncrementMagicLinkEmail(
+        hashEmailForRateLimit(rawEmail)
+      );
+      if (!emailLimit.allowed) {
+        logger.warn(
+          {
+            event: 'magic_link_rate_limited',
+            scope: 'email',
+            retry_after_sec: emailLimit.retryAfterSec,
+          },
+          'magic_link_rate_limited'
+        );
+        res.setHeader('Retry-After', String(emailLimit.retryAfterSec));
+        res.status(429).json({
+          error: 'rate_limited',
+          reason: 'per_email_limit_exceeded',
+          message: "Too many sign-in requests for this email. Try again in a bit.",
+          retry_after_sec: emailLimit.retryAfterSec,
+        });
+        return;
+      }
+
+      const issued = issueMagicLink(rawEmail);
+      const url = `${MAGIC_LINK_BASE_URL}/auth/magic-link/verify?token=${encodeURIComponent(
+        issued.plaintext
+      )}`;
+
+      // Fire-and-forget so a slow Resend can't delay the response. Log on
+      // failure so operators can spot delivery problems via the
+      // 'magic_link_email_failed' event in pino output.
+      sendMagicLinkEmail({ to: rawEmail, url })
+        .then((result) => {
+          if (!result.ok) {
+            logger.error(
+              {
+                event: 'magic_link_email_failed',
+                magic_link_id: issued.id,
+                error: result.error,
+              },
+              'magic_link_email_failed'
+            );
+          }
+        })
+        .catch((err: unknown) => {
+          logger.error(
+            {
+              event: 'magic_link_email_threw',
+              magic_link_id: issued.id,
+              err: err instanceof Error ? err.message : String(err),
+            },
+            'magic_link_email_threw'
+          );
+        });
+
+      res.status(200).json({ ok: true, message: MAGIC_LINK_SUCCESS_MESSAGE });
+    } catch (err) {
+      logger.error(
+        { err: err instanceof Error ? err.message : String(err) },
+        'magic_link_request_handler_error'
       );
       res.status(500).json({ error: 'internal_error' });
     }
