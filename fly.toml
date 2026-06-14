@@ -20,6 +20,10 @@ primary_region = "iad"
   MCP_TRANSPORT = "http"
   PORT = "3000"
   VETOED_DB_PATH = "/data/vetoed.db"
+  # Phase 05a D-03-5 — host portion of the magic-link URL embedded in the
+  # sign-in email. NOT a secret (it only controls the URL the user sees in
+  # their inbox); override in a staging fly.toml if you deploy a staging app.
+  BASE_URL = "https://getvetoed.com"
 
 [[services]]
   internal_port = 3000
