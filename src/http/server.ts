@@ -27,8 +27,17 @@ import {
   hashEmailForRateLimit,
 } from '../ratelimit/magic-link-email.js';
 import { createSignupRequest, hashIp } from '../auth/signup-requests.js';
-import { issueMagicLink } from '../auth/magic-link.js';
+import {
+  issueMagicLink,
+  markMagicLinkUsed,
+  peekMagicLink,
+} from '../auth/magic-link.js';
+import { issueToken } from '../auth/tokens.js';
 import { sendMagicLinkEmail } from '../lib/email.js';
+import {
+  renderMagicLinkErrorPage,
+  renderMagicLinkSuccessPage,
+} from './magic-link-pages.js';
 import { usageLogHook } from './usage-logger.js';
 import { logger, getLastErrorAt } from '../lib/logger.js';
 import { cacheStats } from '../lib/cache.js';
@@ -373,6 +382,108 @@ export function createHttpServer(getServer: () => McpServer): HttpServerHandle {
         'magic_link_request_handler_error'
       );
       res.status(500).json({ error: 'internal_error' });
+    }
+  });
+
+  // Phase 05a D-03-5 — Public magic-link verify endpoint.
+  //
+  // PUBLIC: NO authRequired/rateLimit/usageLogHook. Returns
+  // Content-Type: text/html (server-side rendered, no template engine).
+  //
+  // Flow (peek/mark split — see src/auth/magic-link.ts header for rationale):
+  //   1. Read token from ?token=. Missing → error page 'missing_token'.
+  //   2. peekMagicLink (read-only) → null | { email, status }.
+  //      - null → error page 'not_found'.
+  //      - status='expired' → error page 'expired'.
+  //      - status='used' → error page 'already_used'.
+  //   3. issueToken(email) → new bearer (plaintext returned once).
+  //   4. markMagicLinkUsed(plaintext, bearer.id) → binds the bearer back
+  //      to the magic link row. Returns false on a race-loss (someone
+  //      else consumed the link between peek and mark). We accept the
+  //      duplicate bearer issuance — the new bearer is still valid for
+  //      this user (multi-device contract, no revocation on race).
+  //   5. Render the success HTML with the bearer + Claude Desktop config
+  //      snippet. The bearer plaintext appears in the HTML body BUT NOT
+  //      in the URL — the URL still contains the (now-spent) magic link
+  //      plaintext, which is useless after consumption.
+  //
+  // We always return HTTP 200 + text/html — even for error pages — because
+  // the user is reading the page in a browser. A 4xx would render the
+  // browser's error chrome instead.
+  app.get('/auth/magic-link/verify', (req: Request, res: Response) => {
+    try {
+      const rawToken = typeof req.query['token'] === 'string' ? req.query['token'] : '';
+
+      res.setHeader('Content-Type', 'text/html; charset=utf-8');
+      // Defense-in-depth: never let an upstream cache memoize a consumed-link page.
+      res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+
+      if (rawToken.length === 0) {
+        res.status(200).send(renderMagicLinkErrorPage('missing_token'));
+        return;
+      }
+
+      const peek = peekMagicLink(rawToken);
+      if (!peek) {
+        logger.warn({ event: 'magic_link_verify_not_found' }, 'magic_link_verify_not_found');
+        res.status(200).send(renderMagicLinkErrorPage('not_found'));
+        return;
+      }
+      if (peek.status === 'expired') {
+        logger.warn(
+          { event: 'magic_link_verify_expired', email: peek.email },
+          'magic_link_verify_expired'
+        );
+        res.status(200).send(renderMagicLinkErrorPage('expired'));
+        return;
+      }
+      if (peek.status === 'used') {
+        logger.warn(
+          { event: 'magic_link_verify_replay', email: peek.email },
+          'magic_link_verify_replay'
+        );
+        res.status(200).send(renderMagicLinkErrorPage('already_used'));
+        return;
+      }
+
+      // peek.status === 'ok' → mint bearer + mark used.
+      const bearer = issueToken(peek.email);
+      const marked = markMagicLinkUsed(rawToken, bearer.id);
+      if (!marked) {
+        // Race loss — another click finished between peek and mark. The
+        // bearer we just minted is still valid for this user; we accept
+        // the duplicate per the multi-device contract. Log so operators
+        // can quantify the frequency.
+        logger.warn(
+          {
+            event: 'magic_link_verify_race_loss',
+            email: peek.email,
+            bearer_prefix: bearer.prefix,
+          },
+          'magic_link_verify_race_loss'
+        );
+      } else {
+        logger.info(
+          {
+            event: 'magic_link_verify_success',
+            email: peek.email,
+            bearer_prefix: bearer.prefix,
+          },
+          'magic_link_verify_success'
+        );
+      }
+
+      res.status(200).send(renderMagicLinkSuccessPage(bearer.token));
+    } catch (err) {
+      logger.error(
+        { err: err instanceof Error ? err.message : String(err) },
+        'magic_link_verify_handler_error'
+      );
+      // Last-resort: a generic 500 HTML page rather than JSON, since the
+      // browser is already expecting HTML on this route.
+      if (!res.headersSent) {
+        res.status(500).send('<!DOCTYPE html><html><body><h1>Something went wrong</h1></body></html>');
+      }
     }
   });
 
