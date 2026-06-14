@@ -51,3 +51,23 @@ CREATE TABLE IF NOT EXISTS signup_requests (
 
 CREATE INDEX IF NOT EXISTS idx_signup_requests_status ON signup_requests(status, created_at);
 CREATE INDEX IF NOT EXISTS idx_signup_requests_email ON signup_requests(email_normalized);
+
+-- Phase 05a — Magic link auth. One row per magic link issued. Plaintext is never
+-- stored; we keep sha256(plaintext) and validate by hashing the URL query param
+-- and looking up by hash. used_at marks consumption (one-time-use enforcement);
+-- expires_at is 15 minutes after created_at (UTC ISO).
+CREATE TABLE IF NOT EXISTS magic_link_tokens (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  email TEXT NOT NULL,
+  email_normalized TEXT NOT NULL,        -- lowercased; index target
+  token_hash TEXT NOT NULL UNIQUE,        -- sha256 of plaintext
+  created_at TEXT NOT NULL,               -- ISO UTC
+  expires_at TEXT NOT NULL,               -- ISO UTC (created_at + 15 min)
+  used_at TEXT,                            -- ISO UTC when consumed; NULL means unused
+  consumed_token_id INTEGER REFERENCES tokens(id)  -- bearer token issued on consumption
+);
+
+CREATE INDEX IF NOT EXISTS idx_magic_link_tokens_email
+  ON magic_link_tokens(email_normalized, created_at);
+CREATE INDEX IF NOT EXISTS idx_magic_link_tokens_expires
+  ON magic_link_tokens(expires_at);
