@@ -236,3 +236,115 @@ describe('sendApprovalEmail — failure paths', () => {
     if (!result.ok) expect(result.error).toBe('invalid_token');
   });
 });
+
+// ---------------------------------------------------------------------------
+// Phase 05a — sendMagicLinkEmail
+// ---------------------------------------------------------------------------
+
+describe('buildMagicLinkTextBody / buildMagicLinkHtmlBody', () => {
+  it('embeds the verify URL verbatim in the plain-text body', async () => {
+    const { buildMagicLinkTextBody } = await import('./email.js');
+    const url = 'https://getvetoed.com/auth/magic-link/verify?token=abc123';
+    const body = buildMagicLinkTextBody(url);
+    expect(body.includes(url)).toBe(true);
+    expect(body.includes('15 minutes')).toBe(true);
+    expect(body.includes('works once')).toBe(true);
+  });
+
+  it('embeds the verify URL in the HTML body (CTA + plain link)', async () => {
+    const { buildMagicLinkHtmlBody } = await import('./email.js');
+    const url = 'https://getvetoed.com/auth/magic-link/verify?token=abc123';
+    const html = buildMagicLinkHtmlBody(url);
+    expect(html.includes(`href="${url}"`)).toBe(true);
+    expect(html.includes('Sign in to Veto')).toBe(true);
+    expect(html.includes('15 minutes')).toBe(true);
+  });
+
+  it('escapes HTML-significant characters in the URL', async () => {
+    const { buildMagicLinkHtmlBody } = await import('./email.js');
+    const url = 'https://getvetoed.com/v?token=a&b=<x>';
+    const html = buildMagicLinkHtmlBody(url);
+    expect(html.includes('<x>')).toBe(false);
+    expect(html.includes('&lt;x&gt;')).toBe(true);
+    expect(html.includes('&amp;b=')).toBe(true);
+  });
+});
+
+describe('sendMagicLinkEmail — happy path', () => {
+  it('calls resend.emails.send with the correct shape', async () => {
+    const {
+      sendMagicLinkEmail,
+      __reloadEmailClientForTests,
+      MAGIC_LINK_EMAIL_SUBJECT,
+      MAGIC_LINK_EMAIL_FROM,
+    } = await import('./email.js');
+    __reloadEmailClientForTests();
+
+    const url = 'https://getvetoed.com/auth/magic-link/verify?token=tok123';
+    const result = await sendMagicLinkEmail({ to: 'alice@example.com', url });
+    expect(result.ok).toBe(true);
+    if (result.ok) expect(result.id).toBe('mock-message-id');
+
+    expect(sendCalls).toHaveLength(1);
+    const call = sendCalls[0]!;
+    expect(call.from).toBe(MAGIC_LINK_EMAIL_FROM);
+    expect(call.to).toEqual(['alice@example.com']);
+    expect(call.subject).toBe(MAGIC_LINK_EMAIL_SUBJECT);
+    expect(call.html.includes(url)).toBe(true);
+    expect(call.text.includes(url)).toBe(true);
+  });
+});
+
+describe('sendMagicLinkEmail — failure paths', () => {
+  it('returns email_disabled when RESEND_API_KEY is unset', async () => {
+    delete process.env['RESEND_API_KEY'];
+    const { sendMagicLinkEmail, __reloadEmailClientForTests } = await import('./email.js');
+    __reloadEmailClientForTests();
+
+    const result = await sendMagicLinkEmail({
+      to: 'x@example.com',
+      url: 'https://getvetoed.com/auth/magic-link/verify?token=t',
+    });
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.error).toBe('email_disabled');
+    expect(sendCalls).toHaveLength(0);
+  });
+
+  it('rejects invalid `to`', async () => {
+    const { sendMagicLinkEmail, __reloadEmailClientForTests } = await import('./email.js');
+    __reloadEmailClientForTests();
+
+    const result = await sendMagicLinkEmail({
+      to: '   ',
+      url: 'https://getvetoed.com/auth/magic-link/verify?token=t',
+    });
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.error).toBe('invalid_to');
+  });
+
+  it('rejects empty url', async () => {
+    const { sendMagicLinkEmail, __reloadEmailClientForTests } = await import('./email.js');
+    __reloadEmailClientForTests();
+
+    const result = await sendMagicLinkEmail({ to: 'x@example.com', url: '' });
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.error).toBe('invalid_url');
+  });
+
+  it('surfaces SDK-returned error', async () => {
+    const { sendMagicLinkEmail, __reloadEmailClientForTests } = await import('./email.js');
+    __reloadEmailClientForTests();
+
+    sendImpl = async () => ({
+      data: null,
+      error: { name: 'invalid_to', message: 'Recipient bounced' },
+    });
+
+    const result = await sendMagicLinkEmail({
+      to: 'y@example.com',
+      url: 'https://getvetoed.com/auth/magic-link/verify?token=t',
+    });
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.error).toBe('Recipient bounced');
+  });
+});
