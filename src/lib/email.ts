@@ -99,7 +99,8 @@ export function buildTextBody(token: string, adminNote: string | null): string {
   lines.push('');
   lines.push('Docs and full setup: https://getvetoed.com/');
   lines.push('');
-  lines.push("Reply to this email if anything's broken — happy to help.");
+  lines.push("Questions or anything broken? Write to aljosa.sandbox@gmail.com — happy to help.");
+  lines.push("(This inbox doesn't accept replies — please use the address above.)");
   lines.push('');
   lines.push('— Aljosa');
 
@@ -160,7 +161,8 @@ ${noteBlock}
 
     <p>Docs and full setup: <a href="https://getvetoed.com/">https://getvetoed.com/</a></p>
 
-    <p>Reply to this email if anything's broken — happy to help.</p>
+    <p>Questions or anything broken? Write to <a href="mailto:aljosa.sandbox@gmail.com">aljosa.sandbox@gmail.com</a> — happy to help.</p>
+    <p style="font-size:13px;color:#777;">(This inbox doesn't accept replies — please use the address above.)</p>
 
     <p>— Aljosa</p>
 </body></html>`;
@@ -247,3 +249,146 @@ export function __reloadEmailClientForTests(): void {
 // Constants exported for tests + downstream wiring.
 export const APPROVAL_EMAIL_SUBJECT = SUBJECT;
 export const APPROVAL_EMAIL_FROM = RESEND_FROM;
+
+// ---------------------------------------------------------------------------
+// Phase 05a D-03-5 — Magic link email.
+//
+// Called by the POST /auth/magic-link/request handler with the verify URL
+// already constructed by the caller. We embed the URL verbatim into both
+// the plain-text and HTML bodies so terminal mail clients can still copy it.
+//
+// Same fail-soft semantics as sendApprovalEmail:
+//   - email_disabled when RESEND_API_KEY was unset at module load
+//   - timeout after SEND_TIMEOUT_MS
+//   - never throws
+// ---------------------------------------------------------------------------
+
+const MAGIC_LINK_SUBJECT = 'Your Veto sign-in link';
+
+export interface SendMagicLinkEmailInput {
+  to: string;
+  url: string;
+}
+
+export type SendMagicLinkEmailResult =
+  | { ok: true; id: string }
+  | { ok: false; error: string };
+
+/**
+ * Build the plain-text body for the magic link email. URL appears verbatim
+ * so plain-text mail clients can copy it without HTML parsing.
+ */
+export function buildMagicLinkTextBody(url: string): string {
+  return (
+    "You're one click away from your Veto access token.\n" +
+    '\n' +
+    'Sign in to claim your token:\n' +
+    '\n' +
+    `    ${url}\n` +
+    '\n' +
+    "This link expires in 15 minutes and works once. If you didn't request this, you can safely ignore the email.\n" +
+    '\n' +
+    'Questions? Write to aljosa.sandbox@gmail.com (this inbox does not accept replies).\n' +
+    '\n' +
+    '— Veto'
+  );
+}
+
+/**
+ * Build the HTML body for the magic link email. Mirrors the approval email
+ * wrapper (system font stack, --bg/--fg palette) so both feel like the
+ * same product. The CTA is a button-styled <a> using the landing accent.
+ */
+export function buildMagicLinkHtmlBody(url: string): string {
+  const esc = (s: string): string =>
+    s
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+
+  const safeUrl = esc(url);
+  return `<!DOCTYPE html>
+<html><body style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;font-size:16px;line-height:1.6;color:#1a1a1a;max-width:600px;margin:0 auto;padding:24px;">
+    <p>You're one click away from your Veto access token.</p>
+
+    <p>Sign in to claim your token:</p>
+
+    <p style="margin:24px 0;">
+      <a href="${safeUrl}" style="display:inline-block;padding:12px 22px;background:#c0392b;color:#fff;font-weight:600;text-decoration:none;border-radius:4px;">Sign in to Veto</a>
+    </p>
+
+    <p style="font-size:14px;color:#555;">Or paste this URL into your browser:<br>
+    <a href="${safeUrl}" style="color:#555;word-break:break-all;">${safeUrl}</a></p>
+
+    <p style="font-size:14px;color:#555;">This link expires in 15 minutes and works once. If you didn't request this, you can safely ignore the email.</p>
+
+    <p style="font-size:13px;color:#777;">Questions? Write to <a href="mailto:aljosa.sandbox@gmail.com" style="color:#777;">aljosa.sandbox@gmail.com</a> (this inbox does not accept replies).</p>
+
+    <p>— Veto</p>
+</body></html>`;
+}
+
+/**
+ * Send the magic-link email. URL is embedded verbatim into both bodies.
+ * Fail-soft (never throws); caller (POST /auth/magic-link/request handler)
+ * always returns the same success body to the client regardless of result
+ * so we don't leak whether the email actually went out.
+ */
+export async function sendMagicLinkEmail(
+  input: SendMagicLinkEmailInput
+): Promise<SendMagicLinkEmailResult> {
+  if (!client) {
+    return { ok: false, error: 'email_disabled' };
+  }
+
+  if (typeof input.to !== 'string' || input.to.trim().length === 0) {
+    return { ok: false, error: 'invalid_to' };
+  }
+  if (typeof input.url !== 'string' || input.url.length === 0) {
+    return { ok: false, error: 'invalid_url' };
+  }
+
+  const html = buildMagicLinkHtmlBody(input.url);
+  const text = buildMagicLinkTextBody(input.url);
+
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const timeout = new Promise<SendMagicLinkEmailResult>((resolve) => {
+    timer = setTimeout(() => resolve({ ok: false, error: 'timeout' }), SEND_TIMEOUT_MS);
+  });
+
+  try {
+    const sendPromise = client.emails
+      .send({
+        from: RESEND_FROM,
+        to: [input.to],
+        subject: MAGIC_LINK_SUBJECT,
+        html,
+        text,
+      })
+      .then((result): SendMagicLinkEmailResult => {
+        if (result.error) {
+          return {
+            ok: false,
+            error: result.error.message || result.error.name || 'resend_error',
+          };
+        }
+        if (!result.data?.id) {
+          return { ok: false, error: 'no_message_id' };
+        }
+        return { ok: true, id: result.data.id };
+      })
+      .catch((err: unknown): SendMagicLinkEmailResult => {
+        const msg = err instanceof Error ? err.message : String(err);
+        return { ok: false, error: msg };
+      });
+
+    return await Promise.race([sendPromise, timeout]);
+  } finally {
+    if (timer) clearTimeout(timer);
+  }
+}
+
+export const MAGIC_LINK_EMAIL_SUBJECT = MAGIC_LINK_SUBJECT;
+export const MAGIC_LINK_EMAIL_FROM = RESEND_FROM;

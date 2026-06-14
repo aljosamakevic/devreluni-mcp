@@ -232,12 +232,12 @@
         <!-- TODO: testimonials once 5 users have shipped a verdict -->
       </section>
 
-      <h2>Get access</h2>
+      <h2>Get instant access</h2>
       <p>
-        Veto is currently invite-only while shared API quotas stay manageable.
-        Request a bearer token below; once approved, you'll get an email with
-        your token and a copy-paste snippet for your Claude Desktop config.
-        Then run <code>validate_idea</code> against your next idea.
+        Enter your email; we'll send a one-click sign-in link. The link
+        delivers your bearer token plus a copy-paste snippet for your
+        Claude Desktop config. Then run <code>validate_idea</code> against
+        your next idea.
       </p>
 
       <form class="signup-form" id="signup-form" novalidate>
@@ -252,17 +252,6 @@
             placeholder="you@example.com"
           >
         </div>
-        <div>
-          <label for="signup-referrer">How did you hear about Veto? <span class="optional">(optional)</span></label>
-          <input
-            type="text"
-            id="signup-referrer"
-            name="referrer"
-            maxlength="500"
-            autocomplete="off"
-            placeholder="e.g. saw your post on HN"
-          >
-        </div>
         <div class="signup-honeypot" aria-hidden="true">
           <label for="signup-website">Website (leave blank)</label>
           <input
@@ -274,15 +263,17 @@
           >
         </div>
         <div>
-          <button type="submit" id="signup-submit">Request access</button>
+          <button type="submit" id="signup-submit">Send sign-in link</button>
         </div>
         <p class="signup-message" id="signup-message" role="status" aria-live="polite"></p>
       </form>
 
       <script>
-        // Phase 04 D-03-5 — inline signup form wiring.
-        // Posts JSON to /signup, displays a friendly result message below
-        // the form. No framework, no external deps.
+        // Phase 05a D-03-5 — inline magic-link form wiring.
+        // Posts JSON to /auth/magic-link/request, displays a friendly result
+        // message below the form. No framework, no external deps. Same
+        // honeypot semantics as Phase 04 — bots that fill `website` see an
+        // identical success message; humans see "Check your inbox".
         (function () {
           'use strict';
           var form = document.getElementById('signup-form');
@@ -304,13 +295,12 @@
             submitBtn.disabled = true;
 
             var email = (document.getElementById('signup-email').value || '').trim();
-            var referrer = (document.getElementById('signup-referrer').value || '').trim();
             var website = (document.getElementById('signup-website').value || '').trim();
 
-            fetch('/signup', {
+            fetch('/auth/magic-link/request', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ email: email, referrer: referrer, website: website })
+              body: JSON.stringify({ email: email, website: website })
             })
               .then(function (res) {
                 return res.json().then(function (body) {
@@ -321,7 +311,7 @@
                 if (result.status === 200 && result.body && result.body.ok) {
                   form.reset();
                   showMessage(
-                    result.body.message || "Thanks — we'll review and get back to you within a day or two.",
+                    result.body.message || 'Check your inbox for a sign-in link.',
                     'success'
                   );
                 } else if (result.status === 429) {

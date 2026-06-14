@@ -325,6 +325,93 @@ the only other public routes. `/mcp` stays `authRequired`-gated;
   - `npx tsx scripts/assert-fomi-run.ts` — 6 / 6 PASS (Stream G inviolate).
   - `npx html-validate public/index.html public/admin/index.html` — exit 0.
 
+**Phase 05a iteration (2026-06-14) — self-serve magic link:**
+
+Phase 04 resolved the manual-mailto path but left a ~24h human-in-the-
+loop between user request and token delivery. Phase 05a closes the loop
+without OAuth: users get a token in under 60 seconds via a sha256-hashed,
+15-minute, one-time-use magic link emailed by Resend.
+
+**New files:**
+
+  - `src/auth/magic-link.ts` — `issueMagicLink(email)`, `peekMagicLink`
+    (read-only), `markMagicLinkUsed(plaintext, bearerId)` (idempotent),
+    `cleanupExpiredMagicLinks()`. Plaintext is 32 random bytes base64url,
+    sha256-hashed for storage. `MAGIC_LINK_TTL_MS = 15 * 60 * 1000`.
+    Peek/mark split because the verify handler needs the email BEFORE
+    minting the bearer, then the bearer ID BEFORE marking the link used;
+    a single `consume()` would chicken-and-egg.
+  - `src/auth/magic-link.test.ts` — 15 cases (happy path, replay, expiry
+    via fake timers, plaintext-never-stored assertion, distinct-per-issuance,
+    cleanup grace window).
+  - `src/ratelimit/magic-link-ip.ts` — per-IP 5/hour cap, key prefix
+    `magic:ip:<sha256>`. Same fixed-window math as `signup-ip.ts`.
+  - `src/ratelimit/magic-link-email.ts` — per-email 5/hour cap, key prefix
+    `magic:email:<sha256-of-lowercased>`. Backstop for distributed spam.
+  - `src/ratelimit/magic-link-ip.test.ts` + `magic-link-email.test.ts` —
+    13 cases combined.
+  - `src/http/magic-link-pages.ts` — server-side rendered HTML (no
+    template engine) for the verify endpoint. `renderMagicLinkSuccessPage`
+    inlines the bearer + Claude Desktop config snippet with a "Copy
+    token" button using `navigator.clipboard` (fallback to
+    `document.execCommand`). `renderMagicLinkErrorPage` switches between
+    `missing_token` / `not_found` / `expired` / `already_used` copy.
+    Both pages use the landing palette + `<meta name="robots"
+    content="noindex,nofollow">` so spent verify URLs can't be indexed.
+  - `src/http/magic-link-request.test.ts` — 8 cases (POST endpoint).
+  - `src/http/magic-link-verify.test.ts` — 6 cases (GET endpoint).
+
+**Modified files:**
+
+  - `src/db/schema.sql` — new `magic_link_tokens` table + 2 indices
+    (email_normalized+created_at, expires_at). Plaintext is never stored;
+    `token_hash = sha256(plaintext)` UNIQUE; `used_at` enforces one-time
+    use; `consumed_token_id` binds the issued bearer back for audit.
+  - `src/lib/email.ts` — added `sendMagicLinkEmail({ to, url })` mirroring
+    the `sendApprovalEmail` fail-soft pattern (`email_disabled` /
+    `timeout` / never-throws). Subject "Your Veto sign-in link". Reuses
+    `RESEND_API_KEY` + `RESEND_FROM` — no new secrets.
+  - `src/lib/email.test.ts` — +8 cases for the magic-link templates +
+    sendMagicLinkEmail.
+  - `src/http/server.ts` — mounted two new public routes BEFORE the
+    `express.static('public')` fallthrough:
+    - `POST /auth/magic-link/request` — honeypot drop, RFC-5322-lite
+      email + ≤254 chars, per-IP rate limit (check before per-email so
+      spammers can't enumerate "email exists" via 429-vs-200 diff),
+      `issueMagicLink` → `BASE_URL/auth/magic-link/verify?token=<plaintext>`,
+      fire-and-forget `sendMagicLinkEmail`, always 200 success body.
+    - `GET /auth/magic-link/verify` — peek/mark split flow, renders
+      success or error HTML. Always HTTP 200 (browsers consume this).
+      `Cache-Control: no-store` so an upstream cache can't memoize a
+      consumed-link page. Race-loss logged but accepted (multi-device).
+  - `public/index.html` — landing form swapped: "Get instant access" +
+    "Send sign-in link" button + removed "How did you hear" referrer
+    input. Submits to `/auth/magic-link/request`. Honeypot retained.
+  - `fly.toml` — added `BASE_URL = "https://getvetoed.com"` to `[env]`.
+    NOT a secret; controls only the URL host embedded in emails.
+  - `.planning/codebase/CONCERNS.md` — D-03-5 entry appended with Phase
+    05a iteration summary.
+  - `docs/OPERATIONS.md` — added §11 magic-link runbook (env vars, ops
+    levers, SQL inspection, manual invalidation, Resend-down behavior,
+    race-condition explanation, cleanup story).
+
+**Coexistence with Phase 04:** the `POST /signup` endpoint stays mounted
+for backward-compat / direct API callers / the admin manual-override
+path. The admin dashboard's "Access requests" sections still work. The
+landing form swap is the only user-visible change.
+
+**Status (Phase 05a):** SHIPPED. New public HTTP surface adds
+`POST /auth/magic-link/request` + `GET /auth/magic-link/verify`. All
+other routes unchanged.
+
+**Phase 05a verification:**
+
+  - `npm run build` — clean.
+  - `npm test` — 259 / 259 across 23 files (was 209 / 209 across 18
+    pre-05a; +50 new cases across 5 new test files + 8 added to
+    `src/lib/email.test.ts`).
+  - `npx tsx scripts/assert-fomi-run.ts` — 6 / 6 PASS (Stream G inviolate).
+
 **Spec compliance:** CONTEXT.md Out-of-Scope bullet 4 ("Self-serve token
 request UX — mailto CTA is v1"); resolved without OAuth — the lighter
 in-app admin-approval queue satisfies the user-facing requirement while

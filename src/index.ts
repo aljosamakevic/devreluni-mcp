@@ -129,7 +129,7 @@ async function main(): Promise<void> {
     const server = createMcpServer();
     const transport = new StdioServerTransport();
     await server.connect(transport);
-    console.error('ProductValidation MCP Server running on stdio');
+    console.error('Veto MCP Server running on stdio');
     console.error(
       'Tools: find_closest_competitor, read_competitor_changelog, map_competitive_weaknesses, scan_producthunt_launches, get_category_failure_modes, find_yc_rfs_alignment, find_pricing_anchors, check_big_tech_encroachment, find_why_now_signals, estimate_demand_signals, find_public_revenue_signals, assess_platform_dependency, finalize_validation_report'
     );
@@ -144,22 +144,18 @@ async function main(): Promise<void> {
     // multiple HTTP sessions because the SDK Server's transport binding is sticky.
     const { listen } = createHttpServer(createMcpServer);
     listen(port);
-    console.error(`ProductValidation MCP Server running on HTTP :${port}`);
+    console.error(`Veto MCP Server running on HTTP :${port}`);
     return;
   }
 
-  console.error(
-    `Invalid MCP_TRANSPORT value: '${transportMode}'. Expected 'stdio' (or unset) or 'http'.`
-  );
+  console.error(`Invalid MCP_TRANSPORT value: '${transportMode}'. Expected 'stdio' (or unset) or 'http'.`);
   process.exit(1);
 }
 
 // Only run main() when this file is the entrypoint (node build/index.js or tsx src/index.ts).
 // Guarded so test files can `import { createMcpServer } from '../index.js'` without
 // spawning the stdio server as a side effect.
-const isEntrypoint =
-  process.argv[1] !== undefined &&
-  import.meta.url === pathToFileURL(resolve(process.argv[1])).href;
+const isEntrypoint = process.argv[1] !== undefined && import.meta.url === pathToFileURL(resolve(process.argv[1])).href;
 
 if (isEntrypoint) {
   main().catch((error) => {
