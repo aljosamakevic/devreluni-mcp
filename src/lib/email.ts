@@ -99,7 +99,8 @@ export function buildTextBody(token: string, adminNote: string | null): string {
   lines.push('');
   lines.push('Docs and full setup: https://getvetoed.com/');
   lines.push('');
-  lines.push("Reply to this email if anything's broken — happy to help.");
+  lines.push("Questions or anything broken? Write to aljosa.sandbox@gmail.com — happy to help.");
+  lines.push("(This inbox doesn't accept replies — please use the address above.)");
   lines.push('');
   lines.push('— Aljosa');
 
@@ -160,7 +161,8 @@ ${noteBlock}
 
     <p>Docs and full setup: <a href="https://getvetoed.com/">https://getvetoed.com/</a></p>
 
-    <p>Reply to this email if anything's broken — happy to help.</p>
+    <p>Questions or anything broken? Write to <a href="mailto:aljosa.sandbox@gmail.com">aljosa.sandbox@gmail.com</a> — happy to help.</p>
+    <p style="font-size:13px;color:#777;">(This inbox doesn't accept replies — please use the address above.)</p>
 
     <p>— Aljosa</p>
 </body></html>`;
@@ -286,6 +288,8 @@ export function buildMagicLinkTextBody(url: string): string {
     '\n' +
     "This link expires in 15 minutes and works once. If you didn't request this, you can safely ignore the email.\n" +
     '\n' +
+    'Questions? Write to aljosa.sandbox@gmail.com (this inbox does not accept replies).\n' +
+    '\n' +
     '— Veto'
   );
 }
@@ -319,6 +323,8 @@ export function buildMagicLinkHtmlBody(url: string): string {
     <a href="${safeUrl}" style="color:#555;word-break:break-all;">${safeUrl}</a></p>
 
     <p style="font-size:14px;color:#555;">This link expires in 15 minutes and works once. If you didn't request this, you can safely ignore the email.</p>
+
+    <p style="font-size:13px;color:#777;">Questions? Write to <a href="mailto:aljosa.sandbox@gmail.com" style="color:#777;">aljosa.sandbox@gmail.com</a> (this inbox does not accept replies).</p>
 
     <p>— Veto</p>
 </body></html>`;
