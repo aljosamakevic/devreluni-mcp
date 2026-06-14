@@ -381,3 +381,139 @@ HTTP layer via `rate_limits` keys of the shape `signup:ip:<sha256>`.
   if bounce volume becomes meaningful, wire Resend's webhook to a new
   `/webhook/resend` endpoint and surface failures into a "needs
   attention" subsection.
+
+## 11. Magic link runbook (Phase 05a, D-03-5)
+
+Phase 05a moves the user-facing access path from admin-approval to
+self-serve magic links. The landing page now POSTs to
+`/auth/magic-link/request`; users get a sign-in URL by email; clicking
+it lands on `/auth/magic-link/verify?token=<plaintext>` which mints a
+fresh bearer + renders the token + Claude Desktop config snippet inline.
+
+The Phase 04 admin-queue path stays mounted (the `POST /signup`
+endpoint + admin dashboard sections are unchanged) as the manual
+override for cases like "this user can't receive email, send them a
+token out-of-band".
+
+### 11.1 Required env vars
+
+No NEW secrets — Phase 05a reuses the existing `RESEND_API_KEY` +
+`RESEND_FROM`.
+
+One NEW non-secret env var: `BASE_URL`. Set in `fly.toml` `[env]`,
+defaults to `https://getvetoed.com`. Controls the host portion of the
+URL embedded in the email body. If you deploy a staging app, override
+in that app's `fly.toml` to its staging host so links resolve correctly.
+
+### 11.2 Operational levers
+
+- **TTL:** 15 minutes (constant `MAGIC_LINK_TTL_MS` in
+  `src/auth/magic-link.ts`). Bump only with a deploy.
+- **Rate limits:** 5/hour per IP (`magic:ip:<sha256>` key in
+  `rate_limits`) and 5/hour per email
+  (`magic:email:<sha256-of-lowercased-email>`). Same fixed-window math
+  as the Phase 04 signup limits.
+- **One-time use:** enforced by `magic_link_tokens.used_at`. Once set,
+  the row can't be re-consumed (UPDATE WHERE `used_at IS NULL` guards
+  the race window).
+
+### 11.3 Inspect the magic_link_tokens table
+
+```
+flyctl ssh console -a vetoed-mcp
+sqlite3 /data/vetoed.db
+```
+
+```sql
+-- Recent requests (any status).
+SELECT id, email, created_at, expires_at, used_at, consumed_token_id
+FROM magic_link_tokens
+ORDER BY id DESC LIMIT 50;
+
+-- Unused links that are still within TTL — "in flight" right now.
+SELECT id, email, created_at, expires_at FROM magic_link_tokens
+WHERE used_at IS NULL AND expires_at > datetime('now')
+ORDER BY id DESC;
+
+-- Per-email request volume in the last hour (for spam triage).
+SELECT email_normalized, COUNT(*) AS n
+FROM magic_link_tokens
+WHERE created_at > datetime('now', '-1 hour')
+GROUP BY email_normalized
+ORDER BY n DESC;
+```
+
+Plaintext is NEVER stored — only `token_hash = sha256(plaintext)`. If
+a user emails you a magic-link URL claiming "this didn't work," you
+cannot replay it; ask them to request a fresh one, or use the admin
+queue (`/admin`) to issue a token out-of-band.
+
+### 11.4 Manually invalidate a magic link via SQL
+
+If you need to nuke an outstanding link (compromised inbox, support
+request), mark it used so it can't be consumed:
+
+```sql
+-- By email: invalidate everything outstanding for one address.
+UPDATE magic_link_tokens
+SET used_at = datetime('now'), consumed_token_id = NULL
+WHERE email_normalized = '<lowercased-email>'
+  AND used_at IS NULL;
+
+-- By id: invalidate one specific row.
+UPDATE magic_link_tokens
+SET used_at = datetime('now'), consumed_token_id = NULL
+WHERE id = <row-id> AND used_at IS NULL;
+```
+
+`consumed_token_id = NULL` is intentional — no bearer was actually
+issued for this consumption, so the audit column stays empty.
+
+### 11.5 What happens if Resend is down
+
+The `/auth/magic-link/request` handler fires the send call
+fire-and-forget (`.then().catch()`) and always returns the public
+"Check your inbox" success message regardless of delivery outcome. We
+do this so a slow/down Resend can't reveal "this email exists" via
+response-time differentiation.
+
+If Resend is degraded:
+
+1. Users will submit the form and see "Check your inbox" but no email
+   will arrive.
+2. The pino log fires `event=magic_link_email_failed` (level=error) for
+   each undelivered link with the row id + the Resend error. Tail:
+
+   ```
+   flyctl logs -a vetoed-mcp | grep magic_link_email_failed
+   ```
+
+3. The `magic_link_tokens` rows are still inserted; the TTL keeps the
+   table from growing unboundedly even if no one consumes the links.
+4. Recovery path for affected users: use the admin queue (Section
+   10.2) or issue tokens via `npm run admin -- issue-token` and email
+   manually until Resend recovers.
+
+### 11.6 Race condition: two clicks on the same link
+
+If a user clicks the email link twice quickly (or the email client
+pre-fetches the URL), both requests pass `peekMagicLink` before either
+calls `markMagicLinkUsed`. The UPDATE in `markMagicLinkUsed` re-checks
+`used_at IS NULL` inside its WHERE clause, so only one transaction
+flips the row. The loser:
+
+- Has already minted a (now-orphaned) bearer token in the `tokens`
+  table — this is accepted per the multi-device contract (existing
+  bearers stay valid; no revocation on race).
+- Logs `event=magic_link_verify_race_loss` so operators can quantify
+  frequency. If this fires more than a handful of times per day,
+  investigate aggressive email-client URL prefetching.
+
+### 11.7 Cleanup of old rows
+
+Currently no cron. The table grows ~one row per `/auth/magic-link/request`
+call (plus rate-limited rows that never made it past validation are
+not stored). At thousands of users / month this is fine. If size
+becomes a concern, wire a daily cron to call
+`cleanupExpiredMagicLinks()` which deletes rows where `expires_at` is
+more than 1 day in the past (and `used_at` is similarly old).
