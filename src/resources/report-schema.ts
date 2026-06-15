@@ -217,8 +217,12 @@ If \`finalize_validation_report\` returns \`status: validation_failed\`, the res
  * microseconds per call so we don't pre-generate at build time.
  */
 export function buildReportSchemaResource(): string {
+  // Omit `name` so the output is a flat `{ type: 'object', properties: {...} }`
+  // shape instead of being wrapped in `{ $ref, definitions: {...} }`. Easier
+  // for the calling LLM to read top-to-bottom without chasing a ref.
+  // $refStrategy: 'none' flattens internal sub-schema refs so enums and
+  // nested types are inlined verbatim.
   const jsonSchema = zodToJsonSchema(ValidationReportSchema, {
-    name: 'ValidationReport',
     $refStrategy: 'none',
   });
 
