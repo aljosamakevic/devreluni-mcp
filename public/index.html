@@ -344,6 +344,171 @@
         margin: 0;
       }
 
+      /* ─────────────────────────────────────────────────────────────────
+         T05 — Evidence sample (real Fomi Gate 3 excerpt)
+         BRAND.md "Evidence fact block" + "Tier color map" + inline stamp.
+         ───────────────────────────────────────────────────────────────── */
+      p.lede {
+        color: var(--text);
+        font-size: var(--fs-sub);
+        line-height: 1.4;
+      }
+      .evidence-frame {
+        border: 0.5px solid var(--border);
+        border-radius: var(--radius);
+        padding: var(--s-6);
+        background: var(--surface);
+      }
+      @media (max-width: 768px) {
+        .evidence-frame { padding: var(--s-4); }
+      }
+      .evidence-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--s-5);
+        margin: 0 0 var(--s-5);
+        padding-bottom: var(--s-4);
+        border-bottom: 0.5px solid var(--border);
+        font-family: var(--font-mono);
+        font-size: 12px;
+        color: var(--text-tertiary);
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+      }
+      .evidence-meta b {
+        color: var(--text-secondary);
+        font-weight: 400;
+        margin-left: 6px;
+      }
+      .dok-eyebrow {
+        font-family: var(--font-mono);
+        font-size: var(--fs-eyebrow);
+        text-transform: uppercase;
+        letter-spacing: 0.10em;
+        color: var(--text-tertiary);
+        margin: var(--s-5) 0 var(--s-3);
+      }
+
+      /* Evidence fact block — BRAND.md component spec */
+      .fact-block {
+        font-family: var(--font-mono);
+        font-size: 12px;
+        line-height: 1.55;
+        color: rgba(245, 244, 240, 0.65);
+        border-left: 2px solid rgba(245, 244, 240, 0.12);
+        padding: 6px 0 6px 12px;
+        margin: 10px 0;
+      }
+      .fact-source {
+        color: var(--text-tertiary);
+        display: block;
+        margin-top: 4px;
+      }
+      .fact-tier {
+        display: inline-block;
+        font-family: var(--font-mono);
+        font-size: 9px;
+        font-weight: 500;
+        letter-spacing: 0.04em;
+        padding: 2px 6px;
+        border-radius: var(--radius-badge);
+        margin-right: 6px;
+        vertical-align: 1px;
+        text-transform: uppercase;
+      }
+      .tier-s { background: var(--tier-s-bg); color: var(--tier-s-text); }
+      .tier-a { background: var(--tier-a-bg); color: var(--tier-a-text); }
+      .tier-b { background: var(--tier-b-bg); color: var(--tier-b-text); }
+      .tier-c { background: var(--tier-c-bg); color: var(--tier-c-text); }
+      .tier-d { background: var(--tier-d-bg); color: var(--tier-d-text); }
+
+      .dok-summary,
+      .dok-insight {
+        font-family: var(--font-body);
+        font-size: 14px;
+        color: var(--text-secondary);
+        line-height: 1.6;
+        margin: 0 0 var(--s-3);
+      }
+      .dok-summary .elision,
+      .dok-insight .elision { color: var(--text-tertiary); }
+      .dok-insight {
+        border-left: 2px solid var(--status-inc);
+        padding-left: 12px;
+      }
+      .dok-insight .warn {
+        font-family: var(--font-mono);
+        font-size: 10px;
+        letter-spacing: 0.10em;
+        text-transform: uppercase;
+        color: var(--status-inc);
+        margin-right: 6px;
+      }
+      .contradicting-callout {
+        margin-top: var(--s-5);
+        padding: var(--s-3) var(--s-4);
+        border: 0.5px solid var(--border);
+        border-radius: var(--radius);
+        background: rgba(245, 244, 240, 0.02);
+        font-family: var(--font-body);
+        font-size: 13px;
+        color: var(--text-secondary);
+      }
+      .contradicting-callout strong {
+        font-family: var(--font-mono);
+        font-size: 10px;
+        letter-spacing: 0.10em;
+        text-transform: uppercase;
+        color: var(--text-tertiary);
+        display: block;
+        margin-bottom: 4px;
+        font-weight: 400;
+      }
+      .verdict-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--s-4);
+        margin-top: var(--s-5);
+        padding-top: var(--s-4);
+        border-top: 0.5px solid var(--border);
+        flex-wrap: wrap;
+      }
+      .verdict-row .label {
+        font-family: var(--font-mono);
+        font-size: var(--fs-eyebrow);
+        text-transform: uppercase;
+        letter-spacing: 0.10em;
+        color: var(--text-tertiary);
+        margin: 0;
+      }
+      .verdict-row .conf {
+        font-family: var(--font-mono);
+        font-size: 12px;
+        color: var(--text-secondary);
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+      }
+
+      /* BRAND.md stamp component — inline use (no rotation) and rotated. */
+      .stamp {
+        display: inline-block;
+        border: 3px solid currentColor;
+        border-radius: var(--radius);
+        padding: 6px 16px;
+        font-family: var(--font-mono);
+        font-weight: 500;
+        letter-spacing: -0.02em;
+        transform: rotate(-8deg);
+      }
+      .stamp.stamp-inline {
+        font-size: 22px;
+        padding: 4px 12px;
+        border-width: 2px;
+        transform: none;
+      }
+      .stamp.stamp-fail { color: var(--status-fail); }
+
       /* Placeholder for hero-right column — animation lands in T08. */
       .hero-anim-placeholder {
         border: 0.5px dashed var(--border);
@@ -434,11 +599,72 @@
         </div>
       </section>
 
-      <!-- Evidence (T05) -->
+      <!-- Evidence (T05) — real Gate 3 excerpt from
+           .planning/validation-runs/03-fomi-via-https.md, truncated with
+           explicit […] markers between DOK layers. Source text appears
+           verbatim from the captured artifact. -->
       <section id="evidence">
         <div class="container">
           <p class="eyebrow">Evidence</p>
           <h2>Real output.</h2>
+          <p class="lede">A real Gate 3 (Platform &amp; Big-Tech Risk) excerpt from a validation run on a B2C focus app. Sources, tiers, and the verdict appear exactly as the framework produced them.</p>
+
+          <div class="evidence-frame">
+            <div class="evidence-meta">
+              <span>Gate <b>G3 · Platform &amp; Big-Tech Risk</b></span>
+              <span>Status <b style="color: var(--status-fail);">FAIL</b></span>
+              <span>Confidence <b>Low</b></span>
+            </div>
+
+            <p class="dok-eyebrow">DOK 1 — Facts (sourced)</p>
+
+            <div class="fact-block">
+              <span class="fact-tier tier-a">A</span>
+              assess_platform_dependency scored Gate 3 platform-dependency risk at 3/5 ("Material platform dependency with mixed enforcement history") with 4 detected restrictive platforms (Apple Screen Time API, Android Digital Wellbeing, iOS/Apple platform APIs, macOS). The tool's verdict text explicitly invokes the Apple "system feature" pattern that "has killed prior categories (Spotlight → launchers, Notes → note apps)".
+              <span class="fact-source">— Source: google.serper.dev — Apple Screen Time API ToS / policy churn | Bias: independent</span>
+            </div>
+
+            <div class="fact-block">
+              <span class="fact-tier tier-s">S</span>
+              Apple App Review Guidelines (developer.apple.com/app-store/review/guidelines/) — the first-party rulebook governing Screen Time / focus apps. Any iOS focus app is structurally subject to this policy surface.
+              <span class="fact-source">— Source: developer.apple.com/app-store/review/guidelines/ | Bias: conflicted</span>
+            </div>
+
+            <div class="fact-block">
+              <span class="fact-tier tier-s">S</span>
+              Apple Developer Forums "Managed Settings" tag — the Screen Time API surface every iOS focus app must build on, with active third-party developer issues reported. find_why_now_signals surfaced this as a "recent enabler" (last 24mo).
+              <span class="fact-source">— Source: developer.apple.com/forums/tags/managed-settings | Bias: conflicted</span>
+            </div>
+
+            <div class="fact-block">
+              <span class="fact-tier tier-s">S</span>
+              Microsoft Learn Q&amp;A thread documents Microsoft Viva Insights Focus Plan failing to schedule focus time — Microsoft already ships focus-management as part of Microsoft 365, confirming hyperscaler presence in the category.
+              <span class="fact-source">— Source: learn.microsoft.com/.../viva-insights-focus-plan | Bias: conflicted</span>
+            </div>
+
+            <div class="fact-block">
+              <span class="fact-tier tier-a">A</span>
+              assess_platform_dependency's deplatforming-retro fan-out (Serper query for Apple Screen Time API "lost access" / "deplatformed" / "rejected" founder retros on Medium/HN/IndieHackers) returned no usable hits — logged honestly as empty per spec §11 anti-pattern 2; does NOT mean the platform is safe.
+              <span class="fact-source">— Source: google.serper.dev | Bias: conflicted</span>
+            </div>
+
+            <p class="dok-eyebrow">DOK 2 — Summary (no interpretation)</p>
+            <p class="dok-summary">The product is structurally dependent on Apple's Screen Time / Managed Settings API (or equivalent Android Digital Wellbeing) — both restrictive platforms governed by App Review Guidelines policy churn. assess_platform_dependency scored Gate 3 platform-risk at 3/5 ("Material platform dependency with mixed enforcement history"), explicitly invoking the Apple "system feature" pattern that killed Spotlight-style launchers and Notes-style note apps. <span class="elision">[…]</span> Microsoft already ships Viva Insights Focus Plan. The deplatforming-retro fan-out returned empty — logged honestly per spec §11 anti-pattern 2.</p>
+
+            <p class="dok-eyebrow">DOK 3 — Insight (model judgment)</p>
+            <p class="dok-insight"><span class="warn">⚠ Model judgment</span>Apple owns the Screen Time / Managed Settings API the product must call, and the same App Review Guidelines surface that has killed Spotlight-style and Notes-style third-party apps gates entry. A cloud-screenshot-based third-party app is structurally exposed to both API revocation and competitive encroachment. <span class="elision">[…]</span></p>
+
+            <div class="contradicting-callout">
+              <strong>Contradicting evidence (searched)</strong>
+              No contradicting evidence surfaced — treat as a gap, not confirmation. The framework searched; the absence is logged honestly per spec §11 anti-pattern 2.
+            </div>
+
+            <div class="verdict-row">
+              <p class="label">Gate 3 verdict</p>
+              <span class="stamp stamp-inline stamp-fail">FAIL</span>
+              <span class="conf">≥ 2 tier-S sources · Confidence Low</span>
+            </div>
+          </div>
         </div>
       </section>
 
