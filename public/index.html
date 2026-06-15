@@ -809,20 +809,215 @@
       }
       .toast.show { opacity: 1; }
 
-      /* Placeholder for hero-right column — animation lands in T08. */
-      .hero-anim-placeholder {
-        border: 0.5px dashed var(--border);
+      /* ─────────────────────────────────────────────────────────────────
+         T08 — Hero animation panel.
+         CSS keyframe sequence (~6s total, single-shot, no loop) gated by
+         [data-played="true"] which an IntersectionObserver sets on
+         scroll-into-view. Uses transform + opacity only — GPU-accelerated.
+         prefers-reduced-motion: end state instantly, no transitions.
+         ───────────────────────────────────────────────────────────────── */
+      .hero-anim-wrap { position: relative; }
+      .hero-anim {
+        position: relative;
+        background: var(--surface);
+        border: 0.5px solid var(--border);
         border-radius: var(--radius);
         padding: var(--s-5);
-        min-height: 320px;
+        min-height: 380px;
+        overflow: hidden;
+      }
+      .hero-anim-eyebrow {
+        font-family: var(--font-mono);
+        font-size: var(--fs-eyebrow);
+        text-transform: uppercase;
+        letter-spacing: 0.10em;
+        color: var(--text-tertiary);
+        margin: 0 0 var(--s-4);
+      }
+      .hero-anim-gates {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: var(--s-2);
+        margin: 0 0 var(--s-4);
+      }
+      .anim-gate {
+        border: 0.5px solid var(--border);
+        border-radius: var(--radius);
+        padding: 10px 8px;
+        background: transparent;
+        opacity: 0;
+        transform: translateY(4px);
+      }
+      .anim-gate .gate-id {
+        font-family: var(--font-mono);
+        font-size: var(--fs-gate-id);
+        font-weight: 400;
+        letter-spacing: 0.08em;
+        color: var(--text-tertiary);
+        text-transform: uppercase;
+      }
+      .anim-gate .gate-name {
+        font-family: var(--font-body);
+        font-size: 11px;
+        color: var(--text-secondary);
+        line-height: 1.3;
+        margin: 4px 0 6px;
+        min-height: 28px;
+      }
+      .anim-gate .gate-status {
+        display: inline-block;
+        font-family: var(--font-mono);
+        font-size: 9px;
+        font-weight: 500;
+        letter-spacing: 0.04em;
+        padding: 3px 6px;
+        border-radius: var(--radius-badge);
+        opacity: 0;
+      }
+      .anim-gate .gate-status.fail {
+        background: var(--status-fail-bg);
+        color: var(--status-fail);
+      }
+      .anim-gate .gate-status.inc {
+        background: var(--status-inc-bg);
+        color: var(--status-inc);
+      }
+      .hero-anim-sources {
+        border-top: 0.5px solid var(--border);
+        padding-top: var(--s-3);
+        margin-bottom: var(--s-4);
+      }
+      .anim-source-row {
         display: flex;
         align-items: center;
-        justify-content: center;
+        gap: var(--s-2);
         font-family: var(--font-mono);
         font-size: 11px;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
+        color: var(--text-secondary);
+        padding: 3px 0;
+        opacity: 0;
+        transform: translateY(2px);
+      }
+      .anim-source-row .tier {
+        font-family: var(--font-mono);
+        font-size: 9px;
+        font-weight: 500;
+        letter-spacing: 0.04em;
+        padding: 2px 5px;
+        border-radius: var(--radius-badge);
+        flex-shrink: 0;
+      }
+      .anim-source-row .url {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .hero-anim-contradicting {
+        border-top: 0.5px solid var(--border);
+        padding-top: var(--s-3);
+        font-family: var(--font-mono);
+        font-size: 11px;
         color: var(--text-tertiary);
+        margin-bottom: var(--s-4);
+        opacity: 0;
+        transform: translateY(2px);
+      }
+      .hero-anim-verdict {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding-top: var(--s-3);
+      }
+      .anim-stamp {
+        opacity: 0;
+        transform: translateY(-30px) rotate(-8deg) scale(0.95);
+        font-family: var(--font-mono);
+        font-weight: 500;
+        font-size: 40px;
+        letter-spacing: -0.02em;
+        color: var(--status-fail);
+        border: 3px solid var(--status-fail);
+        border-radius: var(--radius);
+        padding: 6px 16px;
+      }
+
+      /* Hero watermark stamp — 15% opacity per BRAND.md "Hero use" */
+      .hero-watermark {
+        position: absolute;
+        right: -10px;
+        bottom: -24px;
+        opacity: 0.12;
+        pointer-events: none;
+        z-index: 0;
+        color: var(--status-fail);
+      }
+      .stamp.stamp-hero {
+        color: var(--status-fail);
+        font-size: var(--fs-stamp);
+        border-width: 4px;
+      }
+
+      /* Keyframe sequence — gated on data-played=true */
+      .hero-anim[data-played="true"] .anim-gate {
+        animation: animGateIn 280ms ease forwards;
+      }
+      .hero-anim[data-played="true"] .anim-gate:nth-child(1) { animation-delay: 0.10s; }
+      .hero-anim[data-played="true"] .anim-gate:nth-child(2) { animation-delay: 0.25s; }
+      .hero-anim[data-played="true"] .anim-gate:nth-child(3) { animation-delay: 0.40s; }
+      .hero-anim[data-played="true"] .anim-gate:nth-child(4) { animation-delay: 0.55s; }
+      .hero-anim[data-played="true"] .anim-gate:nth-child(5) { animation-delay: 0.70s; }
+
+      .hero-anim[data-played="true"] .anim-source-row {
+        animation: animFadeIn 250ms ease forwards;
+      }
+      .hero-anim[data-played="true"] .anim-source-row:nth-child(1) { animation-delay: 1.00s; }
+      .hero-anim[data-played="true"] .anim-source-row:nth-child(2) { animation-delay: 1.20s; }
+      .hero-anim[data-played="true"] .anim-source-row:nth-child(3) { animation-delay: 1.40s; }
+      .hero-anim[data-played="true"] .anim-source-row:nth-child(4) { animation-delay: 1.60s; }
+      .hero-anim[data-played="true"] .anim-source-row:nth-child(5) { animation-delay: 1.80s; }
+
+      .hero-anim[data-played="true"] .anim-gate .gate-status {
+        animation: animFadeIn 220ms ease forwards;
+      }
+      .hero-anim[data-played="true"] .anim-gate:nth-child(1) .gate-status { animation-delay: 2.55s; }
+      .hero-anim[data-played="true"] .anim-gate:nth-child(2) .gate-status { animation-delay: 2.75s; }
+      .hero-anim[data-played="true"] .anim-gate:nth-child(3) .gate-status { animation-delay: 2.95s; }
+      .hero-anim[data-played="true"] .anim-gate:nth-child(4) .gate-status { animation-delay: 3.15s; }
+      .hero-anim[data-played="true"] .anim-gate:nth-child(5) .gate-status { animation-delay: 3.35s; }
+
+      .hero-anim[data-played="true"] .hero-anim-contradicting {
+        animation: animFadeIn 320ms ease forwards;
+        animation-delay: 3.80s;
+      }
+      .hero-anim[data-played="true"] .anim-stamp {
+        animation: animStampDrop 700ms cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        animation-delay: 4.70s;
+      }
+
+      @keyframes animGateIn {
+        to { opacity: 1; transform: translateY(0); }
+      }
+      @keyframes animFadeIn {
+        to { opacity: 1; transform: translateY(0); }
+      }
+      @keyframes animStampDrop {
+        to { opacity: 1; transform: translateY(0) rotate(-8deg) scale(1); }
+      }
+
+      /* Reduced motion → render end state instantly */
+      @media (prefers-reduced-motion: reduce) {
+        .hero-anim .anim-gate,
+        .hero-anim .anim-gate .gate-status,
+        .hero-anim .anim-source-row,
+        .hero-anim .hero-anim-contradicting,
+        .hero-anim .anim-stamp {
+          opacity: 1 !important;
+          transform: none !important;
+          animation: none !important;
+        }
+        .hero-anim .anim-stamp {
+          transform: rotate(-8deg) !important;
+        }
       }
     </style>
   </head>
@@ -858,8 +1053,68 @@
               <a class="cta-secondary" href="#mechanism">Read the docs</a>
             </div>
           </div>
-          <div class="hero-anim-placeholder" aria-hidden="true">
-            Animation lands in T08
+          <div class="hero-anim-wrap">
+            <div id="hero-animation" class="hero-anim" aria-hidden="true">
+              <p class="hero-anim-eyebrow">Validation run — focus app — B2C / solo</p>
+              <div class="hero-anim-gates">
+                <div class="anim-gate">
+                  <div class="gate-id">G1</div>
+                  <div class="gate-name">Competitor</div>
+                  <span class="gate-status fail">FAIL</span>
+                </div>
+                <div class="anim-gate">
+                  <div class="gate-id">G2</div>
+                  <div class="gate-name">Market</div>
+                  <span class="gate-status fail">FAIL</span>
+                </div>
+                <div class="anim-gate">
+                  <div class="gate-id">G3</div>
+                  <div class="gate-name">Platform</div>
+                  <span class="gate-status fail">FAIL</span>
+                </div>
+                <div class="anim-gate">
+                  <div class="gate-id">G4</div>
+                  <div class="gate-name">Pricing</div>
+                  <span class="gate-status fail">FAIL</span>
+                </div>
+                <div class="anim-gate">
+                  <div class="gate-id">G5</div>
+                  <div class="gate-name">Why now</div>
+                  <span class="gate-status inc">INCONCL</span>
+                </div>
+              </div>
+              <div class="hero-anim-sources">
+                <div class="anim-source-row">
+                  <span class="tier tier-s">S</span>
+                  <span class="url">developer.apple.com/app-store/review/guidelines/</span>
+                </div>
+                <div class="anim-source-row">
+                  <span class="tier tier-s">S</span>
+                  <span class="url">developer.apple.com/forums/tags/managed-settings</span>
+                </div>
+                <div class="anim-source-row">
+                  <span class="tier tier-a">A</span>
+                  <span class="url">rize.io/pricing</span>
+                </div>
+                <div class="anim-source-row">
+                  <span class="tier tier-a">A</span>
+                  <span class="url">indiehackers.com/product/session-2</span>
+                </div>
+                <div class="anim-source-row">
+                  <span class="tier tier-s">S</span>
+                  <span class="url">learn.microsoft.com/.../viva-insights-focus-plan</span>
+                </div>
+              </div>
+              <div class="hero-anim-contradicting">
+                Contradicting evidence searched. No usable hits — logged as gap, not safety.
+              </div>
+              <div class="hero-anim-verdict">
+                <div class="anim-stamp">NO-GO</div>
+              </div>
+            </div>
+            <div class="hero-watermark" aria-hidden="true">
+              <span class="stamp stamp-hero">NO-GO</span>
+            </div>
           </div>
         </div>
       </section>
@@ -1202,6 +1457,38 @@ headers = { Authorization = "Bearer pv_&lt;your_token&gt;" }</div>
     <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
     <script>
+      // ─────────────────────────────────────────────────────────────────
+      // T08 — Hero animation gate. IntersectionObserver toggles
+      // data-played=true on the .hero-anim container when ≥35% visible.
+      // The CSS keyframes are gated on that attribute. Plays once;
+      // observer disconnects after first intersection.
+      // prefers-reduced-motion handled in CSS (end state instantly).
+      // ─────────────────────────────────────────────────────────────────
+      (function () {
+        'use strict';
+        var anim = document.getElementById('hero-animation');
+        if (!anim) return;
+        var reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        if (reduced) {
+          anim.setAttribute('data-played', 'true');
+          return;
+        }
+        if (!('IntersectionObserver' in window)) {
+          // Old-browser fallback — render end state immediately.
+          anim.setAttribute('data-played', 'true');
+          return;
+        }
+        var io = new IntersectionObserver(function (entries) {
+          entries.forEach(function (entry) {
+            if (entry.isIntersecting) {
+              anim.setAttribute('data-played', 'true');
+              io.disconnect();
+            }
+          });
+        }, { threshold: 0.35 });
+        io.observe(anim);
+      })();
+
       // ─────────────────────────────────────────────────────────────────
       // T07 — Copy buttons (vanilla navigator.clipboard with
       // document.execCommand fallback). Each button has
