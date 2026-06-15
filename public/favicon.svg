@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <!-- Veto favicon. BRAND.md tokens only: bg #111210, accent #D4F233.
+       Single letter V centered (DM Mono falls back to system mono at
+       favicon size; the family difference is imperceptible at 16px).
+       Rounded corners 2px (radius=2 in viewBox = 2px at 16px render). -->
+  <rect width="32" height="32" rx="2" fill="#111210"/>
+  <text x="16" y="23"
+        font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace"
+        font-size="22"
+        font-weight="500"
+        text-anchor="middle"
+        letter-spacing="-0.5"
+        fill="#D4F233">V</text>
+</svg>
