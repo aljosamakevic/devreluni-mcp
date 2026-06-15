@@ -6,6 +6,7 @@ import { readFileSync } from 'fs';
 import { fileURLToPath, pathToFileURL } from 'url';
 import { dirname, join, resolve } from 'path';
 import { createHttpServer } from './http/server.js';
+import { buildReportSchemaResource } from './resources/report-schema.js';
 
 // Load .env from the package root (one level up from build/ or src/).
 // Works regardless of cwd — Claude Desktop spawns from /, dev runs from anywhere.
@@ -94,6 +95,19 @@ export function createMcpServer(): McpServer {
     ],
   }));
 
+  // Phase 08 T03 — schema reference for finalize_validation_report. Built
+  // fresh per read (zod-to-json-schema is microseconds). The validate_idea
+  // prompt loads this before constructing the ValidationReport JSON.
+  server.resource('report-schema', 'resource://report-schema', async () => ({
+    contents: [
+      {
+        uri: 'resource://report-schema',
+        mimeType: 'text/markdown',
+        text: buildReportSchemaResource(),
+      },
+    ],
+  }));
+
   // Register tools
   registerFindClosestCompetitor(server);
   registerReadCompetitorChangelog(server);
@@ -134,7 +148,7 @@ async function main(): Promise<void> {
       'Tools: find_closest_competitor, read_competitor_changelog, map_competitive_weaknesses, scan_producthunt_launches, get_category_failure_modes, find_yc_rfs_alignment, find_pricing_anchors, check_big_tech_encroachment, find_why_now_signals, estimate_demand_signals, find_public_revenue_signals, assess_platform_dependency, finalize_validation_report'
     );
     console.error('Prompts: validate_idea, steelman_against, run_single_gate, generate_test_cards, quick_kill_check');
-    console.error('Resources: source-tier-bias, tool-to-gate-map, evaluation-lens-matrix');
+    console.error('Resources: source-tier-bias, tool-to-gate-map, evaluation-lens-matrix, report-schema');
     return;
   }
 
