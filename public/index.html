@@ -465,11 +465,20 @@
         margin: 0 0 var(--s-3);
       }
 
-      /* Evidence frame — styled as a LIGHT DOCUMENT against the dark page.
-         The frame is the visual artifact: a piece of paper laid on the
-         dark surface. Everything inside it switches to dark-ink-on-cream
-         document palette. The cross-gate snippets above stay dark theme;
-         only this deep-dive block reads as "here's the actual report." */
+      /* Evidence frames — each gate is a stacked LIGHT DOCUMENT
+         (<details> accordion) against the dark page. The frame is the
+         visual artifact: a piece of paper laid on the dark surface.
+         Everything inside switches to dark-ink-on-cream document
+         palette. Clicking the summary expands to show the full DOK
+         structure for that gate. Gate 4 (the killshot) is open by
+         default; the others can be expanded one at a time or together. */
+      .gate-accordion {
+        max-width: 760px;
+        margin: 0 auto;
+        display: flex;
+        flex-direction: column;
+        gap: var(--s-5);
+      }
       .evidence-frame {
         --doc-bg: #f5f1e8;
         --doc-text: #1a1815;
@@ -483,17 +492,94 @@
         border: none;
         border-top: 3px solid var(--doc-edge);
         border-radius: var(--radius);
-        padding: var(--s-7) var(--s-7) var(--s-6);
+        padding: 0;
         box-shadow:
           0 1px 0 rgba(0, 0, 0, 0.25),
           0 12px 36px rgba(0, 0, 0, 0.45),
           0 32px 80px rgba(0, 0, 0, 0.35);
         position: relative;
-        max-width: 760px;
-        margin: 0 auto;
+        overflow: hidden;
+      }
+      /* The summary is the clickable accordion header (always visible).
+         BRAND.md: structure carries weight — this is a functional control,
+         not a decoration. Custom chevron replaces the default browser
+         disclosure triangle. */
+      .gate-summary {
+        display: grid;
+        grid-template-columns: auto 1fr auto auto auto;
+        align-items: center;
+        gap: var(--s-4);
+        padding: var(--s-5) var(--s-7);
+        cursor: pointer;
+        list-style: none;
+        user-select: none;
+        transition: background 0.12s ease;
+      }
+      .gate-summary:hover {
+        background: rgba(26, 24, 21, 0.04);
+      }
+      .gate-summary:focus-visible {
+        outline: 2px solid var(--accent);
+        outline-offset: -2px;
+      }
+      .gate-summary::-webkit-details-marker { display: none; }
+      .gate-summary::marker { content: ''; }
+      .gate-summary .gate-id {
+        font-family: var(--font-mono);
+        font-size: 11px;
+        letter-spacing: 0.10em;
+        text-transform: uppercase;
+        color: var(--doc-text-tertiary);
+      }
+      .gate-summary .gate-name {
+        font-family: var(--font-mono);
+        font-size: 15px;
+        font-weight: 500;
+        color: var(--doc-text);
+        letter-spacing: -0.01em;
+      }
+      .gate-summary .gate-verdict {
+        font-family: var(--font-mono);
+        font-size: 12px;
+        font-weight: 500;
+        letter-spacing: 0.04em;
+      }
+      /* In light-document mode the cross-gate verdict pill colors need
+         to shift to print-ink palette so they stay legible on cream. */
+      .gate-summary .v-go { color: #2a6f1c; }
+      .gate-summary .v-nogo { color: #962614; }
+      .gate-summary .v-cond { color: #7a5210; }
+      .gate-summary .gate-conf {
+        font-family: var(--font-mono);
+        font-size: 11px;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: var(--doc-text-tertiary);
+      }
+      /* Chevron — CSS-drawn rotating arrow. Closed: > pointing right.
+         Open: v pointing down. Pure functional indicator, not decoration. */
+      .summary-chevron {
+        width: 8px;
+        height: 8px;
+        border-right: 1.5px solid var(--doc-text-tertiary);
+        border-bottom: 1.5px solid var(--doc-text-tertiary);
+        transform: rotate(-45deg);
+        transition: transform 0.2s ease;
+        justify-self: end;
+        margin-left: var(--s-2);
+      }
+      details[open] .summary-chevron {
+        transform: rotate(45deg);
+      }
+      .gate-body {
+        padding: 0 var(--s-7) var(--s-6);
+        border-top: 0.5px solid var(--doc-border);
+        padding-top: var(--s-5);
       }
       @media (max-width: 768px) {
-        .evidence-frame { padding: var(--s-4); }
+        .gate-summary { padding: var(--s-4); grid-template-columns: auto 1fr auto auto; }
+        .gate-summary .gate-conf { display: none; }
+        .gate-body { padding: var(--s-4); padding-top: var(--s-4); }
       }
       .evidence-frame .evidence-meta {
         color: var(--doc-text-tertiary);
@@ -676,6 +762,14 @@
         transform: none;
       }
       .stamp.stamp-fail { color: var(--status-fail); }
+      .stamp.stamp-pass { color: #2a6f1c; }
+      .stamp.stamp-inc { color: #b88210; }
+      /* Document-mode overrides: when stamps appear inside the light
+         evidence-frame (Gate 2 PASS, Gate 5 INCONCLUSIVE, etc.), ink
+         tones match the rest of the printed-document palette. */
+      .evidence-frame .stamp.stamp-fail { color: #962614; }
+      .evidence-frame .stamp.stamp-pass { color: #2a6f1c; }
+      .evidence-frame .stamp.stamp-inc { color: #b88210; }
 
       /* ─────────────────────────────────────────────────────────────────
          T06 — Verdict math + Anti-bias callout
@@ -1420,109 +1514,298 @@
         <div class="container">
           <p class="eyebrow">Evidence</p>
           <h2>Real output.</h2>
-          <p class="lede">A real validation run on a B2C focus app. Five gates fired; one passed, three failed, one came back inconclusive. Below: the cross-gate snapshot, then the killshot gate (Pricing) in full — sources, tiers, and verdict exactly as the framework rendered them.</p>
+          <p class="lede">A real validation run on a B2C focus app. Five gates fired; one passed, three failed, one came back inconclusive. Click any gate to expand its detailed evidence (sources, tiers, DOK layers, verdict). Gate 4, the killshot, is open by default.</p>
 
-          <div class="cross-gate-grid">
-            <div class="cross-gate-row">
-              <div class="cgr-meta">
-                <span class="cgr-id">G1</span>
-                <span class="cgr-name">Direct Competitor Scan</span>
-                <span class="v-nogo cgr-verdict">FAIL</span>
+          <div class="gate-accordion">
+
+            <details class="evidence-frame">
+              <summary class="gate-summary">
+                <span class="gate-id">G1</span>
+                <span class="gate-name">Direct Competitor Scan</span>
+                <span class="v-nogo gate-verdict">FAIL</span>
+                <span class="gate-conf">Confidence Low</span>
+                <span class="summary-chevron" aria-hidden="true"></span>
+              </summary>
+              <div class="gate-body">
+                <p class="dok-eyebrow">DOK 1 · Facts (sourced)</p>
+
+                <div class="fact-block">
+                  <span class="fact-tier tier-a">A</span>
+                  find_closest_competitor returned a r/ADHD_Programmers thread titled "AI tool that keeps you on track by literally watching your screen" describing a shipping product that watches the screen and uses AI to detect off-task behavior. Exact functional convergence with the proposed idea.
+                  <span class="fact-source">Source: reddit.com/r/ADHD_Programmers | Bias: independent</span>
+                </div>
+
+                <div class="fact-block">
+                  <span class="fact-tier tier-a">A</span>
+                  The Hustle headline "Easily distracted? This AI focus tool will scold you into staying on task" describes a shipping product that "monitors and analyzes your screen to determine whether what you are doing matches your task". Additional direct competitor.
+                  <span class="fact-source">Source: thehustle.co | Bias: independent</span>
+                </div>
+
+                <div class="fact-block">
+                  <span class="fact-tier tier-a">A</span>
+                  IndieHackers post "Every focus app I tried on Mac failed me · here's what finally worked" documents Cold Turkey "too rigid" and Focus (Mac app) "too easy to bypass". Category-wide structural failure pattern across multiple incumbents.
+                  <span class="fact-source">Source: indiehackers.com | Bias: independent</span>
+                </div>
+
+                <div class="fact-block">
+                  <span class="fact-tier tier-a">A</span>
+                  map_competitive_weaknesses fired a Serper query for Fomi negative-sentiment terms ("not worth", "cancelled", "switched from", "disappointed", "terrible") and surfaced churn-out / dissatisfaction language in the category.
+                  <span class="fact-source">Source: google.serper.dev | Bias: independent</span>
+                </div>
+
+                <p class="dok-eyebrow">DOK 2 · Summary (no interpretation)</p>
+                <p class="dok-summary">Multiple direct or adjacent AI-screen-monitoring focus apps already ship today (the r/ADHD_Programmers tool, The Hustle-covered AI focus tool, Focusmo, plus the wider Fomi / Opal / Cold Turkey cohort). Public discussion shows category-wide churn ("Every focus app I tried on Mac failed me"). The targeted Fomi changelog probe failed via URL-guessing fallback; Fomi-specific changelog signal is absent.</p>
+
+                <p class="dok-eyebrow">DOK 3 · Insight (model judgment)</p>
+                <p class="dok-insight"><span class="warn">⚠ Model judgment</span>At least 3 directly-overlapping AI-screen-monitoring products are shipping today. The founder doesn't enter as a first-mover. The "I have the problem too" angle doesn't produce structural differentiation. The IndieHackers "every focus app failed me" pattern is best read as a category symptom (users churn through tools) rather than a winnable wedge.</p>
+
+                <div class="contradicting-callout">
+                  <strong>Contradicting evidence (searched)</strong>
+                  A counter-angled Serper search for "profitable indie AI focus app success story 2025" returned only listicles and adjacent products. No profitable indie AI-screen-monitoring focus app surfaced as a contrarian success.
+                </div>
+
+                <div class="verdict-row">
+                  <p class="label">Gate 1 verdict</p>
+                  <span class="stamp stamp-inline stamp-fail">FAIL</span>
+                  <span class="conf">7 sources · S:1 A:5 B:1 · indep:5 conflicted:2 · Confidence Low</span>
+                </div>
               </div>
-              <p class="cgr-insight"><span class="warn">⚠ Model judgment</span>At least 3 directly-overlapping AI-screen-monitoring products are shipping today — the founder doesn't enter as a first-mover. The "I have the problem too" angle doesn't produce structural differentiation.</p>
-            </div>
+            </details>
 
-            <div class="cross-gate-row">
-              <div class="cgr-meta">
-                <span class="cgr-id">G2</span>
-                <span class="cgr-name">Market Demand</span>
-                <span class="v-go cgr-verdict">PASS</span>
+            <details class="evidence-frame">
+              <summary class="gate-summary">
+                <span class="gate-id">G2</span>
+                <span class="gate-name">Market Demand</span>
+                <span class="v-go gate-verdict">PASS</span>
+                <span class="gate-conf">Confidence Medium</span>
+                <span class="summary-chevron" aria-hidden="true"></span>
+              </summary>
+              <div class="gate-body">
+                <p class="dok-eyebrow">DOK 1 · Facts (sourced)</p>
+
+                <div class="fact-block">
+                  <span class="fact-tier tier-a">A</span>
+                  r/productivity has 4,195,056 subscribers. Very large active community in the productivity space (estimate_demand_signals via Reddit /about.json live fetch).
+                  <span class="fact-source">Source: reddit.com/r/productivity | Bias: independent</span>
+                </div>
+
+                <div class="fact-block">
+                  <span class="fact-tier tier-a">A</span>
+                  r/ADHD has 2,232,448 subscribers. Primary target demographic for focus apps is large and active.
+                  <span class="fact-source">Source: reddit.com/r/ADHD | Bias: independent</span>
+                </div>
+
+                <div class="fact-block">
+                  <span class="fact-tier tier-a">A</span>
+                  Rize, an indie time-tracking SaaS, publicly reports &gt;$10k MRR on IndieHackers. At least one indie comparable in the adjacent (time-tracking) mechanic clears the B2C-solo lifestyle threshold.
+                  <span class="fact-source">Source: indiehackers.com | Bias: independent</span>
+                </div>
+
+                <div class="fact-block">
+                  <span class="fact-tier tier-a">A</span>
+                  TechCrunch 2025-12-25 roundup of distraction blockers (Opal, Freedom, etc.) confirms continued press attention and launch cadence in the focus-app category.
+                  <span class="fact-source">Source: techcrunch.com | Bias: independent</span>
+                </div>
+
+                <p class="dok-eyebrow">DOK 2 · Summary (no interpretation)</p>
+                <p class="dok-summary">Demand-side signal is strong: very large communities (~4.2M r/productivity, ~2.2M r/ADHD, ~2.2M r/getdisciplined), an IndieHackers comparable (Rize) above $10k MRR in adjacent time-tracking, and continued press coverage of new entrants. Niche reachability for B2C-solo framing is clearly met.</p>
+
+                <p class="dok-eyebrow">DOK 3 · Insight (model judgment)</p>
+                <p class="dok-insight"><span class="warn">⚠ Model judgment</span>Demand for "focus" tools is real and large, but the only profitable comparable surfaced (Rize, $10k+ MRR) is a time-tracker, not an AI-screen-monitoring app. The demand may be for a different shape of product. For B2C-solo framing the niche-reachability bar is met, so Gate 2 itself does not kill the idea, but the upside is capped by Gate 4 dynamics.</p>
+
+                <div class="contradicting-callout">
+                  <strong>Contradicting evidence (searched)</strong>
+                  No contradicting evidence surfaced. Treat as a gap, not confirmation. The framework searched; the absence is logged honestly per spec §11 anti-pattern 2.
+                </div>
+
+                <div class="verdict-row">
+                  <p class="label">Gate 2 verdict</p>
+                  <span class="stamp stamp-inline stamp-pass">PASS</span>
+                  <span class="conf">5 sources · A:5 · indep:5 · Confidence Medium</span>
+                </div>
               </div>
-              <p class="cgr-insight"><span class="warn">⚠ Model judgment</span>Demand for "focus" tools is real and large, but the only profitable comparable surfaced (Rize, $10k+ MRR) is a time-tracker, not an AI-screen-monitoring app — the demand may be for a different shape of product.</p>
-            </div>
+            </details>
 
-            <div class="cross-gate-row">
-              <div class="cgr-meta">
-                <span class="cgr-id">G3</span>
-                <span class="cgr-name">Platform &amp; Big-Tech Risk</span>
-                <span class="v-nogo cgr-verdict">FAIL</span>
+            <details class="evidence-frame">
+              <summary class="gate-summary">
+                <span class="gate-id">G3</span>
+                <span class="gate-name">Platform &amp; Big-Tech Risk</span>
+                <span class="v-nogo gate-verdict">FAIL</span>
+                <span class="gate-conf">Confidence Low</span>
+                <span class="summary-chevron" aria-hidden="true"></span>
+              </summary>
+              <div class="gate-body">
+                <p class="dok-eyebrow">DOK 1 · Facts (sourced)</p>
+
+                <div class="fact-block">
+                  <span class="fact-tier tier-a">A</span>
+                  assess_platform_dependency scored Gate 3 platform-dependency risk at 3/5 ("Material platform dependency with mixed enforcement history") with 4 detected restrictive platforms (Apple Screen Time API, Android Digital Wellbeing, iOS/Apple platform APIs, macOS). The tool's verdict explicitly invokes the Apple "system feature" pattern that "has killed prior categories (Spotlight → launchers, Notes → note apps)".
+                  <span class="fact-source">Source: google.serper.dev · Apple Screen Time API ToS / policy churn | Bias: independent</span>
+                </div>
+
+                <div class="fact-block">
+                  <span class="fact-tier tier-s">S</span>
+                  Apple App Review Guidelines (developer.apple.com/app-store/review/guidelines/). The first-party rulebook governing Screen Time / focus apps. Any iOS focus app is structurally subject to this policy surface.
+                  <span class="fact-source">Source: developer.apple.com | Bias: conflicted</span>
+                </div>
+
+                <div class="fact-block">
+                  <span class="fact-tier tier-s">S</span>
+                  Apple Developer Forums "Managed Settings" tag. The Screen Time API surface every iOS focus app must build on, with active third-party developer issues reported.
+                  <span class="fact-source">Source: developer.apple.com/forums | Bias: conflicted</span>
+                </div>
+
+                <div class="fact-block">
+                  <span class="fact-tier tier-s">S</span>
+                  Microsoft Learn Q&amp;A thread documents Microsoft Viva Insights Focus Plan failing to schedule focus time. Microsoft already ships focus-management as part of Microsoft 365, confirming hyperscaler presence in the category.
+                  <span class="fact-source">Source: learn.microsoft.com | Bias: conflicted</span>
+                </div>
+
+                <div class="fact-block">
+                  <span class="fact-tier tier-a">A</span>
+                  assess_platform_dependency's deplatforming-retro fan-out (Serper query for Apple Screen Time API "lost access" / "deplatformed" / "rejected" founder retros on Medium/HN/IndieHackers) returned no usable hits. Logged honestly as empty per spec §11 anti-pattern 2. Does NOT mean the platform is safe.
+                  <span class="fact-source">Source: google.serper.dev | Bias: conflicted</span>
+                </div>
+
+                <p class="dok-eyebrow">DOK 2 · Summary (no interpretation)</p>
+                <p class="dok-summary">The product is structurally dependent on Apple's Screen Time / Managed Settings API (or equivalent Android Digital Wellbeing). Both restrictive platforms governed by App Review Guidelines policy churn. assess_platform_dependency scored Gate 3 platform-risk at 3/5, explicitly invoking the Apple "system feature" pattern that killed Spotlight-style launchers and Notes-style note apps. <span class="elision">[…]</span> Microsoft already ships Viva Insights Focus Plan.</p>
+
+                <p class="dok-eyebrow">DOK 3 · Insight (model judgment)</p>
+                <p class="dok-insight"><span class="warn">⚠ Model judgment</span>This is the killshot gate. Apple owns the Screen Time / Managed Settings API the product must call, and the same App Review Guidelines surface that killed Spotlight-style and Notes-style third-party apps gates entry. A cloud-screenshot-based third-party app is structurally exposed to both API revocation and competitive encroachment. Android Digital Wellbeing applies the same vector on the Android side. <span class="elision">[…]</span></p>
+
+                <div class="contradicting-callout">
+                  <strong>Contradicting evidence (searched)</strong>
+                  No contradicting evidence surfaced. Treat as a gap, not confirmation. The framework searched; the absence is logged honestly per spec §11 anti-pattern 2.
+                </div>
+
+                <div class="verdict-row">
+                  <p class="label">Gate 3 verdict</p>
+                  <span class="stamp stamp-inline stamp-fail">FAIL</span>
+                  <span class="conf">7 sources · S:5 A:2 · indep:1 conflicted:6 · Confidence Low</span>
+                </div>
               </div>
-              <p class="cgr-insight"><span class="warn">⚠ Model judgment</span>Apple owns the Screen Time / Managed Settings API the product must call, and the same App Review Guidelines surface that killed Spotlight-style and Notes-style third-party apps gates entry. Android Digital Wellbeing applies the same vector on the Android side.</p>
-            </div>
+            </details>
 
-            <div class="cross-gate-row">
-              <div class="cgr-meta">
-                <span class="cgr-id">G5</span>
-                <span class="cgr-name">Why Now</span>
-                <span class="v-cond cgr-verdict">INCONCLUSIVE</span>
+            <details class="evidence-frame" open>
+              <summary class="gate-summary">
+                <span class="gate-id">G4</span>
+                <span class="gate-name">Willingness to Pay</span>
+                <span class="v-nogo gate-verdict">FAIL</span>
+                <span class="gate-conf">Confidence Low</span>
+                <span class="summary-chevron" aria-hidden="true"></span>
+              </summary>
+              <div class="gate-body">
+                <p class="dok-eyebrow">DOK 1 · Facts (sourced)</p>
+
+                <div class="fact-block">
+                  <span class="fact-tier tier-s">S</span>
+                  RescueTime live pricing lists $7 / $9 / $12 per month. The category ceiling for an established B2C productivity SaaS sits in the single-digit to low-double-digit dollar range.
+                  <span class="fact-source">Source: rescuetime.com/pricing | Bias: conflicted</span>
+                </div>
+
+                <div class="fact-block">
+                  <span class="fact-tier tier-s">S</span>
+                  Freedom live pricing lists $3.33 / $8.99 per month freemium tiers. Additional confirmation of the sub-$10/mo B2C ceiling.
+                  <span class="fact-source">Source: freedom.to/pricing | Bias: conflicted</span>
+                </div>
+
+                <div class="fact-block">
+                  <span class="fact-tier tier-s">S</span>
+                  Opal lists $8.29 and $19.99 per month. Direct competitor in the same B2C focus-app mechanic.
+                  <span class="fact-source">Source: opal.so/pricing | Bias: conflicted</span>
+                </div>
+
+                <div class="fact-block">
+                  <span class="fact-tier tier-s">S</span>
+                  Wayback Machine snapshots from March + May 2026 confirm Opal and Focus Bear pricing has been stable at the sub-$10/mo ceiling for at least 2 months. Historical anchor, not an artifact of a single fetch.
+                  <span class="fact-source">Source: web.archive.org | Bias: independent</span>
+                </div>
+
+                <div class="fact-block">
+                  <span class="fact-tier tier-a">A</span>
+                  IndieHackers: Session, an App Store focus app, reports $2,000 MRR with ~750 installs/month. Illustrative B2C-solo ceiling for focus apps that aren't one of the top 1–2 winners.
+                  <span class="fact-source">Source: indiehackers.com/product/session-2 | Bias: independent</span>
+                </div>
+
+                <div class="fact-block">
+                  <span class="fact-tier tier-b">B</span>
+                  find_pricing_anchors auto-flagged 5 G2 / Capterra churn signals including "refund the overpayment" and "cancelled they didn't even bother to respond". <span class="elision">[…]</span>
+                  <span class="fact-source">Source: g2.com | Bias: independent</span>
+                </div>
+
+                <p class="dok-eyebrow">DOK 2 · Summary (no interpretation)</p>
+                <p class="dok-summary">The focus-app category prices in the $3–$30/mo range with most consumer tiers between $3–$12/mo (RescueTime, Freedom, Opal, Focus Bear). Two Wayback snapshots confirm pricing stability. find_pricing_anchors auto-flagged 5 churn / refund signals. IndieHackers comparables (Session $2k MRR, Rize $10k+ MRR) show the ceiling. <span class="elision">[…]</span></p>
+
+                <p class="dok-eyebrow">DOK 3 · Insight (model judgment)</p>
+                <p class="dok-insight"><span class="warn">⚠ Model judgment</span>The B2C-solo target ($5k–$50k MRR) is achievable only at the top of this category. New entrants face a ~$10/mo ceiling combined with the documented "ADHD-tax" churn pattern. A classic labor-of-love combination. Cloud-screenshot processing adds inference cost on top of an already-thin margin profile. <span class="elision">[…]</span></p>
+
+                <div class="contradicting-callout">
+                  <strong>Contradicting evidence (searched)</strong>
+                  Rize publicly reports &gt;$10k MRR on IndieHackers with a top tier at $29.99/mo, demonstrating that pricing above the $10/mo ceiling is achievable for adjacent time-tracking. Neither Rize nor Cold Turkey uses cloud-screenshot AI monitoring, and both have multi-year market presence.
+                </div>
+
+                <div class="verdict-row">
+                  <p class="label">Gate 4 verdict</p>
+                  <span class="stamp stamp-inline stamp-fail">FAIL</span>
+                  <span class="conf">10 sources · S:7 A:2 B:1 · indep:5 conflicted:5 · Confidence Low</span>
+                </div>
               </div>
-              <p class="cgr-insight"><span class="warn">⚠ Model judgment</span>"AI got better" is the spec's canonical anti-pattern for Why Now. The evidence doesn't surface a sharper thesis (specific API opening, regulatory change, remote-work behavior shift). The absence of evidence is itself the signal.</p>
-            </div>
-          </div>
+            </details>
 
-          <p class="evidence-section-eyebrow">Gate 4 — Killshot in detail</p>
+            <details class="evidence-frame">
+              <summary class="gate-summary">
+                <span class="gate-id">G5</span>
+                <span class="gate-name">Why Now</span>
+                <span class="v-cond gate-verdict">INCONCLUSIVE</span>
+                <span class="gate-conf">Confidence Low</span>
+                <span class="summary-chevron" aria-hidden="true"></span>
+              </summary>
+              <div class="gate-body">
+                <p class="dok-eyebrow">DOK 1 · Facts (sourced)</p>
 
-          <div class="evidence-frame">
-            <div class="evidence-meta">
-              <span>Gate <b>G4 · Willingness to Pay</b></span>
-              <span>Status <b style="color: var(--status-fail);">FAIL</b></span>
-              <span>Confidence <b>Low</b></span>
-            </div>
+                <div class="fact-block">
+                  <span class="fact-tier tier-s">S</span>
+                  find_why_now_signals surfaced 4 "recent enablers" from hyperscaler dev-doc fan-out. All are general policy / forum surfaces (Apple App Review Guidelines, Apple Developer Forums Managed Settings, Microsoft Visual Studio 2026 release notes, Google ML guides). None describes a discrete enabler that unlocks AI screen-monitoring specifically.
+                  <span class="fact-source">Source: developer.apple.com | Bias: conflicted</span>
+                </div>
 
-            <p class="dok-eyebrow">DOK 1 — Facts (sourced)</p>
+                <div class="fact-block">
+                  <span class="fact-tier tier-a">A</span>
+                  find_yc_rfs_alignment returned 0 keyword matches against YC S26 RFS for focus / screen-time / on-task. YC is not currently pulling for this category.
+                  <span class="fact-source">Source: ycombinator.com/rfs | Bias: conflicted</span>
+                </div>
 
-            <div class="fact-block">
-              <span class="fact-tier tier-s">S</span>
-              RescueTime live pricing lists $7 / $9 / $12 per month — the category ceiling for an established B2C productivity SaaS sits in the single-digit to low-double-digit dollar range.
-              <span class="fact-source">— Source: rescuetime.com/pricing | Bias: conflicted</span>
-            </div>
+                <div class="fact-block">
+                  <span class="fact-tier tier-a">A</span>
+                  EU regulatory query via Serper (site:ec.europa.eu) surfaced no focus-app-specific tailwind. The broader EU AI Act regulatory framework is a headwind for cloud-screenshot processing of user activity, not an unlock.
+                  <span class="fact-source">Source: ec.europa.eu | Bias: independent</span>
+                </div>
 
-            <div class="fact-block">
-              <span class="fact-tier tier-s">S</span>
-              Freedom live pricing lists $3.33 / $8.99 per month freemium tiers — additional confirmation of the sub-$10/mo B2C ceiling.
-              <span class="fact-source">— Source: freedom.to/pricing | Bias: conflicted</span>
-            </div>
+                <div class="fact-block">
+                  <span class="fact-tier tier-a">A</span>
+                  TechCrunch 2025-12-25 "best distraction blockers" rounds up Opal / Freedom. Continued category cadence is driven by editorial calendar (New Year resolutions) and personality-led launches, not a specific 2025–2026 enabler unlock.
+                  <span class="fact-source">Source: techcrunch.com | Bias: independent</span>
+                </div>
 
-            <div class="fact-block">
-              <span class="fact-tier tier-s">S</span>
-              Opal lists $8.29 and $19.99 per month — direct competitor in the same B2C focus-app mechanic.
-              <span class="fact-source">— Source: opal.so/pricing | Bias: conflicted</span>
-            </div>
+                <p class="dok-eyebrow">DOK 2 · Summary (no interpretation)</p>
+                <p class="dok-summary">No specific articulable why-now thesis surfaced for AI-screen-monitoring focus apps. Hyperscaler dev-doc fan-out returned only general policy / forum surfaces. YC RFS shows zero category pull. EU regulatory environment is a headwind, not a tailwind. Press cadence is driven by editorial calendar, not an enabler unlock.</p>
 
-            <div class="fact-block">
-              <span class="fact-tier tier-s">S</span>
-              Wayback Machine snapshots from March + May 2026 confirm Opal and Focus Bear pricing has been stable at the sub-$10/mo ceiling for at least 2 months — historical anchor, not an artifact of a single fetch.
-              <span class="fact-source">— Source: web.archive.org | Bias: independent</span>
-            </div>
+                <p class="dok-eyebrow">DOK 3 · Insight (model judgment)</p>
+                <p class="dok-insight"><span class="warn">⚠ Model judgment</span>"AI got better" is the spec's canonical anti-pattern for Why Now (§9). The available evidence does not surface a sharper thesis (a specific platform API opening, regulatory change forcing screen monitoring, or behavior shift tied to remote work). The absence of evidence is itself the signal here.</p>
 
-            <div class="fact-block">
-              <span class="fact-tier tier-a">A</span>
-              IndieHackers: Session, an App Store focus app, reports $2,000 MRR with ~750 installs/month — illustrative B2C-solo ceiling for focus apps that aren't one of the top 1–2 winners.
-              <span class="fact-source">— Source: indiehackers.com/product/session-2 | Bias: independent</span>
-            </div>
+                <div class="contradicting-callout">
+                  <strong>Contradicting evidence (searched)</strong>
+                  No contradicting evidence surfaced. Treat as a gap, not confirmation. The framework searched; the absence is logged honestly per spec §11 anti-pattern 2.
+                </div>
 
-            <div class="fact-block">
-              <span class="fact-tier tier-b">B</span>
-              find_pricing_anchors auto-flagged 5 G2 / Capterra churn signals including "refund the overpayment" and "cancelled they didn't even bother to respond". <span class="elision">[…]</span>
-              <span class="fact-source">— Source: g2.com | Bias: independent</span>
-            </div>
+                <div class="verdict-row">
+                  <p class="label">Gate 5 verdict</p>
+                  <span class="stamp stamp-inline stamp-inc">INCONCLUSIVE</span>
+                  <span class="conf">4 sources · S:1 A:3 · indep:2 conflicted:2 · Confidence Low</span>
+                </div>
+              </div>
+            </details>
 
-            <p class="dok-eyebrow">DOK 2 — Summary (no interpretation)</p>
-            <p class="dok-summary">The focus-app category prices in the $3–$30/mo range with most consumer tiers between $3–$12/mo (RescueTime, Freedom, Opal, Focus Bear). Two Wayback snapshots confirm pricing stability. find_pricing_anchors auto-flagged 5 churn / refund signals. IndieHackers comparables (Session $2k MRR, Rize $10k+ MRR) show the ceiling. <span class="elision">[…]</span></p>
-
-            <p class="dok-eyebrow">DOK 3 — Insight (model judgment)</p>
-            <p class="dok-insight"><span class="warn">⚠ Model judgment</span>The B2C-solo target ($5k–$50k MRR) is achievable only at the top of this category. New entrants face a ~$10/mo ceiling combined with the documented "ADHD-tax" churn pattern — a classic labor-of-love combination. Cloud-screenshot processing adds inference cost on top of an already-thin margin profile. <span class="elision">[…]</span></p>
-
-            <div class="contradicting-callout">
-              <strong>Contradicting evidence (searched)</strong>
-              Rize publicly reports &gt;$10k MRR on IndieHackers with a top tier at $29.99/mo, demonstrating that pricing above the $10/mo ceiling is achievable for adjacent time-tracking. Neither Rize nor Cold Turkey uses cloud-screenshot AI monitoring, and both have multi-year market presence.
-            </div>
-
-            <div class="verdict-row">
-              <p class="label">Gate 4 verdict</p>
-              <span class="stamp stamp-inline stamp-fail">FAIL</span>
-              <span class="conf">7 tier-S sources · Confidence Low</span>
-            </div>
           </div>
         </div>
       </section>
