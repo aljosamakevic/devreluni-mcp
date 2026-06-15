@@ -1569,7 +1569,7 @@
       <section id="tools">
         <div class="container">
           <!-- TOOLS_SECTION:BEGIN -->
-          <p class="eyebrow">6 prompts &middot; 13 tools</p>
+          <p class="eyebrow">5 prompts &middot; 13 tools</p>
           <h2>Inside the framework.</h2>
           <p class="lede">Prompts are what you call from Claude Desktop. Tools are what runs underneath — the LLM picks them as it works through each gate.</p>
           <div class="tools-subgroup">
@@ -1580,8 +1580,8 @@
                 <span class="t-desc">Runs the full 5-gate validation on a product idea. Calls every tool the gates need; produces a NO-GO / GO / CONDITIONAL GO verdict with sourced evidence.</span>
               </li>
               <li>
-                <span class="t-name">validate_assumption</span>
-                <span class="t-desc">Verifies ONE specific claim instead of running the full sweep. Same anti-bias rigor (tier-graded sources, forced contradicting evidence) at claim granularity.</span>
+                <span class="t-name">generate_test_cards</span>
+                <span class="t-desc">Input your business idea, get 3-7 hypotheses that must be true for the business to work — each with a cheap test design, an exact metric, and a pass/fail threshold. Strategyzer Test Card format. Pair with validate_idea to focus tests on the weakest gates.</span>
               </li>
               <li>
                 <span class="t-name">run_single_gate</span>
@@ -1590,10 +1590,6 @@
               <li>
                 <span class="t-name">steelman_against</span>
                 <span class="t-desc">Argues against your own idea. Forces the strongest possible case that this product should not exist.</span>
-              </li>
-              <li>
-                <span class="t-name">generate_test_cards</span>
-                <span class="t-desc">Turns your assumptions into testable cards. Each one is a falsifiable hypothesis with a concrete experiment design.</span>
               </li>
               <li>
                 <span class="t-name">quick_kill_check</span>

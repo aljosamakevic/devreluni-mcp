@@ -37,7 +37,6 @@ import { registerSteelmanAgainstPrompt } from './prompts/steelman-against.js';
 import { registerRunSingleGatePrompt } from './prompts/run-single-gate.js';
 import { registerGenerateTestCardsPrompt } from './prompts/generate-test-cards.js';
 import { registerQuickKillCheckPrompt } from './prompts/quick-kill-check.js';
-import { registerValidateAssumptionPrompt } from './prompts/validate-assumption.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -116,7 +115,6 @@ export function createMcpServer(): McpServer {
   registerRunSingleGatePrompt(server);
   registerGenerateTestCardsPrompt(server);
   registerQuickKillCheckPrompt(server);
-  registerValidateAssumptionPrompt(server);
 
   return server;
 }
@@ -135,7 +133,7 @@ async function main(): Promise<void> {
     console.error(
       'Tools: find_closest_competitor, read_competitor_changelog, map_competitive_weaknesses, scan_producthunt_launches, get_category_failure_modes, find_yc_rfs_alignment, find_pricing_anchors, check_big_tech_encroachment, find_why_now_signals, estimate_demand_signals, find_public_revenue_signals, assess_platform_dependency, finalize_validation_report'
     );
-    console.error('Prompts: validate_idea, steelman_against, run_single_gate, generate_test_cards, quick_kill_check, validate_assumption');
+    console.error('Prompts: validate_idea, steelman_against, run_single_gate, generate_test_cards, quick_kill_check');
     console.error('Resources: source-tier-bias, tool-to-gate-map, evaluation-lens-matrix');
     return;
   }

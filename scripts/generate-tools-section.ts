@@ -94,9 +94,9 @@ const PROMPTS: PromptMeta[] = [
       'Runs the full 5-gate validation on a product idea. Calls every tool the gates need; produces a NO-GO / GO / CONDITIONAL GO verdict with sourced evidence.',
   },
   {
-    name: 'validate_assumption',
+    name: 'generate_test_cards',
     description:
-      'Verifies ONE specific claim instead of running the full sweep. Same anti-bias rigor (tier-graded sources, forced contradicting evidence) at claim granularity.',
+      'Input your business idea, get 3-7 hypotheses that must be true for the business to work — each with a cheap test design, an exact metric, and a pass/fail threshold. Strategyzer Test Card format. Pair with validate_idea to focus tests on the weakest gates.',
   },
   {
     name: 'run_single_gate',
@@ -107,11 +107,6 @@ const PROMPTS: PromptMeta[] = [
     name: 'steelman_against',
     description:
       'Argues against your own idea. Forces the strongest possible case that this product should not exist.',
-  },
-  {
-    name: 'generate_test_cards',
-    description:
-      'Turns your assumptions into testable cards. Each one is a falsifiable hypothesis with a concrete experiment design.',
   },
   {
     name: 'quick_kill_check',
