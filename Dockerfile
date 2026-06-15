@@ -22,19 +22,19 @@ WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci
 
-# Copy build inputs. Keep scripts/ in a separate layer so that
-# changes to scripts/ don't invalidate the slow TypeScript compile.
+# Copy build inputs. Phase 06 T09+T10 added scripts/generate-tools-section.ts
+# to the build step (writes the rendered tools section into public/index.html
+# via marker replacement), so scripts/ + public/ are now part of `npm run build`
+# and must be present before it runs.
 COPY tsconfig.json ./
 COPY src ./src
-
-# Compile TypeScript to build/ and stage build/db/schema.sql.
-RUN npm run build
-
-# scripts/ + public/ are not needed for `npm run build` but the runtime
-# image ships them; copy them here so the runtime stage can pull
-# everything from the builder.
 COPY scripts ./scripts
 COPY public ./public
+
+# Compile TypeScript to build/, stage build/db/schema.sql, and run the
+# tools-section generator (idempotent — overwrites public/index.html with
+# the rendered tools section between the BEGIN/END markers).
+RUN npm run build
 
 # ---------- Runtime ----------
 FROM node:22-bookworm-slim AS runtime
