@@ -125,7 +125,9 @@ OUTPUT CONTRACT (read carefully — this replaces all prior "output format" guid
 
 Do not output any markdown. Your final assistant message must contain exactly one fenced JSON block (a \`ValidationReport\`) followed by a single tool call to \`finalize_validation_report\` with that JSON as the \`report_json\` argument. If you find yourself about to write \`# Idea:\` or \`Verdict:\` or any spec §5 section heading, stop and emit JSON instead. The validated markdown will be returned by the tool — relay that to the user verbatim.
 
-Schema reference: see \`src/validation/types.ts\` for the full \`ValidationReport\` shape. Top-level fields you must populate:
+**Before constructing the JSON, load \`resource://report-schema\`.** The resource returns three things: the live JSON Schema (authoritative), a minimal-valid skeleton you can copy and fill in, and a worked example showing a populated NO-GO report. Construct your JSON to match the schema exactly — do not skip this step. If your client cannot list resources, the top-level fields are summarized below as a fallback, but the resource is the source of truth.
+
+Top-level fields (summary — see \`resource://report-schema\` for the exhaustive contract):
 - \`header\` — { idea, audience, builder, generated_at, mcp_version (use "0.1.0" if unknown), total_sources_consulted, source_quality_mix: {S,A,B,C,D}, bias_mix: {independent, "vendor-funded", conflicted, unknown} }
 - \`verdict\` — { overall, overall_confidence, gate_summary[5], killshots[] (only when NO-GO) }
 - \`gates\` — exactly 5 \`GateReport\` objects in order 1..5, each with dok1_facts[], dok2_summary, dok3_insights[] (is_model_judgment: true), contradicting_evidence[] (use the "none found" sentinel if empty), dok4_verdict, source_meta
@@ -135,10 +137,8 @@ Schema reference: see \`src/validation/types.ts\` for the full \`ValidationRepor
 - \`source_appendix\` — numbered rows with gates/dok_layers
 - \`methodology_notes\` — { tool_calls[], tool_calls_fired, validation_rules_in_force, disclaimer }
 
-You may also load \`resource://report-schema\` for the live JSON schema.
-
 <retry_policy>
-Maximum 2 attempts. If \`finalize_validation_report\` returns \`status: validation_failed\` on attempt 1, read the \`issues[]\` array, fix the specific issues in your JSON, and emit corrected JSON on attempt 2 (with a fresh tool call). If attempt 2 also fails, surface the \`validation_failed\` payload to the user verbatim — do NOT attempt to render markdown directly. Do NOT make a 3rd attempt.
+Maximum 2 attempts. If \`finalize_validation_report\` returns \`status: validation_failed\`, the response includes \`expected_skeleton\` (the minimal-valid skeleton — copy its shape) and \`hints[]\` (one per issue, path-localized — e.g. \`gates.2.dok1_facts.3.tier — expected one of "S","A","B","C","D"; got "high"\`). Read them, fix the specific issues, and emit corrected JSON on attempt 2 with a fresh tool call. If attempt 2 also fails, surface the \`validation_failed\` payload to the user verbatim — do NOT attempt to render markdown directly, do NOT make a 3rd attempt, and do NOT skip the finalize step.
 </retry_policy>
 
 On \`status: ok\`: relay the tool's \`markdown\` field to the user verbatim. If \`adjustments_made\` is non-empty, append a short "Server-side adjustments:" note listing them so the user knows the verdict-validator overrode something.
