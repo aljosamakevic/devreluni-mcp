@@ -396,6 +396,74 @@
         font-size: var(--fs-sub);
         line-height: 1.4;
       }
+      /* Cross-gate snippet grid — 4 small blocks before the deep-dive gate.
+         Each row: gate ID + name + verdict pill on the left, DOK 3 insight
+         on the right (stacked on mobile). */
+      .cross-gate-grid {
+        margin: var(--s-6) 0 var(--s-7);
+        border-top: 0.5px solid var(--border);
+      }
+      .cross-gate-row {
+        display: grid;
+        grid-template-columns: 240px 1fr;
+        gap: var(--s-5);
+        padding: var(--s-4) 0;
+        border-bottom: 0.5px solid var(--border);
+        align-items: start;
+      }
+      @media (max-width: 768px) {
+        .cross-gate-row { grid-template-columns: 1fr; gap: var(--s-2); }
+      }
+      .cgr-meta {
+        display: flex;
+        flex-direction: column;
+        gap: var(--s-1);
+      }
+      .cgr-id {
+        font-family: var(--font-mono);
+        font-size: 11px;
+        letter-spacing: 0.10em;
+        color: var(--text-tertiary);
+        text-transform: uppercase;
+      }
+      .cgr-name {
+        font-family: var(--font-mono);
+        font-size: 14px;
+        font-weight: 500;
+        color: var(--text);
+        letter-spacing: -0.01em;
+      }
+      .cgr-verdict {
+        font-family: var(--font-mono);
+        font-size: 12px;
+        font-weight: 500;
+        letter-spacing: 0.04em;
+        margin-top: var(--s-2);
+      }
+      .cgr-insight {
+        font-family: var(--font-body);
+        font-size: 13px;
+        color: var(--text-secondary);
+        line-height: 1.55;
+        margin: 0;
+      }
+      .cgr-insight .warn {
+        display: inline-block;
+        font-family: var(--font-mono);
+        font-size: 10px;
+        letter-spacing: 0.08em;
+        color: var(--status-inc);
+        margin-right: var(--s-2);
+      }
+      .evidence-section-eyebrow {
+        font-family: var(--font-mono);
+        font-size: 11px;
+        letter-spacing: 0.10em;
+        color: var(--text-tertiary);
+        text-transform: uppercase;
+        margin: 0 0 var(--s-3);
+      }
+
       .evidence-frame {
         border: 0.5px solid var(--border);
         border-radius: var(--radius);
@@ -1295,11 +1363,51 @@
         <div class="container">
           <p class="eyebrow">Evidence</p>
           <h2>Real output.</h2>
-          <p class="lede">A real Gate 3 (Platform &amp; Big-Tech Risk) excerpt from a validation run on a B2C focus app. Sources, tiers, and the verdict appear exactly as the framework produced them.</p>
+          <p class="lede">A real validation run on a B2C focus app. Five gates fired; one passed, three failed, one came back inconclusive. Below: the cross-gate snapshot, then the killshot gate (Pricing) in full — sources, tiers, and verdict exactly as the framework rendered them.</p>
+
+          <div class="cross-gate-grid">
+            <div class="cross-gate-row">
+              <div class="cgr-meta">
+                <span class="cgr-id">G1</span>
+                <span class="cgr-name">Direct Competitor Scan</span>
+                <span class="v-nogo cgr-verdict">FAIL</span>
+              </div>
+              <p class="cgr-insight"><span class="warn">⚠ Model judgment</span>At least 3 directly-overlapping AI-screen-monitoring products are shipping today — the founder doesn't enter as a first-mover. The "I have the problem too" angle doesn't produce structural differentiation.</p>
+            </div>
+
+            <div class="cross-gate-row">
+              <div class="cgr-meta">
+                <span class="cgr-id">G2</span>
+                <span class="cgr-name">Market Demand</span>
+                <span class="v-go cgr-verdict">PASS</span>
+              </div>
+              <p class="cgr-insight"><span class="warn">⚠ Model judgment</span>Demand for "focus" tools is real and large, but the only profitable comparable surfaced (Rize, $10k+ MRR) is a time-tracker, not an AI-screen-monitoring app — the demand may be for a different shape of product.</p>
+            </div>
+
+            <div class="cross-gate-row">
+              <div class="cgr-meta">
+                <span class="cgr-id">G3</span>
+                <span class="cgr-name">Platform &amp; Big-Tech Risk</span>
+                <span class="v-nogo cgr-verdict">FAIL</span>
+              </div>
+              <p class="cgr-insight"><span class="warn">⚠ Model judgment</span>Apple owns the Screen Time / Managed Settings API the product must call, and the same App Review Guidelines surface that killed Spotlight-style and Notes-style third-party apps gates entry. Android Digital Wellbeing applies the same vector on the Android side.</p>
+            </div>
+
+            <div class="cross-gate-row">
+              <div class="cgr-meta">
+                <span class="cgr-id">G5</span>
+                <span class="cgr-name">Why Now</span>
+                <span class="v-cond cgr-verdict">INCONCLUSIVE</span>
+              </div>
+              <p class="cgr-insight"><span class="warn">⚠ Model judgment</span>"AI got better" is the spec's canonical anti-pattern for Why Now. The evidence doesn't surface a sharper thesis (specific API opening, regulatory change, remote-work behavior shift). The absence of evidence is itself the signal.</p>
+            </div>
+          </div>
+
+          <p class="evidence-section-eyebrow">Gate 4 — Killshot in detail</p>
 
           <div class="evidence-frame">
             <div class="evidence-meta">
-              <span>Gate <b>G3 · Platform &amp; Big-Tech Risk</b></span>
+              <span>Gate <b>G4 · Willingness to Pay</b></span>
               <span>Status <b style="color: var(--status-fail);">FAIL</b></span>
               <span>Confidence <b>Low</b></span>
             </div>
@@ -1307,50 +1415,56 @@
             <p class="dok-eyebrow">DOK 1 — Facts (sourced)</p>
 
             <div class="fact-block">
+              <span class="fact-tier tier-s">S</span>
+              RescueTime live pricing lists $7 / $9 / $12 per month — the category ceiling for an established B2C productivity SaaS sits in the single-digit to low-double-digit dollar range.
+              <span class="fact-source">— Source: rescuetime.com/pricing | Bias: conflicted</span>
+            </div>
+
+            <div class="fact-block">
+              <span class="fact-tier tier-s">S</span>
+              Freedom live pricing lists $3.33 / $8.99 per month freemium tiers — additional confirmation of the sub-$10/mo B2C ceiling.
+              <span class="fact-source">— Source: freedom.to/pricing | Bias: conflicted</span>
+            </div>
+
+            <div class="fact-block">
+              <span class="fact-tier tier-s">S</span>
+              Opal lists $8.29 and $19.99 per month — direct competitor in the same B2C focus-app mechanic.
+              <span class="fact-source">— Source: opal.so/pricing | Bias: conflicted</span>
+            </div>
+
+            <div class="fact-block">
+              <span class="fact-tier tier-s">S</span>
+              Wayback Machine snapshots from March + May 2026 confirm Opal and Focus Bear pricing has been stable at the sub-$10/mo ceiling for at least 2 months — historical anchor, not an artifact of a single fetch.
+              <span class="fact-source">— Source: web.archive.org | Bias: independent</span>
+            </div>
+
+            <div class="fact-block">
               <span class="fact-tier tier-a">A</span>
-              assess_platform_dependency scored Gate 3 platform-dependency risk at 3/5 ("Material platform dependency with mixed enforcement history") with 4 detected restrictive platforms (Apple Screen Time API, Android Digital Wellbeing, iOS/Apple platform APIs, macOS). The tool's verdict text explicitly invokes the Apple "system feature" pattern that "has killed prior categories (Spotlight → launchers, Notes → note apps)".
-              <span class="fact-source">— Source: google.serper.dev — Apple Screen Time API ToS / policy churn | Bias: independent</span>
+              IndieHackers: Session, an App Store focus app, reports $2,000 MRR with ~750 installs/month — illustrative B2C-solo ceiling for focus apps that aren't one of the top 1–2 winners.
+              <span class="fact-source">— Source: indiehackers.com/product/session-2 | Bias: independent</span>
             </div>
 
             <div class="fact-block">
-              <span class="fact-tier tier-s">S</span>
-              Apple App Review Guidelines (developer.apple.com/app-store/review/guidelines/) — the first-party rulebook governing Screen Time / focus apps. Any iOS focus app is structurally subject to this policy surface.
-              <span class="fact-source">— Source: developer.apple.com/app-store/review/guidelines/ | Bias: conflicted</span>
-            </div>
-
-            <div class="fact-block">
-              <span class="fact-tier tier-s">S</span>
-              Apple Developer Forums "Managed Settings" tag — the Screen Time API surface every iOS focus app must build on, with active third-party developer issues reported. find_why_now_signals surfaced this as a "recent enabler" (last 24mo).
-              <span class="fact-source">— Source: developer.apple.com/forums/tags/managed-settings | Bias: conflicted</span>
-            </div>
-
-            <div class="fact-block">
-              <span class="fact-tier tier-s">S</span>
-              Microsoft Learn Q&amp;A thread documents Microsoft Viva Insights Focus Plan failing to schedule focus time — Microsoft already ships focus-management as part of Microsoft 365, confirming hyperscaler presence in the category.
-              <span class="fact-source">— Source: learn.microsoft.com/.../viva-insights-focus-plan | Bias: conflicted</span>
-            </div>
-
-            <div class="fact-block">
-              <span class="fact-tier tier-a">A</span>
-              assess_platform_dependency's deplatforming-retro fan-out (Serper query for Apple Screen Time API "lost access" / "deplatformed" / "rejected" founder retros on Medium/HN/IndieHackers) returned no usable hits — logged honestly as empty per spec §11 anti-pattern 2; does NOT mean the platform is safe.
-              <span class="fact-source">— Source: google.serper.dev | Bias: conflicted</span>
+              <span class="fact-tier tier-b">B</span>
+              find_pricing_anchors auto-flagged 5 G2 / Capterra churn signals including "refund the overpayment" and "cancelled they didn't even bother to respond". <span class="elision">[…]</span>
+              <span class="fact-source">— Source: g2.com | Bias: independent</span>
             </div>
 
             <p class="dok-eyebrow">DOK 2 — Summary (no interpretation)</p>
-            <p class="dok-summary">The product is structurally dependent on Apple's Screen Time / Managed Settings API (or equivalent Android Digital Wellbeing) — both restrictive platforms governed by App Review Guidelines policy churn. assess_platform_dependency scored Gate 3 platform-risk at 3/5 ("Material platform dependency with mixed enforcement history"), explicitly invoking the Apple "system feature" pattern that killed Spotlight-style launchers and Notes-style note apps. <span class="elision">[…]</span> Microsoft already ships Viva Insights Focus Plan. The deplatforming-retro fan-out returned empty — logged honestly per spec §11 anti-pattern 2.</p>
+            <p class="dok-summary">The focus-app category prices in the $3–$30/mo range with most consumer tiers between $3–$12/mo (RescueTime, Freedom, Opal, Focus Bear). Two Wayback snapshots confirm pricing stability. find_pricing_anchors auto-flagged 5 churn / refund signals. IndieHackers comparables (Session $2k MRR, Rize $10k+ MRR) show the ceiling. <span class="elision">[…]</span></p>
 
             <p class="dok-eyebrow">DOK 3 — Insight (model judgment)</p>
-            <p class="dok-insight"><span class="warn">⚠ Model judgment</span>Apple owns the Screen Time / Managed Settings API the product must call, and the same App Review Guidelines surface that has killed Spotlight-style and Notes-style third-party apps gates entry. A cloud-screenshot-based third-party app is structurally exposed to both API revocation and competitive encroachment. <span class="elision">[…]</span></p>
+            <p class="dok-insight"><span class="warn">⚠ Model judgment</span>The B2C-solo target ($5k–$50k MRR) is achievable only at the top of this category. New entrants face a ~$10/mo ceiling combined with the documented "ADHD-tax" churn pattern — a classic labor-of-love combination. Cloud-screenshot processing adds inference cost on top of an already-thin margin profile. <span class="elision">[…]</span></p>
 
             <div class="contradicting-callout">
               <strong>Contradicting evidence (searched)</strong>
-              No contradicting evidence surfaced — treat as a gap, not confirmation. The framework searched; the absence is logged honestly per spec §11 anti-pattern 2.
+              Rize publicly reports &gt;$10k MRR on IndieHackers with a top tier at $29.99/mo, demonstrating that pricing above the $10/mo ceiling is achievable for adjacent time-tracking. Neither Rize nor Cold Turkey uses cloud-screenshot AI monitoring, and both have multi-year market presence.
             </div>
 
             <div class="verdict-row">
-              <p class="label">Gate 3 verdict</p>
+              <p class="label">Gate 4 verdict</p>
               <span class="stamp stamp-inline stamp-fail">FAIL</span>
-              <span class="conf">≥ 2 tier-S sources · Confidence Low</span>
+              <span class="conf">7 tier-S sources · Confidence Low</span>
             </div>
           </div>
         </div>
