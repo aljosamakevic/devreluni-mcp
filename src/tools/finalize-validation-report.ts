@@ -36,6 +36,7 @@ import type {
   ValidationIssue,
   ValidationReport,
 } from '../validation/types.js';
+import { MINIMAL_VALID_SKELETON } from '../resources/report-schema.js';
 
 // ──────────────────────────────────────────────────────────────────────────
 // Result envelope
@@ -62,9 +63,74 @@ interface FailureResult {
   issues: ParseFailureIssue[] | ZodIssue[] | ValidationIssue[];
   /** Present only for structural-stage failures so the LLM can self-correct. */
   partial_report?: ValidationReport;
+  /**
+   * Phase 08 T05 — minimal-valid ValidationReport shape the LLM can copy
+   * from for the retry attempt. Same content as `resource://report-schema`'s
+   * skeleton section. Always present on failure to keep the retry path
+   * self-contained even if the LLM never read the resource.
+   */
+  expected_skeleton: ValidationReport;
+  /**
+   * Phase 08 T05 — one hint per `issues[i]`, matching index order. Each
+   * hint names the offending path (e.g. `gates.2.dok1_facts.3.tier`) and
+   * the constraint (e.g. `expected one of "S","A","B","C","D"; got "high"`).
+   * For the `parse` stage, contains a single hint describing the JSON
+   * syntax error.
+   */
+  hints: string[];
 }
 
 type FinalizeResult = SuccessResult | FailureResult;
+
+// ──────────────────────────────────────────────────────────────────────────
+// Phase 08 T05 — hint builders. Translate raw issue records into single-
+// line, path-localized strings the LLM can act on directly. NEVER alters
+// the underlying `issues[]`; hints are an additive, parallel array.
+// ──────────────────────────────────────────────────────────────────────────
+
+function formatZodIssue(issue: ZodIssue): string {
+  const path = issue.path.length > 0 ? issue.path.join('.') : '(root)';
+  switch (issue.code) {
+    case 'invalid_type':
+      return `${path} — expected ${issue.expected}, got ${issue.received}`;
+    case 'invalid_enum_value': {
+      const opts = (issue as { options?: readonly unknown[] }).options ?? [];
+      const received = (issue as { received?: unknown }).received;
+      return `${path} — expected one of ${opts.map((o) => JSON.stringify(o)).join(', ')}; got ${JSON.stringify(received)}`;
+    }
+    case 'invalid_literal': {
+      const expected = (issue as { expected?: unknown }).expected;
+      return `${path} — expected literal ${JSON.stringify(expected)}`;
+    }
+    case 'unrecognized_keys': {
+      const keys = (issue as { keys?: string[] }).keys ?? [];
+      return `${path} — unexpected key(s): ${keys.join(', ')}. Remove them.`;
+    }
+    case 'too_small':
+    case 'too_big':
+      return `${path} — ${issue.message}`;
+    default:
+      return `${path} — ${issue.message}`;
+  }
+}
+
+function buildHints(
+  stage: FailStage,
+  issues: ParseFailureIssue[] | ZodIssue[] | ValidationIssue[]
+): string[] {
+  if (stage === 'parse') {
+    const msg = (issues[0] as ParseFailureIssue | undefined)?.message ?? 'invalid JSON';
+    return [`(root) — JSON parse failed: ${msg}. Emit a single valid JSON object.`];
+  }
+  if (stage === 'schema') {
+    return (issues as ZodIssue[]).map(formatZodIssue);
+  }
+  // structural
+  return (issues as ValidationIssue[]).map((i) => {
+    const loc = i.location ? `${i.location} — ` : '';
+    return `[${i.code}] ${loc}${i.message}`;
+  });
+}
 
 // ──────────────────────────────────────────────────────────────────────────
 // Adjustment diff — surfaces verdict changes the validator forced.
@@ -127,16 +193,19 @@ export function finalizeValidationReport(reportJson: string): FinalizeResult {
     parsed = JSON.parse(reportJson);
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
+    const issues: ParseFailureIssue[] = [
+      {
+        severity: 'fundamental',
+        code: 'invalid_json',
+        message,
+      },
+    ];
     return {
       status: 'validation_failed',
       stage: 'parse',
-      issues: [
-        {
-          severity: 'fundamental',
-          code: 'invalid_json',
-          message,
-        },
-      ],
+      issues,
+      expected_skeleton: MINIMAL_VALID_SKELETON,
+      hints: buildHints('parse', issues),
     };
   }
 
@@ -147,6 +216,8 @@ export function finalizeValidationReport(reportJson: string): FinalizeResult {
       status: 'validation_failed',
       stage: 'schema',
       issues: schemaResult.issues,
+      expected_skeleton: MINIMAL_VALID_SKELETON,
+      hints: buildHints('schema', schemaResult.issues),
     };
   }
   const report = schemaResult.report;
@@ -157,11 +228,14 @@ export function finalizeValidationReport(reportJson: string): FinalizeResult {
     (i) => i.severity === 'fundamental'
   );
   if (hasFundamental) {
+    const fundamentals = structuralIssues.filter((i) => i.severity === 'fundamental');
     return {
       status: 'validation_failed',
       stage: 'structural',
       issues: structuralIssues,
       partial_report: report,
+      expected_skeleton: MINIMAL_VALID_SKELETON,
+      hints: buildHints('structural', fundamentals),
     };
   }
 
@@ -201,7 +275,7 @@ export function registerFinalizeValidationReport(server: McpServer): void {
     'finalize_validation_report',
     {
       description:
-        'Finalize a ValidationReport. Pass the JSON you constructed in `validate_idea`. Returns the validated markdown artifact, or a `validation_failed` error with the specific issues to fix. **This is the ONLY way to emit the final validation artifact — do not output markdown directly.**',
+        'Finalize a ValidationReport. Pass the JSON you constructed in `validate_idea` (load `resource://report-schema` first for the live JSON Schema, minimal-valid skeleton, and worked example). Returns the validated markdown artifact, or a `validation_failed` envelope with `issues[]`, `hints[]` (one per issue, path-localized), and `expected_skeleton` (the minimal-valid shape to copy from). On failure, fix using the hints and retry once. **This is the ONLY way to emit the final validation artifact — do not output markdown directly, do not skip this step.**',
       inputSchema: {
         report_json: z
           .string()
