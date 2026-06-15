@@ -20,8 +20,39 @@
 //   This preserves spec §11 anti-pattern 2 + §7 graceful degradation.
 
 import { getDb } from '../db/connection.js';
+import { logger } from '../lib/logger.js';
 
 export const GLOBAL_SERPER_LIMIT = 1500;
+
+// The global Serper cap is a HOSTED multi-tenant protection: it guards the
+// shared 1,500/UTC-day Serper quota across all web users, backed by the
+// rate_limits table on the Fly volume at /data. In LOCAL STDIO mode there is
+// no /data volume (getDb throws "Cannot open database because the directory
+// does not exist") and no shared quota to protect — the user runs their own
+// SERPER_API_KEY. In that case the limiter must FAIL OPEN (allow the search,
+// skip global accounting) rather than let a hosted-only concern break core
+// search. Before this guard, serperSearch() propagated the getDb throw and
+// any tool that didn't wrap serperSearch in its own try/catch died with a
+// raw "Cannot open database" error — which calling LLMs then rationalized as
+// a fabricated infrastructure failure. This is the structural fix for that.
+let dbUnavailableLogged = false;
+function tryGetDb(): ReturnType<typeof getDb> | null {
+  try {
+    return getDb();
+  } catch (err) {
+    if (!dbUnavailableLogged) {
+      logger.warn(
+        {
+          event: 'global_serper_limiter_disabled',
+          reason: err instanceof Error ? err.message : String(err),
+        },
+        'global Serper limiter disabled — DB unavailable (expected in local stdio mode); failing open'
+      );
+      dbUnavailableLogged = true;
+    }
+    return null;
+  }
+}
 
 export interface GlobalSerperCheck {
   allowed: boolean;
@@ -56,7 +87,11 @@ function utcMidnightStartIso(): string {
  * Returns allowed=false when today's counter is at or above GLOBAL_SERPER_LIMIT.
  */
 export function checkGlobalSerperLimit(): GlobalSerperCheck {
-  const db = getDb();
+  const db = tryGetDb();
+  if (!db) {
+    // Fail open — no hosted DB means no shared quota to enforce (local stdio).
+    return { allowed: true, remaining: GLOBAL_SERPER_LIMIT, retryAfterSec: 0 };
+  }
   const key = `global:serper:${todayUtcKey()}`;
   const row = db
     .prepare(`SELECT count FROM rate_limits WHERE key = ?`)
@@ -77,7 +112,8 @@ export function checkGlobalSerperLimit(): GlobalSerperCheck {
  * single transaction; see R5 race-window note in the file header.
  */
 export function recordSerperCall(): void {
-  const db = getDb();
+  const db = tryGetDb();
+  if (!db) return; // No-op when DB unavailable (local stdio) — nothing to count.
   const key = `global:serper:${todayUtcKey()}`;
   const windowStart = utcMidnightStartIso();
 

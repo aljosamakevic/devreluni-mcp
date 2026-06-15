@@ -196,3 +196,44 @@ describe('serperSearch — C7 graceful degradation contract', () => {
     expect(wasLastSerperCallCapped()).toBe(false);
   });
 });
+
+// Phase: fail-open when the DB is unavailable (local stdio mode). The global
+// Serper cap is a hosted-only protection backed by the Fly volume at /data;
+// when getDb() throws because that directory doesn't exist, the limiter must
+// fail OPEN rather than break core search. Regression for the "Cannot open
+// database because the directory does not exist" tool failure.
+describe('fail-open when DB unavailable (local stdio)', () => {
+  afterEach(() => {
+    // Restore the good DB path the rest of the suite relies on.
+    process.env['VETOED_DB_PATH'] = DB_PATH;
+    __resetDbForTests();
+    getDb();
+  });
+
+  it('checkGlobalSerperLimit allows + reports full remaining when getDb throws', () => {
+    __resetDbForTests();
+    process.env['VETOED_DB_PATH'] = '/nonexistent-dir-xyz/does/not/exist/vetoed.db';
+    const check = checkGlobalSerperLimit();
+    expect(check.allowed).toBe(true);
+    expect(check.remaining).toBe(GLOBAL_SERPER_LIMIT);
+    expect(check.retryAfterSec).toBe(0);
+  });
+
+  it('recordSerperCall is a silent no-op when getDb throws', () => {
+    __resetDbForTests();
+    process.env['VETOED_DB_PATH'] = '/nonexistent-dir-xyz/does/not/exist/vetoed.db';
+    expect(() => recordSerperCall()).not.toThrow();
+  });
+
+  it('serperSearch returns live-shaped results without throwing when DB is unavailable', async () => {
+    __resetDbForTests();
+    process.env['VETOED_DB_PATH'] = '/nonexistent-dir-xyz/does/not/exist/vetoed.db';
+    process.env['SERPER_API_KEY'] = 'test-key-forces-live-path';
+    // The fetch will fail (fake key) and fall through to the stub, but the
+    // point is: NO "Cannot open database" throw escapes serperSearch.
+    const results = await serperSearch('secondhand clothes');
+    expect(Array.isArray(results)).toBe(true);
+    expect(wasLastSerperCallCapped()).toBe(false); // not capped — limiter failed open
+    delete process.env['SERPER_API_KEY'];
+  });
+});
