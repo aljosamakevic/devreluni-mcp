@@ -344,9 +344,14 @@ export function buildMagicLinkTextBody(url: string): string {
 }
 
 /**
- * Build the HTML body for the magic link email. Mirrors the approval email
- * wrapper (system font stack, --bg/--fg palette) so both feel like the
- * same product. The CTA is a button-styled <a> using the landing accent.
+ * Build the HTML body for the magic link email. Mirrors the approval
+ * email's BRAND.md application: table-based layout, inline styles only,
+ * web-safe font-family fallbacks, hardcoded color values (no CSS
+ * custom properties — email clients don't support them).
+ *
+ * Phase 06 T14 restyle: BRAND.md tokens applied within email-safe HTML.
+ * The CTA button is the magic link itself in primary CTA shape
+ * (#D4F233 background, #111210 text, DM Mono 13/500 0.04em uppercase).
  */
 export function buildMagicLinkHtmlBody(url: string): string {
   const esc = (s: string): string =>
@@ -359,23 +364,50 @@ export function buildMagicLinkHtmlBody(url: string): string {
 
   const safeUrl = esc(url);
   return `<!DOCTYPE html>
-<html><body style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;font-size:16px;line-height:1.6;color:#1a1a1a;max-width:600px;margin:0 auto;padding:24px;">
-    <p>You're one click away from your Veto access token.</p>
-
-    <p>Sign in to claim your token:</p>
-
-    <p style="margin:24px 0;">
-      <a href="${safeUrl}" style="display:inline-block;padding:12px 22px;background:#c0392b;color:#fff;font-weight:600;text-decoration:none;border-radius:4px;">Sign in to Veto</a>
-    </p>
-
-    <p style="font-size:14px;color:#555;">Or paste this URL into your browser:<br>
-    <a href="${safeUrl}" style="color:#555;word-break:break-all;">${safeUrl}</a></p>
-
-    <p style="font-size:14px;color:#555;">This link expires in 15 minutes and works once. If you didn't request this, you can safely ignore the email.</p>
-
-    <p style="font-size:13px;color:#777;">Questions? Write to <a href="mailto:aljosa.sandbox@gmail.com" style="color:#777;">aljosa.sandbox@gmail.com</a> (this inbox does not accept replies).</p>
-
-    <p>— Veto</p>
+<html><body style="margin:0;padding:0;background:#111210;color:#F5F4F0;font-family:Inter,-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#111210;">
+    <tr>
+      <td align="center" style="padding:32px 16px 64px;">
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="600" style="max-width:600px;width:100%;background:#111210;">
+          <tr>
+            <td style="padding:0 0 32px;border-bottom:1px solid rgba(245,244,240,0.10);">
+              <span style="font-family:'DM Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-weight:500;font-size:16px;letter-spacing:-0.02em;text-transform:uppercase;color:#F5F4F0;">VETO</span>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:32px 0 16px;">
+              <div style="font-family:'DM Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:10px;letter-spacing:0.10em;text-transform:uppercase;color:rgba(245,244,240,0.55);margin:0 0 12px;">Sign in</div>
+              <h1 style="font-family:'DM Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-weight:500;font-size:28px;letter-spacing:-0.02em;line-height:1.1;color:#F5F4F0;margin:0 0 16px;">One click to your token.</h1>
+              <p style="font-family:Inter,-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;font-size:16px;line-height:1.6;color:rgba(245,244,240,0.55);margin:0 0 24px;">You're one click away from your Veto access token.</p>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:8px 0 32px;">
+              <a href="${safeUrl}" style="display:inline-block;background:#D4F233;color:#111210;font-family:'DM Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;font-weight:500;letter-spacing:0.04em;text-transform:uppercase;padding:12px 24px;border-radius:2px;text-decoration:none;">Sign in to Veto</a>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:0 0 24px;">
+              <p style="font-family:Inter,-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;font-size:13px;color:rgba(245,244,240,0.55);margin:0 0 6px;">Or paste this URL into your browser:</p>
+              <a href="${safeUrl}" style="font-family:'DM Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12px;color:#F5F4F0;word-break:break-all;text-decoration:underline;">${safeUrl}</a>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:8px 0 16px;">
+              <p style="font-family:Inter,-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;font-size:13px;color:rgba(245,244,240,0.55);margin:0;">This link expires in 15 minutes and works once. If you didn't request this, you can safely ignore the email.</p>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:24px 0 16px;border-top:1px solid rgba(245,244,240,0.10);">
+              <p style="font-family:Inter,-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;font-size:13px;color:rgba(245,244,240,0.55);margin:0 0 8px;">Questions? Write to <a href="mailto:aljosa.sandbox@gmail.com" style="color:#F5F4F0;text-decoration:underline;">aljosa.sandbox@gmail.com</a>.</p>
+              <p style="font-family:Inter,-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;font-size:12px;color:rgba(245,244,240,0.30);margin:0 0 16px;">(This inbox doesn't accept replies — please use the address above.)</p>
+              <p style="font-family:Inter,-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;font-size:14px;color:rgba(245,244,240,0.55);margin:0;">— Veto</p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
 </body></html>`;
 }
 
