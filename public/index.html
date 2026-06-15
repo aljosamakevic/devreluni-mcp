@@ -216,6 +216,103 @@
         margin: 0 var(--s-2);
       }
       .footer-links a:hover { color: var(--text); }
+
+      /* ─────────────────────────────────────────────────────────────────
+         T03 — Hero (static heading + sub + CTAs)
+         BRAND.md hero pattern: accent on "before", two CTAs (primary +
+         secondary text-link). Two-column desktop, stacked mobile.
+         ───────────────────────────────────────────────────────────────── */
+      .accent { color: var(--accent); }
+      .hero {
+        padding: var(--s-9) 0 var(--s-8);
+        position: relative;
+        overflow: hidden;
+      }
+      @media (max-width: 768px) {
+        .hero { padding: var(--s-7) 0 var(--s-6); }
+      }
+      .hero-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: var(--s-7);
+        align-items: center;
+      }
+      @media (max-width: 900px) {
+        .hero-grid { grid-template-columns: 1fr; gap: var(--s-6); }
+      }
+      .hero h1 {
+        font-size: var(--fs-hero);
+        letter-spacing: -0.03em;
+        line-height: 1.05;
+        margin: 0 0 var(--s-5);
+      }
+      @media (max-width: 600px) {
+        .hero h1 { font-size: 36px; }
+      }
+      .hero-sub {
+        color: var(--text-secondary);
+        font-size: 17px;
+        line-height: 1.5;
+        margin: 0 0 var(--s-6);
+        max-width: 32ch;
+      }
+      .hero-ctas {
+        display: flex;
+        gap: var(--s-3);
+        flex-wrap: wrap;
+      }
+
+      /* CTAs (BRAND.md "CTA button — primary / secondary") */
+      .cta-primary {
+        background: var(--accent);
+        color: var(--bg);
+        font-family: var(--font-mono);
+        font-size: 13px;
+        font-weight: 500;
+        letter-spacing: 0.04em;
+        padding: 10px 20px;
+        border-radius: var(--radius);
+        border: none;
+        text-transform: uppercase;
+        display: inline-block;
+        cursor: pointer;
+        transition: opacity 120ms ease;
+      }
+      .cta-primary:hover { opacity: 0.88; }
+      .cta-secondary {
+        background: transparent;
+        color: var(--text-secondary);
+        font-family: var(--font-mono);
+        font-size: 13px;
+        letter-spacing: 0.04em;
+        padding: 10px 20px;
+        border: 0.5px solid rgba(245, 244, 240, 0.15);
+        border-radius: var(--radius);
+        text-transform: uppercase;
+        display: inline-block;
+        cursor: pointer;
+        transition: border-color 120ms ease, color 120ms ease;
+      }
+      .cta-secondary:hover {
+        color: var(--text);
+        border-color: var(--border-emphasis);
+      }
+
+      /* Placeholder for hero-right column — animation lands in T08. */
+      .hero-anim-placeholder {
+        border: 0.5px dashed var(--border);
+        border-radius: var(--radius);
+        padding: var(--s-5);
+        min-height: 320px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: var(--font-mono);
+        font-size: 11px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--text-tertiary);
+      }
     </style>
   </head>
   <body>
@@ -234,11 +331,25 @@
     </header>
 
     <main>
-      <!-- Hero (T03) -->
+      <!-- Hero (T03) — static heading + sub + CTAs.
+           Right column is a placeholder; T08 swaps the animation panel in. -->
       <section id="hero" class="hero">
-        <div class="container">
-          <p class="eyebrow">Hero</p>
-          <h2>Pending T03.</h2>
+        <div class="container hero-grid">
+          <div class="hero-text">
+            <h1>
+              Kill bad ideas<br>
+              <span class="accent">before</span> you<br>
+              build them.
+            </h1>
+            <p class="hero-sub">Five gates. One verdict. No cheerleading.</p>
+            <div class="hero-ctas">
+              <a class="cta-primary" href="#install">Install the MCP</a>
+              <a class="cta-secondary" href="#mechanism">Read the docs</a>
+            </div>
+          </div>
+          <div class="hero-anim-placeholder" aria-hidden="true">
+            Animation lands in T08
+          </div>
         </div>
       </section>
 
