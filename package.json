@@ -8,7 +8,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
-    "build": "tsc && chmod 755 build/index.js && mkdir -p build/db && cp src/db/schema.sql build/db/schema.sql",
+    "build": "tsc && chmod 755 build/index.js && mkdir -p build/db && cp src/db/schema.sql build/db/schema.sql && tsx scripts/generate-tools-section.ts",
     "smoke:http": "tsx scripts/smoke-http.ts",
     "admin": "tsx scripts/admin.ts",
     "fomi:https": "tsx scripts/run-fomi-via-https.ts"

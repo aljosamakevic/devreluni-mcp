@@ -3,105 +3,780 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Veto — kill bad product ideas before you build them</title>
+    <title>Veto — Kill bad ideas before you build them</title>
     <meta
       name="description"
-      content="An MCP server that validates product ideas with unbiased, source-grounded evidence across 5 structured gates. Returns a GO / NO-GO / CONDITIONAL GO verdict."
+      content="An MCP server that validates product ideas across five structured gates. Five gates. One verdict. No cheerleading."
     >
+
+    <!-- T16 — SEO meta + Open Graph + Twitter card. -->
+    <meta name="robots" content="index,follow">
+    <link rel="canonical" href="https://getvetoed.com/">
+    <meta name="theme-color" content="#111210">
+
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Veto — Kill bad ideas before you build them">
+    <meta property="og:description" content="An MCP server that validates product ideas across five structured gates. Five gates. One verdict. No cheerleading.">
+    <meta property="og:url" content="https://getvetoed.com/">
+    <meta property="og:site_name" content="Veto">
+    <meta property="og:image" content="https://getvetoed.com/og.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="VETO — five gates, one verdict, no cheerleading">
+
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Veto — Kill bad ideas before you build them">
+    <meta name="twitter:description" content="An MCP server that validates product ideas across five structured gates. Five gates. One verdict. No cheerleading.">
+    <meta name="twitter:image" content="https://getvetoed.com/og.png">
+
+    <!-- T16 — JSON-LD structured data (WebApplication). -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "Veto",
+      "applicationCategory": "BusinessApplication",
+      "operatingSystem": "Cross-platform (Claude Desktop, Cursor, Codex CLI)",
+      "description": "An MCP server that validates product ideas across five structured gates. Returns GO / NO-GO / CONDITIONAL GO verdicts backed by source-grounded evidence.",
+      "url": "https://getvetoed.com/",
+      "author": {
+        "@type": "Person",
+        "name": "Aljosa Makevic"
+      },
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      }
+    }
+    </script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Inter:wght@400;500&display=swap">
     <style>
+      /* ─────────────────────────────────────────────────────────────────
+         Phase 06 T01 — BRAND.md design tokens.
+         Single source of palette/type/spacing for the landing page.
+         Per CONTEXT.md decision 10: vanilla CSS, no framework.
+         Per executor judgment: inline <style> block (file < 800 lines
+         total even after Stream A — multi-file CSS not warranted).
+         ───────────────────────────────────────────────────────────────── */
       :root {
-        --fg: #1a1a1a;
-        --muted: #555;
-        --bg: #fafaf7;
-        --accent: #c0392b;
-        --rule: #e5e5e0;
-        --max: 720px;
-      }
-      * { box-sizing: border-box; }
-      html, body { margin: 0; padding: 0; }
-      body {
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
-        font-size: 17px;
-        line-height: 1.6;
-        color: var(--fg);
-        background: var(--bg);
-        padding: 48px 24px 96px;
-      }
-      main { max-width: var(--max); margin: 0 auto; }
-      h1 {
-        font-size: 40px;
-        line-height: 1.15;
-        margin: 0 0 16px;
-        letter-spacing: -0.01em;
-      }
-      h2 {
-        font-size: 22px;
-        margin: 48px 0 12px;
-        padding-bottom: 8px;
-        border-bottom: 1px solid var(--rule);
-      }
-      h3 {
-        font-size: 17px;
-        margin: 24px 0 6px;
-      }
-      p { margin: 0 0 14px; }
-      .tagline {
-        font-size: 20px;
-        color: var(--muted);
-        margin: 0 0 36px;
-      }
-      .cta {
-        display: inline-block;
-        margin: 12px 0 8px;
-        padding: 12px 22px;
-        background: var(--accent);
-        color: #fff;
-        font-weight: 600;
-        text-decoration: none;
-        border-radius: 4px;
-      }
-      .cta:hover { opacity: 0.92; }
-      .gate {
-        margin: 18px 0;
-      }
-      .gate strong { color: var(--fg); }
-      footer {
-        margin-top: 64px;
-        padding-top: 24px;
-        border-top: 1px solid var(--rule);
-        color: var(--muted);
-        font-size: 14px;
-      }
-      footer a { color: var(--muted); }
-      code {
-        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-        background: #efece4;
-        padding: 1px 6px;
-        border-radius: 3px;
-        font-size: 14px;
+        /* Color — BRAND.md palette, single accent */
+        --bg: #111210;
+        --surface: #1A1A18;
+        --border: rgba(245, 244, 240, 0.10);
+        --border-emphasis: rgba(245, 244, 240, 0.20);
+        --text: #F5F4F0;
+        --text-secondary: rgba(245, 244, 240, 0.55);
+        --text-tertiary: rgba(245, 244, 240, 0.30);
+        --text-muted: rgba(245, 244, 240, 0.18);
+        --accent: #D4F233;
+        --accent-bg: rgba(212, 242, 51, 0.10);
+        --status-fail: #FF6B55;
+        --status-fail-bg: rgba(255, 107, 85, 0.10);
+        --status-inc: #FFB828;
+        --status-inc-bg: rgba(255, 184, 40, 0.10);
+
+        /* Tier color map (BRAND.md "Tier color map") */
+        --tier-s-text: #D4F233;
+        --tier-s-bg: rgba(212, 242, 51, 0.12);
+        --tier-a-text: #7DC8FF;
+        --tier-a-bg: rgba(99, 195, 255, 0.12);
+        --tier-b-text: #AAAAAA;
+        --tier-b-bg: rgba(150, 150, 130, 0.15);
+        --tier-c-text: #FFB828;
+        --tier-c-bg: rgba(255, 184, 40, 0.10);
+        --tier-d-text: #FF6B55;
+        --tier-d-bg: rgba(255, 107, 85, 0.10);
+
+        /* Spacing scale (4/8/12/16/24/32/48/64/96/128px) */
+        --s-1: 4px;
+        --s-2: 8px;
+        --s-3: 12px;
+        --s-4: 16px;
+        --s-5: 24px;
+        --s-6: 32px;
+        --s-7: 48px;
+        --s-8: 64px;
+        --s-9: 96px;
+        --s-10: 128px;
+
+        /* Type scale */
+        --fs-hero: 48px;
+        --fs-section: 28px;
+        --fs-sub: 20px;
+        --fs-body: 16px;
+        --fs-body-sm: 14px;
+        --fs-eyebrow: 10px;
+        --fs-stamp: 64px;
+        --fs-gate-id: 10px;
+        --fs-mono: 13px;
+
+        /* Border radius — BRAND.md "2px or less" */
+        --radius: 2px;
+        --radius-badge: 1px;
+
+        /* Font stacks — Google Fonts (DM Mono + Inter), system fallback */
+        --font-mono: "DM Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        --font-body: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+
+        /* Layout */
+        --max-width: 1200px;
+        --gutter: 32px;
       }
 
-      /* Phase 04 D-03-5 — signup form */
+      /* ─────────────────────────────────────────────────────────────────
+         Reset + base typography
+         ───────────────────────────────────────────────────────────────── */
+      *, *::before, *::after { box-sizing: border-box; }
+      html, body { margin: 0; padding: 0; }
+      html { background: var(--bg); }
+      body {
+        background: var(--bg);
+        color: var(--text);
+        font-family: var(--font-body);
+        font-size: var(--fs-body);
+        line-height: 1.65;
+        letter-spacing: -0.01em;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }
+      a { color: inherit; text-decoration: none; }
+      a:focus-visible,
+      button:focus-visible {
+        outline: 2px solid var(--accent);
+        outline-offset: 2px;
+      }
+      img { max-width: 100%; display: block; }
+      ::selection { background: var(--accent); color: var(--bg); }
+
+      /* ─────────────────────────────────────────────────────────────────
+         Layout primitives
+         ───────────────────────────────────────────────────────────────── */
+      .container {
+        max-width: var(--max-width);
+        margin: 0 auto;
+        padding: 0 var(--gutter);
+      }
+      @media (max-width: 768px) {
+        .container { padding: 0 16px; }
+      }
+      main { display: block; }
+      section { padding: var(--s-8) 0; }
+      @media (max-width: 768px) {
+        section { padding: var(--s-7) 0; }
+      }
+
+      /* ─────────────────────────────────────────────────────────────────
+         Typography helpers (T02 skeleton)
+         ───────────────────────────────────────────────────────────────── */
+      .wordmark {
+        font-family: var(--font-mono);
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: -0.02em;
+        color: var(--text);
+        display: inline-block;
+      }
+      .eyebrow {
+        font-family: var(--font-mono);
+        font-weight: 400;
+        font-size: var(--fs-eyebrow);
+        text-transform: uppercase;
+        letter-spacing: 0.10em;
+        color: var(--text-tertiary);
+        margin: 0 0 var(--s-4);
+      }
+      h1, h2, h3 {
+        font-family: var(--font-mono);
+        font-weight: 500;
+        letter-spacing: -0.02em;
+        margin: 0;
+        color: var(--text);
+        line-height: 1.1;
+      }
+      h2 { font-size: var(--fs-section); margin: 0 0 var(--s-5); }
+      h3 { font-size: var(--fs-sub); font-weight: 400; letter-spacing: -0.01em; line-height: 1.3; }
+      p { margin: 0 0 var(--s-3); color: var(--text-secondary); }
+
+      /* ─────────────────────────────────────────────────────────────────
+         Navigation (BRAND.md: wordmark + Docs / GitHub / Install)
+         ───────────────────────────────────────────────────────────────── */
+      .nav {
+        border-bottom: 1px solid var(--border);
+        padding: var(--s-4) 0;
+      }
+      .nav-inner {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--s-5);
+      }
+      .nav .wordmark {
+        font-size: 16px;
+      }
+      .nav-links {
+        display: flex;
+        gap: var(--s-5);
+        align-items: center;
+      }
+      .nav-links a {
+        font-family: var(--font-mono);
+        font-size: 12px;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: var(--text-secondary);
+        transition: color 120ms ease;
+      }
+      .nav-links a:hover { color: var(--text); }
+
+      /* ─────────────────────────────────────────────────────────────────
+         Footer (preserve LinkedIn + X links from prior phase)
+         ───────────────────────────────────────────────────────────────── */
+      footer.site-footer {
+        border-top: 0.5px solid var(--border);
+        padding: var(--s-6) 0;
+        margin-top: var(--s-7);
+      }
+      .footer-inner {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        align-items: center;
+        gap: var(--s-4);
+      }
+      .footer-inner .wordmark { font-size: 14px; }
+      .footer-links {
+        font-family: var(--font-mono);
+        font-size: 12px;
+        color: var(--text-tertiary);
+        letter-spacing: 0.04em;
+      }
+      .footer-links a {
+        color: var(--text-secondary);
+        margin: 0 var(--s-2);
+      }
+      .footer-links a:hover { color: var(--text); }
+
+      /* ─────────────────────────────────────────────────────────────────
+         T03 — Hero (static heading + sub + CTAs)
+         BRAND.md hero pattern: accent on "before", two CTAs (primary +
+         secondary text-link). Two-column desktop, stacked mobile.
+         ───────────────────────────────────────────────────────────────── */
+      .accent { color: var(--accent); }
+      .hero {
+        padding: var(--s-9) 0 var(--s-8);
+        position: relative;
+        overflow: hidden;
+      }
+      @media (max-width: 768px) {
+        .hero { padding: var(--s-7) 0 var(--s-6); }
+      }
+      .hero-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: var(--s-7);
+        align-items: center;
+      }
+      @media (max-width: 900px) {
+        .hero-grid { grid-template-columns: 1fr; gap: var(--s-6); }
+      }
+      .hero h1 {
+        font-size: var(--fs-hero);
+        letter-spacing: -0.03em;
+        line-height: 1.05;
+        margin: 0 0 var(--s-5);
+      }
+      @media (max-width: 600px) {
+        .hero h1 { font-size: 36px; }
+      }
+      .hero-sub {
+        color: var(--text-secondary);
+        font-size: 17px;
+        line-height: 1.5;
+        margin: 0 0 var(--s-6);
+        max-width: 32ch;
+      }
+      .hero-ctas {
+        display: flex;
+        gap: var(--s-3);
+        flex-wrap: wrap;
+      }
+
+      /* CTAs (BRAND.md "CTA button — primary / secondary") */
+      .cta-primary {
+        background: var(--accent);
+        color: var(--bg);
+        font-family: var(--font-mono);
+        font-size: 13px;
+        font-weight: 500;
+        letter-spacing: 0.04em;
+        padding: 10px 20px;
+        border-radius: var(--radius);
+        border: none;
+        text-transform: uppercase;
+        display: inline-block;
+        cursor: pointer;
+        transition: opacity 120ms ease;
+      }
+      .cta-primary:hover { opacity: 0.88; }
+      .cta-secondary {
+        background: transparent;
+        color: var(--text-secondary);
+        font-family: var(--font-mono);
+        font-size: 13px;
+        letter-spacing: 0.04em;
+        padding: 10px 20px;
+        border: 0.5px solid rgba(245, 244, 240, 0.15);
+        border-radius: var(--radius);
+        text-transform: uppercase;
+        display: inline-block;
+        cursor: pointer;
+        transition: border-color 120ms ease, color 120ms ease;
+      }
+      .cta-secondary:hover {
+        color: var(--text);
+        border-color: var(--border-emphasis);
+      }
+
+      /* ─────────────────────────────────────────────────────────────────
+         T04 — Mechanism (5-gate sequence)
+         Numbered list is appropriate here — BRAND.md: "the gates are a
+         genuine sequence". DM Mono for IDs + names, Inter for descriptions.
+         ───────────────────────────────────────────────────────────────── */
+      .gates-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        border-top: 0.5px solid var(--border);
+      }
+      .gates-list li {
+        display: grid;
+        grid-template-columns: 56px 220px 1fr;
+        gap: var(--s-5);
+        align-items: baseline;
+        padding: var(--s-5) 0;
+        border-bottom: 0.5px solid var(--border);
+      }
+      @media (max-width: 768px) {
+        .gates-list li {
+          grid-template-columns: 1fr;
+          gap: var(--s-1);
+        }
+      }
+      .gates-list .g-id {
+        font-family: var(--font-mono);
+        font-size: 14px;
+        font-weight: 500;
+        letter-spacing: 0.04em;
+        color: var(--text-tertiary);
+      }
+      .gates-list .g-name {
+        font-family: var(--font-mono);
+        font-size: 16px;
+        font-weight: 500;
+        color: var(--text);
+        letter-spacing: -0.01em;
+      }
+      .gates-list .g-desc {
+        font-family: var(--font-body);
+        color: var(--text-secondary);
+        line-height: 1.5;
+        margin: 0;
+      }
+
+      /* ─────────────────────────────────────────────────────────────────
+         T05 — Evidence sample (real Fomi Gate 3 excerpt)
+         BRAND.md "Evidence fact block" + "Tier color map" + inline stamp.
+         ───────────────────────────────────────────────────────────────── */
+      p.lede {
+        color: var(--text);
+        font-size: var(--fs-sub);
+        line-height: 1.4;
+      }
+      .evidence-frame {
+        border: 0.5px solid var(--border);
+        border-radius: var(--radius);
+        padding: var(--s-6);
+        background: var(--surface);
+      }
+      @media (max-width: 768px) {
+        .evidence-frame { padding: var(--s-4); }
+      }
+      .evidence-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--s-5);
+        margin: 0 0 var(--s-5);
+        padding-bottom: var(--s-4);
+        border-bottom: 0.5px solid var(--border);
+        font-family: var(--font-mono);
+        font-size: 12px;
+        color: var(--text-tertiary);
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+      }
+      .evidence-meta b {
+        color: var(--text-secondary);
+        font-weight: 400;
+        margin-left: 6px;
+      }
+      .dok-eyebrow {
+        font-family: var(--font-mono);
+        font-size: var(--fs-eyebrow);
+        text-transform: uppercase;
+        letter-spacing: 0.10em;
+        color: var(--text-tertiary);
+        margin: var(--s-5) 0 var(--s-3);
+      }
+
+      /* Evidence fact block — BRAND.md component spec */
+      .fact-block {
+        font-family: var(--font-mono);
+        font-size: 12px;
+        line-height: 1.55;
+        color: rgba(245, 244, 240, 0.65);
+        border-left: 2px solid rgba(245, 244, 240, 0.12);
+        padding: 6px 0 6px 12px;
+        margin: 10px 0;
+      }
+      .fact-source {
+        color: var(--text-tertiary);
+        display: block;
+        margin-top: 4px;
+      }
+      .fact-tier {
+        display: inline-block;
+        font-family: var(--font-mono);
+        font-size: 9px;
+        font-weight: 500;
+        letter-spacing: 0.04em;
+        padding: 2px 6px;
+        border-radius: var(--radius-badge);
+        margin-right: 6px;
+        vertical-align: 1px;
+        text-transform: uppercase;
+      }
+      .tier-s { background: var(--tier-s-bg); color: var(--tier-s-text); }
+      .tier-a { background: var(--tier-a-bg); color: var(--tier-a-text); }
+      .tier-b { background: var(--tier-b-bg); color: var(--tier-b-text); }
+      .tier-c { background: var(--tier-c-bg); color: var(--tier-c-text); }
+      .tier-d { background: var(--tier-d-bg); color: var(--tier-d-text); }
+
+      .dok-summary,
+      .dok-insight {
+        font-family: var(--font-body);
+        font-size: 14px;
+        color: var(--text-secondary);
+        line-height: 1.6;
+        margin: 0 0 var(--s-3);
+      }
+      .dok-summary .elision,
+      .dok-insight .elision { color: var(--text-tertiary); }
+      .dok-insight {
+        border-left: 2px solid var(--status-inc);
+        padding-left: 12px;
+      }
+      .dok-insight .warn {
+        font-family: var(--font-mono);
+        font-size: 10px;
+        letter-spacing: 0.10em;
+        text-transform: uppercase;
+        color: var(--status-inc);
+        margin-right: 6px;
+      }
+      .contradicting-callout {
+        margin-top: var(--s-5);
+        padding: var(--s-3) var(--s-4);
+        border: 0.5px solid var(--border);
+        border-radius: var(--radius);
+        background: rgba(245, 244, 240, 0.02);
+        font-family: var(--font-body);
+        font-size: 13px;
+        color: var(--text-secondary);
+      }
+      .contradicting-callout strong {
+        font-family: var(--font-mono);
+        font-size: 10px;
+        letter-spacing: 0.10em;
+        text-transform: uppercase;
+        color: var(--text-tertiary);
+        display: block;
+        margin-bottom: 4px;
+        font-weight: 400;
+      }
+      .verdict-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--s-4);
+        margin-top: var(--s-5);
+        padding-top: var(--s-4);
+        border-top: 0.5px solid var(--border);
+        flex-wrap: wrap;
+      }
+      .verdict-row .label {
+        font-family: var(--font-mono);
+        font-size: var(--fs-eyebrow);
+        text-transform: uppercase;
+        letter-spacing: 0.10em;
+        color: var(--text-tertiary);
+        margin: 0;
+      }
+      .verdict-row .conf {
+        font-family: var(--font-mono);
+        font-size: 12px;
+        color: var(--text-secondary);
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+      }
+
+      /* BRAND.md stamp component — inline use (no rotation) and rotated. */
+      .stamp {
+        display: inline-block;
+        border: 3px solid currentColor;
+        border-radius: var(--radius);
+        padding: 6px 16px;
+        font-family: var(--font-mono);
+        font-weight: 500;
+        letter-spacing: -0.02em;
+        transform: rotate(-8deg);
+      }
+      .stamp.stamp-inline {
+        font-size: 22px;
+        padding: 4px 12px;
+        border-width: 2px;
+        transform: none;
+      }
+      .stamp.stamp-fail { color: var(--status-fail); }
+
+      /* ─────────────────────────────────────────────────────────────────
+         T06 — Verdict math + Anti-bias callout
+         Document-layout, not dashboard. Table = math; ordered list = the
+         four structural defenses.
+         ───────────────────────────────────────────────────────────────── */
+      .math-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: var(--s-7);
+        align-items: start;
+      }
+      @media (max-width: 900px) {
+        .math-grid { grid-template-columns: 1fr; gap: var(--s-7); }
+      }
+      table.verdict-math {
+        width: 100%;
+        border-collapse: collapse;
+        font-family: var(--font-mono);
+        font-size: 13px;
+        margin-top: var(--s-3);
+      }
+      table.verdict-math th,
+      table.verdict-math td {
+        text-align: left;
+        padding: 10px 0;
+        border-bottom: 0.5px solid var(--border);
+      }
+      table.verdict-math th {
+        font-weight: 400;
+        font-size: var(--fs-eyebrow);
+        letter-spacing: 0.10em;
+        text-transform: uppercase;
+        color: var(--text-tertiary);
+      }
+      table.verdict-math td {
+        color: var(--text-secondary);
+      }
+      table.verdict-math td.verdict-cell {
+        color: var(--text);
+        font-weight: 500;
+        text-align: right;
+      }
+      .verdict-cell .v-go { color: var(--accent); }
+      .verdict-cell .v-nogo { color: var(--status-fail); }
+      .verdict-cell .v-cond { color: var(--status-inc); }
+
+      ol.anti-bias {
+        list-style: none;
+        padding: 0;
+        margin: var(--s-3) 0 0;
+        counter-reset: ab;
+      }
+      ol.anti-bias li {
+        counter-increment: ab;
+        padding: var(--s-3) 0;
+        border-bottom: 0.5px solid var(--border);
+        font-family: var(--font-body);
+        color: var(--text-secondary);
+        line-height: 1.55;
+        position: relative;
+        padding-left: 48px;
+      }
+      ol.anti-bias li::before {
+        content: counter(ab, decimal-leading-zero);
+        position: absolute;
+        left: 0;
+        top: var(--s-3);
+        font-family: var(--font-mono);
+        font-size: 12px;
+        font-weight: 500;
+        letter-spacing: 0.04em;
+        color: var(--text-tertiary);
+      }
+      ol.anti-bias li b {
+        color: var(--text);
+        font-weight: 500;
+      }
+
+      /* ─────────────────────────────────────────────────────────────────
+         T07 — Install (3-tier section) + Get access (magic-link form)
+         + copy buttons + toast.
+         ───────────────────────────────────────────────────────────────── */
+      .install-tier { margin-bottom: var(--s-7); }
+      .install-tier h3 {
+        font-family: var(--font-mono);
+        font-size: 18px;
+        margin: 0 0 var(--s-2);
+      }
+      .install-tier .tier-eyebrow {
+        font-family: var(--font-mono);
+        font-size: var(--fs-eyebrow);
+        text-transform: uppercase;
+        letter-spacing: 0.10em;
+        color: var(--text-tertiary);
+        margin: 0 0 4px;
+      }
+      .install-tier > p {
+        color: var(--text-secondary);
+        max-width: 60ch;
+      }
+
+      .client-block {
+        border-top: 0.5px solid var(--border);
+        padding: var(--s-5) 0;
+      }
+      .client-block:last-child { border-bottom: 0.5px solid var(--border); }
+      .client-block h4 {
+        font-family: var(--font-mono);
+        font-size: 15px;
+        font-weight: 500;
+        color: var(--text);
+        margin: 0 0 4px;
+        letter-spacing: -0.01em;
+      }
+      .client-block .tagline {
+        font-family: var(--font-body);
+        font-size: 13px;
+        color: var(--text-secondary);
+        margin: 0 0 var(--s-3);
+      }
+      .client-block .path {
+        font-family: var(--font-mono);
+        font-size: 12px;
+        color: var(--text-tertiary);
+        margin: 0 0 var(--s-2);
+      }
+
+      .copy-row {
+        display: flex;
+        align-items: stretch;
+        gap: var(--s-2);
+        margin: var(--s-2) 0 var(--s-3);
+      }
+      .copy-row .copy-input {
+        flex: 1;
+        background: var(--surface);
+        border: 0.5px solid var(--border);
+        border-radius: var(--radius);
+        padding: 10px 12px;
+        font-family: var(--font-mono);
+        font-size: 12px;
+        color: var(--text);
+        overflow-x: auto;
+        white-space: nowrap;
+      }
+      .copy-btn {
+        flex-shrink: 0;
+        background: transparent;
+        color: var(--text-secondary);
+        font-family: var(--font-mono);
+        font-size: 11px;
+        letter-spacing: 0.06em;
+        padding: 0 14px;
+        border: 0.5px solid var(--border);
+        border-radius: var(--radius);
+        text-transform: uppercase;
+        cursor: pointer;
+        transition: color 120ms ease, border-color 120ms ease;
+      }
+      .copy-btn:hover {
+        color: var(--text);
+        border-color: var(--border-emphasis);
+      }
+      .copy-btn[data-state="copied"] {
+        color: var(--accent);
+        border-color: var(--accent);
+      }
+      .copy-row.config { flex-direction: column; }
+      .copy-row.config .copy-input {
+        white-space: pre;
+        font-size: 12px;
+        line-height: 1.5;
+        padding: var(--s-3) var(--s-4);
+        overflow-x: auto;
+      }
+      .copy-row.config .copy-btn {
+        align-self: flex-end;
+        margin-top: var(--s-2);
+        padding: 6px 14px;
+      }
+      .token-note {
+        font-family: var(--font-body);
+        font-size: 12px;
+        color: var(--text-tertiary);
+        margin: 0;
+      }
+      .token-note a {
+        color: var(--text-secondary);
+        border-bottom: 0.5px solid var(--border-emphasis);
+      }
+      .token-note a:hover {
+        color: var(--accent);
+        border-color: var(--accent);
+      }
+
+      /* Get access — magic-link signup card */
+      .signup-card {
+        border: 0.5px solid var(--border);
+        border-radius: var(--radius);
+        padding: var(--s-6);
+        background: var(--surface);
+        max-width: 560px;
+      }
       .signup-form {
-        margin: 18px 0 8px;
         display: flex;
         flex-direction: column;
-        gap: 12px;
+        gap: var(--s-3);
+        margin: var(--s-4) 0 0;
       }
       .signup-form label {
-        font-weight: 600;
-        font-size: 14px;
-        color: var(--fg);
+        font-family: var(--font-mono);
+        font-size: var(--fs-eyebrow);
+        text-transform: uppercase;
+        letter-spacing: 0.10em;
+        color: var(--text-tertiary);
       }
       .signup-form input[type="email"],
       .signup-form input[type="text"] {
+        background: var(--bg);
+        border: 0.5px solid var(--border);
+        border-radius: var(--radius);
         padding: 12px 14px;
-        font-size: 16px;
-        border: 1px solid var(--rule);
-        border-radius: 4px;
-        background: #fff;
-        color: var(--fg);
-        font-family: inherit;
+        font-family: var(--font-body);
+        font-size: 15px;
+        color: var(--text);
         width: 100%;
       }
       .signup-form input[type="email"]:focus,
@@ -111,23 +786,21 @@
       }
       .signup-form button {
         align-self: flex-start;
-        margin: 0;
-        padding: 12px 22px;
         background: var(--accent);
-        color: #fff;
-        font-weight: 600;
-        font-family: inherit;
-        font-size: 16px;
+        color: var(--bg);
+        font-family: var(--font-mono);
+        font-size: 13px;
+        font-weight: 500;
+        letter-spacing: 0.04em;
+        padding: 10px 20px;
+        border-radius: var(--radius);
         border: none;
-        border-radius: 4px;
+        text-transform: uppercase;
         cursor: pointer;
+        transition: opacity 120ms ease;
       }
-      .signup-form button:hover { opacity: 0.92; }
-      .signup-form button:disabled { opacity: 0.6; cursor: wait; }
-      .signup-form .optional {
-        font-weight: 400;
-        color: var(--muted);
-      }
+      .signup-form button:hover { opacity: 0.88; }
+      .signup-form button:disabled { opacity: 0.4; cursor: wait; }
       .signup-honeypot {
         position: absolute;
         left: -9999px;
@@ -137,214 +810,985 @@
         overflow: hidden;
       }
       .signup-message {
-        margin: 8px 0 0;
-        font-size: 14px;
+        margin: var(--s-3) 0 0;
+        font-family: var(--font-mono);
+        font-size: 12px;
+        letter-spacing: 0.04em;
         padding: 10px 12px;
-        border-radius: 4px;
+        border-radius: var(--radius);
         display: none;
       }
       .signup-message.show { display: block; }
       .signup-message.success {
-        background: #e9f5ec;
-        border: 1px solid #b9deca;
-        color: #1f5a2f;
+        background: var(--accent-bg);
+        border: 0.5px solid var(--accent);
+        color: var(--accent);
       }
       .signup-message.error {
-        background: #fcecea;
-        border: 1px solid #f0b3aa;
-        color: #7a2820;
+        background: var(--status-fail-bg);
+        border: 0.5px solid var(--status-fail);
+        color: var(--status-fail);
+      }
+
+      /* Toast for copy buttons */
+      .toast {
+        position: fixed;
+        bottom: 24px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: var(--surface);
+        color: var(--text);
+        border: 0.5px solid var(--accent);
+        border-radius: var(--radius);
+        padding: 8px 16px;
+        font-family: var(--font-mono);
+        font-size: 12px;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 200ms ease;
+        z-index: 100;
+      }
+      .toast.show { opacity: 1; }
+
+      /* ─────────────────────────────────────────────────────────────────
+         T10 — Tools section (auto-extracted at build time).
+         Grouped by gate; each row is a 2-column grid (tool name in
+         DM Mono / description in Inter).
+         ───────────────────────────────────────────────────────────────── */
+      .tools-group {
+        padding: var(--s-5) 0;
+        border-bottom: 0.5px solid var(--border);
+      }
+      .tools-group:first-of-type { border-top: 0.5px solid var(--border); }
+      .tools-group h3 {
+        font-family: var(--font-mono);
+        font-size: 14px;
+        font-weight: 500;
+        letter-spacing: 0.04em;
+        color: var(--text-tertiary);
+        text-transform: uppercase;
+        margin: 0 0 var(--s-3);
+      }
+      .tools-group ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+      }
+      .tools-group li {
+        display: grid;
+        grid-template-columns: 280px 1fr;
+        gap: var(--s-4);
+        padding: var(--s-2) 0;
+      }
+      @media (max-width: 768px) {
+        .tools-group li { grid-template-columns: 1fr; gap: 4px; }
+      }
+      .tools-group .t-name {
+        font-family: var(--font-mono);
+        font-size: 13px;
+        color: var(--text);
+        letter-spacing: -0.01em;
+      }
+      .tools-group .t-desc {
+        font-family: var(--font-body);
+        font-size: 13px;
+        color: var(--text-secondary);
+        line-height: 1.5;
+      }
+
+      /* ─────────────────────────────────────────────────────────────────
+         T08 — Hero animation panel.
+         CSS keyframe sequence (~6s total, single-shot, no loop) gated by
+         [data-played="true"] which an IntersectionObserver sets on
+         scroll-into-view. Uses transform + opacity only — GPU-accelerated.
+         prefers-reduced-motion: end state instantly, no transitions.
+         ───────────────────────────────────────────────────────────────── */
+      .hero-anim-wrap { position: relative; }
+      .hero-anim {
+        position: relative;
+        background: var(--surface);
+        border: 0.5px solid var(--border);
+        border-radius: var(--radius);
+        padding: var(--s-5);
+        min-height: 380px;
+        overflow: hidden;
+      }
+      .hero-anim-eyebrow {
+        font-family: var(--font-mono);
+        font-size: var(--fs-eyebrow);
+        text-transform: uppercase;
+        letter-spacing: 0.10em;
+        color: var(--text-tertiary);
+        margin: 0 0 var(--s-4);
+      }
+      .hero-anim-gates {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: var(--s-2);
+        margin: 0 0 var(--s-4);
+      }
+      .anim-gate {
+        border: 0.5px solid var(--border);
+        border-radius: var(--radius);
+        padding: 10px 8px;
+        background: transparent;
+        opacity: 0;
+        transform: translateY(4px);
+      }
+      .anim-gate .gate-id {
+        font-family: var(--font-mono);
+        font-size: var(--fs-gate-id);
+        font-weight: 400;
+        letter-spacing: 0.08em;
+        color: var(--text-tertiary);
+        text-transform: uppercase;
+      }
+      .anim-gate .gate-name {
+        font-family: var(--font-body);
+        font-size: 11px;
+        color: var(--text-secondary);
+        line-height: 1.3;
+        margin: 4px 0 6px;
+        min-height: 28px;
+      }
+      .anim-gate .gate-status {
+        display: inline-block;
+        font-family: var(--font-mono);
+        font-size: 9px;
+        font-weight: 500;
+        letter-spacing: 0.04em;
+        padding: 3px 6px;
+        border-radius: var(--radius-badge);
+        opacity: 0;
+      }
+      .anim-gate .gate-status.fail {
+        background: var(--status-fail-bg);
+        color: var(--status-fail);
+      }
+      .anim-gate .gate-status.inc {
+        background: var(--status-inc-bg);
+        color: var(--status-inc);
+      }
+      .hero-anim-sources {
+        border-top: 0.5px solid var(--border);
+        padding-top: var(--s-3);
+        margin-bottom: var(--s-4);
+      }
+      .anim-source-row {
+        display: flex;
+        align-items: center;
+        gap: var(--s-2);
+        font-family: var(--font-mono);
+        font-size: 11px;
+        color: var(--text-secondary);
+        padding: 3px 0;
+        opacity: 0;
+        transform: translateY(2px);
+      }
+      .anim-source-row .tier {
+        font-family: var(--font-mono);
+        font-size: 9px;
+        font-weight: 500;
+        letter-spacing: 0.04em;
+        padding: 2px 5px;
+        border-radius: var(--radius-badge);
+        flex-shrink: 0;
+      }
+      .anim-source-row .url {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .hero-anim-contradicting {
+        border-top: 0.5px solid var(--border);
+        padding-top: var(--s-3);
+        font-family: var(--font-mono);
+        font-size: 11px;
+        color: var(--text-tertiary);
+        margin-bottom: var(--s-4);
+        opacity: 0;
+        transform: translateY(2px);
+      }
+      .hero-anim-verdict {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding-top: var(--s-3);
+      }
+      .anim-stamp {
+        opacity: 0;
+        transform: translateY(-30px) rotate(-8deg) scale(0.95);
+        font-family: var(--font-mono);
+        font-weight: 500;
+        font-size: 40px;
+        letter-spacing: -0.02em;
+        color: var(--status-fail);
+        border: 3px solid var(--status-fail);
+        border-radius: var(--radius);
+        padding: 6px 16px;
+      }
+
+      /* Hero watermark stamp — 15% opacity per BRAND.md "Hero use" */
+      .hero-watermark {
+        position: absolute;
+        right: -10px;
+        bottom: -24px;
+        opacity: 0.12;
+        pointer-events: none;
+        z-index: 0;
+        color: var(--status-fail);
+      }
+      .stamp.stamp-hero {
+        color: var(--status-fail);
+        font-size: var(--fs-stamp);
+        border-width: 4px;
+      }
+
+      /* Keyframe sequence — gated on data-played=true */
+      .hero-anim[data-played="true"] .anim-gate {
+        animation: animGateIn 280ms ease forwards;
+      }
+      .hero-anim[data-played="true"] .anim-gate:nth-child(1) { animation-delay: 0.10s; }
+      .hero-anim[data-played="true"] .anim-gate:nth-child(2) { animation-delay: 0.25s; }
+      .hero-anim[data-played="true"] .anim-gate:nth-child(3) { animation-delay: 0.40s; }
+      .hero-anim[data-played="true"] .anim-gate:nth-child(4) { animation-delay: 0.55s; }
+      .hero-anim[data-played="true"] .anim-gate:nth-child(5) { animation-delay: 0.70s; }
+
+      .hero-anim[data-played="true"] .anim-source-row {
+        animation: animFadeIn 250ms ease forwards;
+      }
+      .hero-anim[data-played="true"] .anim-source-row:nth-child(1) { animation-delay: 1.00s; }
+      .hero-anim[data-played="true"] .anim-source-row:nth-child(2) { animation-delay: 1.20s; }
+      .hero-anim[data-played="true"] .anim-source-row:nth-child(3) { animation-delay: 1.40s; }
+      .hero-anim[data-played="true"] .anim-source-row:nth-child(4) { animation-delay: 1.60s; }
+      .hero-anim[data-played="true"] .anim-source-row:nth-child(5) { animation-delay: 1.80s; }
+
+      .hero-anim[data-played="true"] .anim-gate .gate-status {
+        animation: animFadeIn 220ms ease forwards;
+      }
+      .hero-anim[data-played="true"] .anim-gate:nth-child(1) .gate-status { animation-delay: 2.55s; }
+      .hero-anim[data-played="true"] .anim-gate:nth-child(2) .gate-status { animation-delay: 2.75s; }
+      .hero-anim[data-played="true"] .anim-gate:nth-child(3) .gate-status { animation-delay: 2.95s; }
+      .hero-anim[data-played="true"] .anim-gate:nth-child(4) .gate-status { animation-delay: 3.15s; }
+      .hero-anim[data-played="true"] .anim-gate:nth-child(5) .gate-status { animation-delay: 3.35s; }
+
+      .hero-anim[data-played="true"] .hero-anim-contradicting {
+        animation: animFadeIn 320ms ease forwards;
+        animation-delay: 3.80s;
+      }
+      .hero-anim[data-played="true"] .anim-stamp {
+        animation: animStampDrop 700ms cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        animation-delay: 4.70s;
+      }
+
+      @keyframes animGateIn {
+        to { opacity: 1; transform: translateY(0); }
+      }
+      @keyframes animFadeIn {
+        to { opacity: 1; transform: translateY(0); }
+      }
+      @keyframes animStampDrop {
+        to { opacity: 1; transform: translateY(0) rotate(-8deg) scale(1); }
+      }
+
+      /* Reduced motion → render end state instantly */
+      @media (prefers-reduced-motion: reduce) {
+        .hero-anim .anim-gate,
+        .hero-anim .anim-gate .gate-status,
+        .hero-anim .anim-source-row,
+        .hero-anim .hero-anim-contradicting,
+        .hero-anim .anim-stamp {
+          opacity: 1 !important;
+          transform: none !important;
+          animation: none !important;
+        }
+        .hero-anim .anim-stamp {
+          transform: rotate(-8deg) !important;
+        }
       }
     </style>
   </head>
   <body>
+    <!-- ──────────────────────────────────────────────────────────────── -->
+    <!-- Navigation -->
+    <!-- ──────────────────────────────────────────────────────────────── -->
+    <header id="nav" class="nav">
+      <div class="container nav-inner">
+        <span class="wordmark" aria-label="Veto">VETO</span>
+        <nav class="nav-links" aria-label="Primary">
+          <a href="#mechanism">Docs</a>
+          <a href="https://github.com/aljosamakevic/devreluni-mcp" target="_blank" rel="noopener noreferrer">GitHub</a>
+          <a href="#install">Install</a>
+        </nav>
+      </div>
+    </header>
+
     <main>
-      <h1>Veto</h1>
-      <p class="tagline">Kill bad product ideas before you build them.</p>
-
-      <p>
-        Veto is a Model Context Protocol server that validates product ideas
-        with unbiased, source-grounded evidence across five structured gates.
-        It returns a GO / NO-GO / CONDITIONAL GO verdict with citations &mdash;
-        not vibes. The framework is designed to make confirmation bias
-        structurally impossible.
-      </p>
-
-      <h2>How it works</h2>
-
-      <div class="gate">
-        <h3>Gate 1 &mdash; Direct Competitor Scan</h3>
-        <p>
-          Who is the closest existing thing, what have they shipped, where are
-          they weak? Veto surfaces the strongest direct competitor and reads
-          their public changelog for shipped features, then maps explicit
-          weaknesses you could exploit.
-        </p>
-      </div>
-
-      <div class="gate">
-        <h3>Gate 2 &mdash; Market Structure</h3>
-        <p>
-          Is the market shaped such that this idea can win a meaningful share?
-          For solopreneurs, that means a niche of roughly 1,000 reachable
-          customers through concentrated channels. For funded teams, a
-          plausible $1B+ TAM. Either bar, made explicit.
-        </p>
-      </div>
-
-      <div class="gate">
-        <h3>Gate 3 &mdash; Platform &amp; Big-Tech Risk</h3>
-        <p>
-          Will a platform shift or a hyperscaler shipping this as a system
-          primitive kill the idea inside 24 months? Veto checks Apple, Google,
-          Microsoft, and Meta for encroachment signals before any verdict.
-        </p>
-      </div>
-
-      <div class="gate">
-        <h3>Gate 4 &mdash; Willingness to Pay</h3>
-        <p>
-          Will the target customer actually pay enough to make this a business?
-          Public revenue from comparables is the strongest evidence. Auto-flag
-          if competitor pricing has fallen 25%+ over 24 months, or if the
-          category is freemium-only with no profitable paid tier.
-        </p>
-      </div>
-
-      <div class="gate">
-        <h3>Gate 5 &mdash; Why Now</h3>
-        <p>
-          What changed in the last 24 months that makes this possible or
-          necessary <em>now</em>? Must be a specific articulable thesis, not
-          &ldquo;AI got better.&rdquo; Automatic Inconclusive if no non-obvious
-          why-now exists.
-        </p>
-      </div>
-
-      <h2>Who it's for</h2>
-      <p>
-        Solopreneurs and small builder teams (1&ndash;5 people) evaluating
-        product ideas before committing build time. Funded founders pre-PRD
-        also welcome. If you ship code on weekends and have an idea graveyard,
-        Veto is built for you.
-      </p>
-
-      <section id="social-proof">
-        <!-- TODO: testimonials once 5 users have shipped a verdict -->
+      <!-- Hero (T03) — static heading + sub + CTAs.
+           Right column is a placeholder; T08 swaps the animation panel in. -->
+      <section id="hero" class="hero">
+        <div class="container hero-grid">
+          <div class="hero-text">
+            <h1>
+              Kill bad ideas<br>
+              <span class="accent">before</span> you<br>
+              build them.
+            </h1>
+            <p class="hero-sub">Five gates. One verdict. No cheerleading.</p>
+            <div class="hero-ctas">
+              <a class="cta-primary" href="#install">Install the MCP</a>
+              <a class="cta-secondary" href="#mechanism">Read the docs</a>
+            </div>
+          </div>
+          <div class="hero-anim-wrap">
+            <div id="hero-animation" class="hero-anim" aria-hidden="true">
+              <p class="hero-anim-eyebrow">Validation run — focus app — B2C / solo</p>
+              <div class="hero-anim-gates">
+                <div class="anim-gate">
+                  <div class="gate-id">G1</div>
+                  <div class="gate-name">Competitor</div>
+                  <span class="gate-status fail">FAIL</span>
+                </div>
+                <div class="anim-gate">
+                  <div class="gate-id">G2</div>
+                  <div class="gate-name">Market</div>
+                  <span class="gate-status fail">FAIL</span>
+                </div>
+                <div class="anim-gate">
+                  <div class="gate-id">G3</div>
+                  <div class="gate-name">Platform</div>
+                  <span class="gate-status fail">FAIL</span>
+                </div>
+                <div class="anim-gate">
+                  <div class="gate-id">G4</div>
+                  <div class="gate-name">Pricing</div>
+                  <span class="gate-status fail">FAIL</span>
+                </div>
+                <div class="anim-gate">
+                  <div class="gate-id">G5</div>
+                  <div class="gate-name">Why now</div>
+                  <span class="gate-status inc">INCONCL</span>
+                </div>
+              </div>
+              <div class="hero-anim-sources">
+                <div class="anim-source-row">
+                  <span class="tier tier-s">S</span>
+                  <span class="url">developer.apple.com/app-store/review/guidelines/</span>
+                </div>
+                <div class="anim-source-row">
+                  <span class="tier tier-s">S</span>
+                  <span class="url">developer.apple.com/forums/tags/managed-settings</span>
+                </div>
+                <div class="anim-source-row">
+                  <span class="tier tier-a">A</span>
+                  <span class="url">rize.io/pricing</span>
+                </div>
+                <div class="anim-source-row">
+                  <span class="tier tier-a">A</span>
+                  <span class="url">indiehackers.com/product/session-2</span>
+                </div>
+                <div class="anim-source-row">
+                  <span class="tier tier-s">S</span>
+                  <span class="url">learn.microsoft.com/.../viva-insights-focus-plan</span>
+                </div>
+              </div>
+              <div class="hero-anim-contradicting">
+                Contradicting evidence searched. No usable hits — logged as gap, not safety.
+              </div>
+              <div class="hero-anim-verdict">
+                <div class="anim-stamp">NO-GO</div>
+              </div>
+            </div>
+            <div class="hero-watermark" aria-hidden="true">
+              <span class="stamp stamp-hero">NO-GO</span>
+            </div>
+          </div>
+        </div>
       </section>
 
-      <h2>Get instant access</h2>
-      <p>
-        Enter your email; we'll send a one-click sign-in link. The link
-        delivers your bearer token plus a copy-paste snippet for your
-        Claude Desktop config. Then run <code>validate_idea</code> against
-        your next idea.
-      </p>
-
-      <form class="signup-form" id="signup-form" novalidate>
-        <div>
-          <label for="signup-email">Email</label>
-          <input
-            type="email"
-            id="signup-email"
-            name="email"
-            required
-            autocomplete="email"
-            placeholder="you@example.com"
-          >
+      <!-- Mechanism (T04) — 5 gates as a numbered sequence. -->
+      <section id="mechanism">
+        <div class="container">
+          <p class="eyebrow">Mechanism</p>
+          <h2>How it works.</h2>
+          <ol class="gates-list">
+            <li>
+              <span class="g-id">G1</span>
+              <span class="g-name">Direct Competitor Scan</span>
+              <p class="g-desc">Who is the closest existing thing, what have they shipped, where are they weak?</p>
+            </li>
+            <li>
+              <span class="g-id">G2</span>
+              <span class="g-name">Market Structure</span>
+              <p class="g-desc">Is the market shaped so this idea can win meaningful share?</p>
+            </li>
+            <li>
+              <span class="g-id">G3</span>
+              <span class="g-name">Platform Risk</span>
+              <p class="g-desc">Will a platform shift or hyperscaler ship this in 24 months?</p>
+            </li>
+            <li>
+              <span class="g-id">G4</span>
+              <span class="g-name">Willingness to Pay</span>
+              <p class="g-desc">Will the target customer actually pay enough to make this a business?</p>
+            </li>
+            <li>
+              <span class="g-id">G5</span>
+              <span class="g-name">Why Now</span>
+              <p class="g-desc">What changed in the last 24 months that makes this possible <em>now</em>?</p>
+            </li>
+          </ol>
         </div>
-        <div class="signup-honeypot" aria-hidden="true">
-          <label for="signup-website">Website (leave blank)</label>
-          <input
-            type="text"
-            id="signup-website"
-            name="website"
-            autocomplete="off"
-            tabindex="-1"
-          >
+      </section>
+
+      <!-- Evidence (T05) — real Gate 3 excerpt from
+           .planning/validation-runs/03-fomi-via-https.md, truncated with
+           explicit […] markers between DOK layers. Source text appears
+           verbatim from the captured artifact. -->
+      <section id="evidence">
+        <div class="container">
+          <p class="eyebrow">Evidence</p>
+          <h2>Real output.</h2>
+          <p class="lede">A real Gate 3 (Platform &amp; Big-Tech Risk) excerpt from a validation run on a B2C focus app. Sources, tiers, and the verdict appear exactly as the framework produced them.</p>
+
+          <div class="evidence-frame">
+            <div class="evidence-meta">
+              <span>Gate <b>G3 · Platform &amp; Big-Tech Risk</b></span>
+              <span>Status <b style="color: var(--status-fail);">FAIL</b></span>
+              <span>Confidence <b>Low</b></span>
+            </div>
+
+            <p class="dok-eyebrow">DOK 1 — Facts (sourced)</p>
+
+            <div class="fact-block">
+              <span class="fact-tier tier-a">A</span>
+              assess_platform_dependency scored Gate 3 platform-dependency risk at 3/5 ("Material platform dependency with mixed enforcement history") with 4 detected restrictive platforms (Apple Screen Time API, Android Digital Wellbeing, iOS/Apple platform APIs, macOS). The tool's verdict text explicitly invokes the Apple "system feature" pattern that "has killed prior categories (Spotlight → launchers, Notes → note apps)".
+              <span class="fact-source">— Source: google.serper.dev — Apple Screen Time API ToS / policy churn | Bias: independent</span>
+            </div>
+
+            <div class="fact-block">
+              <span class="fact-tier tier-s">S</span>
+              Apple App Review Guidelines (developer.apple.com/app-store/review/guidelines/) — the first-party rulebook governing Screen Time / focus apps. Any iOS focus app is structurally subject to this policy surface.
+              <span class="fact-source">— Source: developer.apple.com/app-store/review/guidelines/ | Bias: conflicted</span>
+            </div>
+
+            <div class="fact-block">
+              <span class="fact-tier tier-s">S</span>
+              Apple Developer Forums "Managed Settings" tag — the Screen Time API surface every iOS focus app must build on, with active third-party developer issues reported. find_why_now_signals surfaced this as a "recent enabler" (last 24mo).
+              <span class="fact-source">— Source: developer.apple.com/forums/tags/managed-settings | Bias: conflicted</span>
+            </div>
+
+            <div class="fact-block">
+              <span class="fact-tier tier-s">S</span>
+              Microsoft Learn Q&amp;A thread documents Microsoft Viva Insights Focus Plan failing to schedule focus time — Microsoft already ships focus-management as part of Microsoft 365, confirming hyperscaler presence in the category.
+              <span class="fact-source">— Source: learn.microsoft.com/.../viva-insights-focus-plan | Bias: conflicted</span>
+            </div>
+
+            <div class="fact-block">
+              <span class="fact-tier tier-a">A</span>
+              assess_platform_dependency's deplatforming-retro fan-out (Serper query for Apple Screen Time API "lost access" / "deplatformed" / "rejected" founder retros on Medium/HN/IndieHackers) returned no usable hits — logged honestly as empty per spec §11 anti-pattern 2; does NOT mean the platform is safe.
+              <span class="fact-source">— Source: google.serper.dev | Bias: conflicted</span>
+            </div>
+
+            <p class="dok-eyebrow">DOK 2 — Summary (no interpretation)</p>
+            <p class="dok-summary">The product is structurally dependent on Apple's Screen Time / Managed Settings API (or equivalent Android Digital Wellbeing) — both restrictive platforms governed by App Review Guidelines policy churn. assess_platform_dependency scored Gate 3 platform-risk at 3/5 ("Material platform dependency with mixed enforcement history"), explicitly invoking the Apple "system feature" pattern that killed Spotlight-style launchers and Notes-style note apps. <span class="elision">[…]</span> Microsoft already ships Viva Insights Focus Plan. The deplatforming-retro fan-out returned empty — logged honestly per spec §11 anti-pattern 2.</p>
+
+            <p class="dok-eyebrow">DOK 3 — Insight (model judgment)</p>
+            <p class="dok-insight"><span class="warn">⚠ Model judgment</span>Apple owns the Screen Time / Managed Settings API the product must call, and the same App Review Guidelines surface that has killed Spotlight-style and Notes-style third-party apps gates entry. A cloud-screenshot-based third-party app is structurally exposed to both API revocation and competitive encroachment. <span class="elision">[…]</span></p>
+
+            <div class="contradicting-callout">
+              <strong>Contradicting evidence (searched)</strong>
+              No contradicting evidence surfaced — treat as a gap, not confirmation. The framework searched; the absence is logged honestly per spec §11 anti-pattern 2.
+            </div>
+
+            <div class="verdict-row">
+              <p class="label">Gate 3 verdict</p>
+              <span class="stamp stamp-inline stamp-fail">FAIL</span>
+              <span class="conf">≥ 2 tier-S sources · Confidence Low</span>
+            </div>
+          </div>
         </div>
-        <div>
-          <button type="submit" id="signup-submit">Send sign-in link</button>
+      </section>
+
+      <!-- Verdict math + anti-bias (T06) — two tightly-coupled small
+           sections rendered side-by-side on desktop, stacked on mobile.
+           Math: table (not prose). Anti-bias: 4-item ordered list. -->
+      <section id="verdict-math">
+        <div class="container">
+          <div class="math-grid">
+            <div>
+              <p class="eyebrow">Verdict math</p>
+              <h2>The fail-2 rule.</h2>
+              <p>Five gate verdicts collapse to one overall verdict by a fixed table. No model discretion at the rollup.</p>
+              <table class="verdict-math" aria-label="Verdict math">
+                <thead>
+                  <tr>
+                    <th>Gate verdicts</th>
+                    <th style="text-align: right;">Overall</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>5 PASS</td>
+                    <td class="verdict-cell"><span class="v-go">GO</span></td>
+                  </tr>
+                  <tr>
+                    <td>4 PASS + 1 INCONCLUSIVE</td>
+                    <td class="verdict-cell"><span class="v-cond">CONDITIONAL GO</span></td>
+                  </tr>
+                  <tr>
+                    <td>4 PASS + 1 FAIL</td>
+                    <td class="verdict-cell"><span class="v-cond">CONDITIONAL GO</span></td>
+                  </tr>
+                  <tr>
+                    <td>3 PASS + 2 (FAIL or INCONCLUSIVE)</td>
+                    <td class="verdict-cell"><span class="v-cond">CONDITIONAL GO</span></td>
+                  </tr>
+                  <tr>
+                    <td>2+ FAIL</td>
+                    <td class="verdict-cell"><span class="v-nogo">NO-GO</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div id="anti-bias">
+              <p class="eyebrow">Anti-bias by construction</p>
+              <h2>Four structural defenses.</h2>
+              <p>Confirmation bias is the failure mode of every idea-validation tool. Veto answers it at four points in the pipeline.</p>
+              <ol class="anti-bias">
+                <li><b>Every fact carries a quality tier (S/A/B/C/D) and a bias flag.</b> No fact ships without provenance.</li>
+                <li><b>Contradicting-evidence search is mandatory.</b> Every gate fans out a counter-search before the verdict resolves.</li>
+                <li><b>Three Validation Checks audit verdicts before they render.</b> Internal consistency, source quality, anti-confirmation.</li>
+                <li><b>The Spiky POV section is blank.</b> The framework never decides for the user. The reader writes the take.</li>
+              </ol>
+            </div>
+          </div>
         </div>
-        <p class="signup-message" id="signup-message" role="status" aria-live="polite"></p>
-      </form>
+      </section>
 
-      <script>
-        // Phase 05a D-03-5 — inline magic-link form wiring.
-        // Posts JSON to /auth/magic-link/request, displays a friendly result
-        // message below the form. No framework, no external deps. Same
-        // honeypot semantics as Phase 04 — bots that fill `website` see an
-        // identical success message; humans see "Check your inbox".
-        (function () {
-          'use strict';
-          var form = document.getElementById('signup-form');
-          var submitBtn = document.getElementById('signup-submit');
-          var msgEl = document.getElementById('signup-message');
+      <!-- Install (T07) — three-tier section per CONTEXT.md decision 11.
+           Tier 1 = bearer-token works-today clients (Claude Desktop /
+           Cursor / Codex CLI / Generic Streamable HTTP). Tier 2 = OpenAI
+           Responses API. Tier 3 = consumer ChatGPT (OAuth pending). -->
+      <section id="install">
+        <div class="container">
+          <p class="eyebrow">Install</p>
+          <h2>Three tiers. Pick yours.</h2>
+          <p class="lede">Veto speaks MCP over Streamable HTTP. Bearer-token auth. Get your token at <a href="#get-access" style="color: var(--accent); border-bottom: 0.5px solid var(--accent);">the form below</a>; paste it into the config that fits your client.</p>
 
-          function showMessage(text, kind) {
-            msgEl.textContent = text;
-            msgEl.className = 'signup-message show ' + kind;
-          }
-          function clearMessage() {
-            msgEl.textContent = '';
-            msgEl.className = 'signup-message';
-          }
+          <!-- Tier 1 — works today -->
+          <div class="install-tier">
+            <p class="tier-eyebrow">Tier 1 — Works today (bearer token)</p>
+            <h3>CLI-native MCP clients.</h3>
 
-          form.addEventListener('submit', function (ev) {
-            ev.preventDefault();
-            clearMessage();
-            submitBtn.disabled = true;
+            <div class="client-block">
+              <h4>Claude Desktop</h4>
+              <p class="tagline">Anthropic's native desktop app. The reference MCP host.</p>
+              <p class="path">macOS: <code>~/Library/Application Support/Claude/claude_desktop_config.json</code></p>
+              <p class="path">Windows: <code>%APPDATA%\Claude\claude_desktop_config.json</code></p>
+              <div class="copy-row">
+                <div class="copy-input" data-copy="https://getvetoed.com/mcp">https://getvetoed.com/mcp</div>
+                <button class="copy-btn" type="button" data-copy-target="prev">Copy URL</button>
+              </div>
+              <div class="copy-row config">
+                <div class="copy-input">{
+  "mcpServers": {
+    "veto": {
+      "url": "https://getvetoed.com/mcp",
+      "headers": {
+        "Authorization": "Bearer pv_&lt;your_token&gt;"
+      }
+    }
+  }
+}</div>
+                <button class="copy-btn" type="button" data-copy-target="prev">Copy JSON</button>
+              </div>
+              <p class="token-note">Replace <code>pv_&lt;your_token&gt;</code> with the token from your sign-in email. <a href="#get-access">Get your token →</a></p>
+            </div>
 
-            var email = (document.getElementById('signup-email').value || '').trim();
-            var website = (document.getElementById('signup-website').value || '').trim();
+            <div class="client-block">
+              <h4>Cursor</h4>
+              <p class="tagline">VS Code fork with native MCP support.</p>
+              <p class="path">Path: <code>~/.cursor/mcp.json</code></p>
+              <div class="copy-row">
+                <div class="copy-input" data-copy="https://getvetoed.com/mcp">https://getvetoed.com/mcp</div>
+                <button class="copy-btn" type="button" data-copy-target="prev">Copy URL</button>
+              </div>
+              <div class="copy-row config">
+                <div class="copy-input">{
+  "mcpServers": {
+    "veto": {
+      "url": "https://getvetoed.com/mcp",
+      "headers": {
+        "Authorization": "Bearer pv_&lt;your_token&gt;"
+      }
+    }
+  }
+}</div>
+                <button class="copy-btn" type="button" data-copy-target="prev">Copy JSON</button>
+              </div>
+            </div>
 
-            fetch('/auth/magic-link/request', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ email: email, website: website })
-            })
-              .then(function (res) {
-                return res.json().then(function (body) {
-                  return { status: res.status, retryAfter: res.headers.get('Retry-After'), body: body };
-                });
-              })
-              .then(function (result) {
-                if (result.status === 200 && result.body && result.body.ok) {
-                  form.reset();
-                  showMessage(
-                    result.body.message || 'Check your inbox for a sign-in link.',
-                    'success'
-                  );
-                } else if (result.status === 429) {
-                  var sec = result.body && result.body.retry_after_sec ? result.body.retry_after_sec : (result.retryAfter ? parseInt(result.retryAfter, 10) : 0);
-                  var mins = sec > 0 ? Math.ceil(sec / 60) : 0;
-                  showMessage(
-                    'Too many requests. Try again in about ' + (mins > 0 ? mins + ' minute' + (mins === 1 ? '' : 's') : 'a bit') + '.',
-                    'error'
-                  );
-                } else if (result.status === 400 && result.body && result.body.message) {
-                  showMessage(result.body.message, 'error');
-                } else {
-                  showMessage('Something went wrong. Please try again in a moment.', 'error');
-                }
-              })
-              .catch(function () {
-                showMessage('Network error. Please try again in a moment.', 'error');
-              })
-              .then(function () {
-                submitBtn.disabled = false;
-              });
-          });
-        })();
-      </script>
+            <div class="client-block">
+              <h4>Codex CLI</h4>
+              <p class="tagline">OpenAI's terminal coding agent. MCP servers configured per project.</p>
+              <p class="path">Add to your <code>~/.codex/config.toml</code>:</p>
+              <div class="copy-row config">
+                <div class="copy-input">[mcp_servers.veto]
+url = "https://getvetoed.com/mcp"
+headers = { Authorization = "Bearer pv_&lt;your_token&gt;" }</div>
+                <button class="copy-btn" type="button" data-copy-target="prev">Copy TOML</button>
+              </div>
+            </div>
 
-      <footer>
-        <p>
-          Built by Aljosa Makevic &middot;
-          <a href="https://www.linkedin.com/in/aljosamakevic/">LinkedIn</a>
-          &middot;
-          <a href="https://x.com/aljoha_">X</a>
-        </p>
-      </footer>
+            <div class="client-block">
+              <h4>Generic Streamable HTTP MCP</h4>
+              <p class="tagline">Cline, Goose, Aider, or any MCP-compliant client.</p>
+              <div class="copy-row">
+                <div class="copy-input" data-copy="https://getvetoed.com/mcp">URL: https://getvetoed.com/mcp</div>
+                <button class="copy-btn" type="button" data-copy-target="prev">Copy URL</button>
+              </div>
+              <div class="copy-row">
+                <div class="copy-input" data-copy="Authorization: Bearer pv_&lt;your_token&gt;">Header: Authorization: Bearer pv_&lt;your_token&gt;</div>
+                <button class="copy-btn" type="button" data-copy-target="prev">Copy Header</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tier 2 — developer integration -->
+          <div class="install-tier">
+            <p class="tier-eyebrow">Tier 2 — Developer integration</p>
+            <h3>OpenAI Responses API.</h3>
+            <p>Pass Veto into a Responses API call as an MCP tool. For developers building agents on top of OpenAI's API — not a consumer ChatGPT install.</p>
+            <div class="copy-row config">
+              <div class="copy-input">{
+  "type": "mcp",
+  "server_label": "veto",
+  "server_url": "https://getvetoed.com/mcp",
+  "headers": {
+    "Authorization": "Bearer pv_&lt;your_token&gt;"
+  },
+  "require_approval": "never"
+}</div>
+              <button class="copy-btn" type="button" data-copy-target="prev">Copy JSON</button>
+            </div>
+          </div>
+
+          <!-- Tier 3 — coming when OAuth ships -->
+          <div class="install-tier">
+            <p class="tier-eyebrow">Tier 3 — Coming when OAuth ships</p>
+            <h3>Consumer ChatGPT.</h3>
+            <p>ChatGPT's Apps &amp; Connectors UI requires OAuth for MCP servers. Veto's bearer-token model doesn't connect here yet. OAuth is on the roadmap; when it lands, this section will show the connect flow.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Tools — auto-extracted (T09/T10) -->
+      <section id="tools">
+        <div class="container">
+          <!-- TOOLS_SECTION:BEGIN -->
+          <p class="eyebrow">13 tools</p>
+          <h2>Inside the framework.</h2>
+          <p class="lede">Each gate calls a specific set of tools. Descriptions below are pulled verbatim from each tool's MCP registration at build time — no drift between code and docs.</p>
+          <div class="tools-group">
+            <h3>Gate 1 — Direct Competitor Scan</h3>
+            <ul>
+              <li>
+                <span class="t-name">find_closest_competitor</span>
+                <span class="t-desc">Find the closest competitors to a product idea using web search, Product Hunt, and Hacker News. Returns a list of competitors with tier/bias-annotated sources.</span>
+              </li>
+              <li>
+                <span class="t-name">map_competitive_weaknesses</span>
+                <span class="t-desc">Surface user-reported weaknesses of a competitor by searching Reddit, HN, and the web. Identifies structural vs. surface-level weaknesses and common complaint themes.</span>
+              </li>
+              <li>
+                <span class="t-name">read_competitor_changelog</span>
+                <span class="t-desc">Fetch and parse a competitor changelog, detecting failure signals like setup creep, churn language, and platform gaps. Falls back to search if no changelog URL is known.</span>
+              </li>
+            </ul>
+          </div>
+          <div class="tools-group">
+            <h3>Gate 2 — Market Structure</h3>
+            <ul>
+              <li>
+                <span class="t-name">estimate_demand_signals</span>
+                <span class="t-desc">Assess Gate 2 (Market Demand) — composes GitHub repo activity, Reddit subreddit subscriber counts, and Serper-aggregated launch-cluster mentions into a single gate2_signal_strength (strong/moderate/weak/none) plus a verdict. Google Trend…</span>
+              </li>
+              <li>
+                <span class="t-name">find_public_revenue_signals</span>
+                <span class="t-desc">Surface public revenue evidence (IndieHackers entries, founder MRR tweets, SEC filings, OpenStartup pages) for a product category and its competitors. Strengthens Gate 2 (market demand via paid comparables) and Gate 4 (WTP via observed p…</span>
+              </li>
+            </ul>
+          </div>
+          <div class="tools-group">
+            <h3>Gate 3 — Platform Risk</h3>
+            <ul>
+              <li>
+                <span class="t-name">assess_platform_dependency</span>
+                <span class="t-desc">Gate 3 P1: assess platform dependency risk. Detects which platforms (App Store, Twitter API, Shopify, Chrome Web Store, OpenAI, etc.) the product sits on top of — either from explicit_platforms input or by inference from idea_description…</span>
+              </li>
+              <li>
+                <span class="t-name">check_big_tech_encroachment</span>
+                <span class="t-desc">Assess platform / big-tech encroachment risk (Gate 3). Scans Apple WWDC, Google I/O, Microsoft Build, Meta Connect, and AWS re:Invent sessions in the last 24mo for category overlap. Also looks for new platform APIs and acquisitions in th…</span>
+              </li>
+            </ul>
+          </div>
+          <div class="tools-group">
+            <h3>Gate 4 — Willingness to Pay</h3>
+            <ul>
+              <li>
+                <span class="t-name">find_pricing_anchors</span>
+                <span class="t-desc">Fetch competitor pricing pages (live + Wayback), research pricing history, and scan G2/Capterra for churn signals. Returns current pricing models, historical trends, and auto-generated WTP flags.</span>
+              </li>
+            </ul>
+          </div>
+          <div class="tools-group">
+            <h3>Gate 5 — Why Now</h3>
+            <ul>
+              <li>
+                <span class="t-name">find_why_now_signals</span>
+                <span class="t-desc">Assess Gate 5 (Why Now) — surfaces recent platform/API enablers (last 24mo), YC RFS touchpoints, and launch-cluster signals for the category. Returns gate5_signal_strength (strong/moderate/weak/none) plus a verdict tying signals to Gate 5.</span>
+              </li>
+              <li>
+                <span class="t-name">find_yc_rfs_alignment</span>
+                <span class="t-desc">Assess alignment between a product idea and YC&#39;s current Request for Startups vintage. Uses a static dataset — refreshed quarterly. Returns scored alignment across all 6 YC S26 categories.</span>
+              </li>
+            </ul>
+          </div>
+          <div class="tools-group">
+            <h3>Cross-gate (synthesis)</h3>
+            <ul>
+              <li>
+                <span class="t-name">finalize_validation_report</span>
+                <span class="t-desc">Finalize a ValidationReport. Pass the JSON you constructed in `validate_idea`. Returns the validated markdown artifact, or a `validation_failed` error with the specific issues to fix. **This is the ONLY way to emit the final validation a…</span>
+              </li>
+              <li>
+                <span class="t-name">get_category_failure_modes</span>
+                <span class="t-desc">Research historical failure modes in a product category by searching for post-mortems, shutdowns, and user complaints. Returns structural failure patterns relevant to the category.</span>
+              </li>
+              <li>
+                <span class="t-name">scan_producthunt_launches</span>
+                <span class="t-desc">Search Product Hunt for launches in a category. Computes engagement ratio (comments/votes) to distinguish high-conviction launches from viral-but-shallow ones.</span>
+              </li>
+            </ul>
+          </div>
+          <!-- TOOLS_SECTION:END -->
+        </div>
+      </section>
+
+      <!-- Get access (T07) — magic-link signup form. Restyled per
+           BRAND.md; preserves the Phase 05a POST /auth/magic-link/request
+           wire + honeypot semantics. -->
+      <section id="get-access">
+        <div class="container">
+          <p class="eyebrow">Get access</p>
+          <h2>Get your token.</h2>
+          <div class="signup-card">
+            <p>Enter your email. You get a one-click sign-in link. The link delivers your bearer token plus the copy-paste config for your client.</p>
+            <form class="signup-form" id="signup-form" novalidate>
+              <div>
+                <label for="signup-email">Email</label>
+                <input
+                  type="email"
+                  id="signup-email"
+                  name="email"
+                  required
+                  autocomplete="email"
+                  placeholder="you@example.com"
+                  style="margin-top: 6px;"
+                >
+              </div>
+              <div class="signup-honeypot" aria-hidden="true">
+                <label for="signup-website">Website (leave blank)</label>
+                <input type="text" id="signup-website" name="website" autocomplete="off" tabindex="-1">
+              </div>
+              <div>
+                <button type="submit" id="signup-submit">Send sign-in link</button>
+              </div>
+              <p class="signup-message" id="signup-message" role="status" aria-live="polite"></p>
+            </form>
+          </div>
+        </div>
+      </section>
     </main>
+
+    <!-- ──────────────────────────────────────────────────────────────── -->
+    <!-- Footer — preserves LinkedIn + X links from prior phase -->
+    <!-- ──────────────────────────────────────────────────────────────── -->
+    <footer id="footer" class="site-footer">
+      <div class="container footer-inner">
+        <span class="wordmark">VETO</span>
+        <div class="footer-links">
+          Built by Aljosa Makevic ·
+          <a href="https://www.linkedin.com/in/aljosamakevic/">LinkedIn</a> ·
+          <a href="https://x.com/aljoha_">X</a>
+        </div>
+      </div>
+    </footer>
+
+    <!-- Toast for copy buttons (T07) -->
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+    <script>
+      // ─────────────────────────────────────────────────────────────────
+      // T08 — Hero animation gate. IntersectionObserver toggles
+      // data-played=true on the .hero-anim container when ≥35% visible.
+      // The CSS keyframes are gated on that attribute. Plays once;
+      // observer disconnects after first intersection.
+      // prefers-reduced-motion handled in CSS (end state instantly).
+      // ─────────────────────────────────────────────────────────────────
+      (function () {
+        'use strict';
+        var anim = document.getElementById('hero-animation');
+        if (!anim) return;
+        var reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        if (reduced) {
+          anim.setAttribute('data-played', 'true');
+          return;
+        }
+        if (!('IntersectionObserver' in window)) {
+          // Old-browser fallback — render end state immediately.
+          anim.setAttribute('data-played', 'true');
+          return;
+        }
+        var io = new IntersectionObserver(function (entries) {
+          entries.forEach(function (entry) {
+            if (entry.isIntersecting) {
+              anim.setAttribute('data-played', 'true');
+              io.disconnect();
+            }
+          });
+        }, { threshold: 0.35 });
+        io.observe(anim);
+      })();
+
+      // ─────────────────────────────────────────────────────────────────
+      // T07 — Copy buttons (vanilla navigator.clipboard with
+      // document.execCommand fallback). Each button has
+      // data-copy-target="prev"; copies the previous .copy-input sibling.
+      // The data-copy attribute (when present) takes precedence over
+      // textContent so machine-clean strings are copied independent of
+      // display HTML (e.g. literal <> in display becomes & l t / & g t).
+      // ─────────────────────────────────────────────────────────────────
+      (function () {
+        'use strict';
+        var toast = document.getElementById('toast');
+        function showToast(msg) {
+          if (!toast) return;
+          toast.textContent = msg;
+          toast.classList.add('show');
+          setTimeout(function () { toast.classList.remove('show'); }, 1600);
+        }
+        function copyText(text, btn) {
+          var done = function () {
+            btn.setAttribute('data-state', 'copied');
+            var orig = btn.textContent;
+            btn.textContent = 'Copied';
+            showToast('Copied to clipboard');
+            setTimeout(function () {
+              btn.textContent = orig;
+              btn.removeAttribute('data-state');
+            }, 1600);
+          };
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(text).then(done, function () {
+              fallback(text, done, btn);
+            });
+          } else {
+            fallback(text, done, btn);
+          }
+        }
+        function fallback(text, done, btn) {
+          var ta = document.createElement('textarea');
+          ta.value = text;
+          ta.style.position = 'fixed';
+          ta.style.left = '-9999px';
+          document.body.appendChild(ta);
+          ta.select();
+          try { document.execCommand('copy'); done(); }
+          catch (e) { btn.textContent = 'Copy failed'; }
+          document.body.removeChild(ta);
+        }
+        var buttons = document.querySelectorAll('.copy-btn');
+        Array.prototype.forEach.call(buttons, function (btn) {
+          btn.addEventListener('click', function () {
+            var target = btn.previousElementSibling;
+            if (!target) return;
+            var text = target.getAttribute('data-copy') || target.textContent || '';
+            copyText(text.trim(), btn);
+          });
+        });
+      })();
+
+      // ─────────────────────────────────────────────────────────────────
+      // T07 — Magic-link signup form (Phase 05a wire preserved).
+      // POSTs to /auth/magic-link/request; honeypot semantics unchanged:
+      // bots that fill `website` see an identical success message.
+      // ─────────────────────────────────────────────────────────────────
+      (function () {
+        'use strict';
+        var form = document.getElementById('signup-form');
+        if (!form) return;
+        var submitBtn = document.getElementById('signup-submit');
+        var msgEl = document.getElementById('signup-message');
+
+        function showMessage(text, kind) {
+          msgEl.textContent = text;
+          msgEl.className = 'signup-message show ' + kind;
+        }
+        function clearMessage() {
+          msgEl.textContent = '';
+          msgEl.className = 'signup-message';
+        }
+
+        form.addEventListener('submit', function (ev) {
+          ev.preventDefault();
+          clearMessage();
+          submitBtn.disabled = true;
+
+          var email = (document.getElementById('signup-email').value || '').trim();
+          var website = (document.getElementById('signup-website').value || '').trim();
+
+          fetch('/auth/magic-link/request', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: email, website: website })
+          })
+            .then(function (res) {
+              return res.json().then(function (body) {
+                return { status: res.status, retryAfter: res.headers.get('Retry-After'), body: body };
+              });
+            })
+            .then(function (result) {
+              if (result.status === 200 && result.body && result.body.ok) {
+                form.reset();
+                showMessage(
+                  result.body.message || 'Check your inbox for a sign-in link.',
+                  'success'
+                );
+              } else if (result.status === 429) {
+                var sec = result.body && result.body.retry_after_sec ? result.body.retry_after_sec : (result.retryAfter ? parseInt(result.retryAfter, 10) : 0);
+                var mins = sec > 0 ? Math.ceil(sec / 60) : 0;
+                showMessage(
+                  'Too many requests. Try again in about ' + (mins > 0 ? mins + ' minute' + (mins === 1 ? '' : 's') : 'a bit') + '.',
+                  'error'
+                );
+              } else if (result.status === 400 && result.body && result.body.message) {
+                showMessage(result.body.message, 'error');
+              } else {
+                showMessage('Something went wrong. Please try again in a moment.', 'error');
+              }
+            })
+            .catch(function () {
+              showMessage('Network error. Please try again in a moment.', 'error');
+            })
+            .then(function () {
+              submitBtn.disabled = false;
+            });
+        });
+      })();
+    </script>
   </body>
 </html>
