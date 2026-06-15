@@ -39,12 +39,17 @@
 //     appends `... [truncated]`. This is applied AFTER substring scrubbing
 //     so truncation can't accidentally leave a partial secret in view.
 //
-// STDIO TRANSPORT NOTE: this logger writes to STDOUT. The stdio MCP
-// transport uses stdout for the JSON-RPC channel — never import this logger
-// into src/index.ts's stdio branch (src/index.ts keeps `console.error`).
-// HTTP transport only.
+// STDIO TRANSPORT NOTE: this logger writes to STDERR (fd 2), not stdout.
+// The stdio MCP transport reserves stdout for the JSON-RPC channel — any
+// line emitted to stdout is parsed as a JSON-RPC frame and triggers a Zod
+// validation error in the client. Several modules (notably src/lib/email.ts)
+// call logger.warn at MODULE LOAD time, and src/index.ts transitively imports
+// http/server.ts even in stdio mode, so we cannot rely on "don't import the
+// logger in the stdio branch" — we have to make the logger itself safe.
+// Fly.io captures both stdout and stderr into the same log stream, so HTTP
+// observability is unchanged.
 
-import { pino } from 'pino';
+import { pino, destination as pinoDestination } from 'pino';
 
 // Snapshot watched env values at module load. Empty / missing → skipped.
 const WATCHED_ENV_VARS = [
@@ -116,45 +121,50 @@ export function __resetLastErrorAtForTests(): void {
   lastErrorAt = null;
 }
 
-export const logger = pino({
-  level: process.env['LOG_LEVEL'] ?? 'info',
-  hooks: {
-    // logMethod fires before the log line is emitted. We use it ONLY to
-    // sniff the level number and bump lastErrorAt — it does not transform
-    // arguments. Always delegates to method.apply(this, args) untouched.
-    logMethod(args, method, level) {
-      if (level >= ERROR_LEVEL) {
-        lastErrorAt = new Date().toISOString();
-      }
-      return method.apply(this, args);
+export const logger = pino(
+  {
+    level: process.env['LOG_LEVEL'] ?? 'info',
+    hooks: {
+      // logMethod fires before the log line is emitted. We use it ONLY to
+      // sniff the level number and bump lastErrorAt — it does not transform
+      // arguments. Always delegates to method.apply(this, args) untouched.
+      logMethod(args, method, level) {
+        if (level >= ERROR_LEVEL) {
+          lastErrorAt = new Date().toISOString();
+        }
+        return method.apply(this, args);
+      },
+    },
+    redact: {
+      // Top-level forms catch `{ authorization: '...' }`; `*.foo` forms catch
+      // nested `{ req: { authorization: '...' } }`. See header comment.
+      paths: [
+        'authorization',
+        'token',
+        'token_hash',
+        'password',
+        '*.authorization',
+        '*.token',
+        '*.token_hash',
+        '*.password',
+      ],
+      censor: REDACTED,
+    },
+    formatters: {
+      // Runs once per log call, BEFORE serialization. Applies both substring
+      // scrubbing (env-var values anywhere in any string) and body truncation.
+      // Path-based redaction (above) runs AFTER this — order is fine because
+      // path-based redaction never reads truncated/scrubbed values; it just
+      // replaces the named keys with the censor literal.
+      log(object) {
+        return scrubLogObject(object);
+      },
     },
   },
-  redact: {
-    // Top-level forms catch `{ authorization: '...' }`; `*.foo` forms catch
-    // nested `{ req: { authorization: '...' } }`. See header comment.
-    paths: [
-      'authorization',
-      'token',
-      'token_hash',
-      'password',
-      '*.authorization',
-      '*.token',
-      '*.token_hash',
-      '*.password',
-    ],
-    censor: REDACTED,
-  },
-  formatters: {
-    // Runs once per log call, BEFORE serialization. Applies both substring
-    // scrubbing (env-var values anywhere in any string) and body truncation.
-    // Path-based redaction (above) runs AFTER this — order is fine because
-    // path-based redaction never reads truncated/scrubbed values; it just
-    // replaces the named keys with the censor literal.
-    log(object) {
-      return scrubLogObject(object);
-    },
-  },
-});
+  // Destination: fd 2 (stderr). Keeps stdout clean for stdio MCP JSON-RPC.
+  // Fly captures both streams, so HTTP observability is unchanged.
+  pinoDestination({ dest: 2, sync: false })
+);
 
 // Test seam — re-snapshot watched env values. ONLY used by tests that need
 // to verify scrubbing for an env value that was unset at module load.
