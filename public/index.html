@@ -810,6 +810,52 @@
       .toast.show { opacity: 1; }
 
       /* ─────────────────────────────────────────────────────────────────
+         T10 — Tools section (auto-extracted at build time).
+         Grouped by gate; each row is a 2-column grid (tool name in
+         DM Mono / description in Inter).
+         ───────────────────────────────────────────────────────────────── */
+      .tools-group {
+        padding: var(--s-5) 0;
+        border-bottom: 0.5px solid var(--border);
+      }
+      .tools-group:first-of-type { border-top: 0.5px solid var(--border); }
+      .tools-group h3 {
+        font-family: var(--font-mono);
+        font-size: 14px;
+        font-weight: 500;
+        letter-spacing: 0.04em;
+        color: var(--text-tertiary);
+        text-transform: uppercase;
+        margin: 0 0 var(--s-3);
+      }
+      .tools-group ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+      }
+      .tools-group li {
+        display: grid;
+        grid-template-columns: 280px 1fr;
+        gap: var(--s-4);
+        padding: var(--s-2) 0;
+      }
+      @media (max-width: 768px) {
+        .tools-group li { grid-template-columns: 1fr; gap: 4px; }
+      }
+      .tools-group .t-name {
+        font-family: var(--font-mono);
+        font-size: 13px;
+        color: var(--text);
+        letter-spacing: -0.01em;
+      }
+      .tools-group .t-desc {
+        font-family: var(--font-body);
+        font-size: 13px;
+        color: var(--text-secondary);
+        line-height: 1.5;
+      }
+
+      /* ─────────────────────────────────────────────────────────────────
          T08 — Hero animation panel.
          CSS keyframe sequence (~6s total, single-shot, no loop) gated by
          [data-played="true"] which an IntersectionObserver sets on
@@ -1399,7 +1445,93 @@ headers = { Authorization = "Bearer pv_&lt;your_token&gt;" }</div>
       <!-- Tools — auto-extracted (T09/T10) -->
       <section id="tools">
         <div class="container">
-          <!-- TOOLS_SECTION -->
+          <!-- TOOLS_SECTION:BEGIN -->
+          <p class="eyebrow">13 tools</p>
+          <h2>Inside the framework.</h2>
+          <p class="lede">Each gate calls a specific set of tools. Descriptions below are pulled verbatim from each tool's MCP registration at build time — no drift between code and docs.</p>
+          <div class="tools-group">
+            <h3>Gate 1 — Direct Competitor Scan</h3>
+            <ul>
+              <li>
+                <span class="t-name">find_closest_competitor</span>
+                <span class="t-desc">Find the closest competitors to a product idea using web search, Product Hunt, and Hacker News. Returns a list of competitors with tier/bias-annotated sources.</span>
+              </li>
+              <li>
+                <span class="t-name">map_competitive_weaknesses</span>
+                <span class="t-desc">Surface user-reported weaknesses of a competitor by searching Reddit, HN, and the web. Identifies structural vs. surface-level weaknesses and common complaint themes.</span>
+              </li>
+              <li>
+                <span class="t-name">read_competitor_changelog</span>
+                <span class="t-desc">Fetch and parse a competitor changelog, detecting failure signals like setup creep, churn language, and platform gaps. Falls back to search if no changelog URL is known.</span>
+              </li>
+            </ul>
+          </div>
+          <div class="tools-group">
+            <h3>Gate 2 — Market Structure</h3>
+            <ul>
+              <li>
+                <span class="t-name">estimate_demand_signals</span>
+                <span class="t-desc">Assess Gate 2 (Market Demand) — composes GitHub repo activity, Reddit subreddit subscriber counts, and Serper-aggregated launch-cluster mentions into a single gate2_signal_strength (strong/moderate/weak/none) plus a verdict. Google Trend…</span>
+              </li>
+              <li>
+                <span class="t-name">find_public_revenue_signals</span>
+                <span class="t-desc">Surface public revenue evidence (IndieHackers entries, founder MRR tweets, SEC filings, OpenStartup pages) for a product category and its competitors. Strengthens Gate 2 (market demand via paid comparables) and Gate 4 (WTP via observed p…</span>
+              </li>
+            </ul>
+          </div>
+          <div class="tools-group">
+            <h3>Gate 3 — Platform Risk</h3>
+            <ul>
+              <li>
+                <span class="t-name">assess_platform_dependency</span>
+                <span class="t-desc">Gate 3 P1: assess platform dependency risk. Detects which platforms (App Store, Twitter API, Shopify, Chrome Web Store, OpenAI, etc.) the product sits on top of — either from explicit_platforms input or by inference from idea_description…</span>
+              </li>
+              <li>
+                <span class="t-name">check_big_tech_encroachment</span>
+                <span class="t-desc">Assess platform / big-tech encroachment risk (Gate 3). Scans Apple WWDC, Google I/O, Microsoft Build, Meta Connect, and AWS re:Invent sessions in the last 24mo for category overlap. Also looks for new platform APIs and acquisitions in th…</span>
+              </li>
+            </ul>
+          </div>
+          <div class="tools-group">
+            <h3>Gate 4 — Willingness to Pay</h3>
+            <ul>
+              <li>
+                <span class="t-name">find_pricing_anchors</span>
+                <span class="t-desc">Fetch competitor pricing pages (live + Wayback), research pricing history, and scan G2/Capterra for churn signals. Returns current pricing models, historical trends, and auto-generated WTP flags.</span>
+              </li>
+            </ul>
+          </div>
+          <div class="tools-group">
+            <h3>Gate 5 — Why Now</h3>
+            <ul>
+              <li>
+                <span class="t-name">find_why_now_signals</span>
+                <span class="t-desc">Assess Gate 5 (Why Now) — surfaces recent platform/API enablers (last 24mo), YC RFS touchpoints, and launch-cluster signals for the category. Returns gate5_signal_strength (strong/moderate/weak/none) plus a verdict tying signals to Gate 5.</span>
+              </li>
+              <li>
+                <span class="t-name">find_yc_rfs_alignment</span>
+                <span class="t-desc">Assess alignment between a product idea and YC&#39;s current Request for Startups vintage. Uses a static dataset — refreshed quarterly. Returns scored alignment across all 6 YC S26 categories.</span>
+              </li>
+            </ul>
+          </div>
+          <div class="tools-group">
+            <h3>Cross-gate (synthesis)</h3>
+            <ul>
+              <li>
+                <span class="t-name">finalize_validation_report</span>
+                <span class="t-desc">Finalize a ValidationReport. Pass the JSON you constructed in `validate_idea`. Returns the validated markdown artifact, or a `validation_failed` error with the specific issues to fix. **This is the ONLY way to emit the final validation a…</span>
+              </li>
+              <li>
+                <span class="t-name">get_category_failure_modes</span>
+                <span class="t-desc">Research historical failure modes in a product category by searching for post-mortems, shutdowns, and user complaints. Returns structural failure patterns relevant to the category.</span>
+              </li>
+              <li>
+                <span class="t-name">scan_producthunt_launches</span>
+                <span class="t-desc">Search Product Hunt for launches in a category. Computes engagement ratio (comments/votes) to distinguish high-conviction launches from viral-but-shallow ones.</span>
+              </li>
+            </ul>
+          </div>
+          <!-- TOOLS_SECTION:END -->
         </div>
       </section>
 
