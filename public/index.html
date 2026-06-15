@@ -36,7 +36,7 @@
       "@type": "WebApplication",
       "name": "Veto",
       "applicationCategory": "BusinessApplication",
-      "operatingSystem": "Cross-platform (Claude Desktop, Cursor, Codex CLI)",
+      "operatingSystem": "Cross-platform (Claude Desktop)",
       "description": "An MCP server that validates product ideas across five structured gates. Returns GO / NO-GO / CONDITIONAL GO verdicts backed by source-grounded evidence.",
       "url": "https://getvetoed.com/",
       "author": {
@@ -1368,21 +1368,17 @@
         </div>
       </section>
 
-      <!-- Install (T07) — three-tier section per CONTEXT.md decision 11.
-           Tier 1 = bearer-token works-today clients (Claude Desktop /
-           Cursor / Codex CLI / Generic Streamable HTTP). Tier 2 = OpenAI
-           Responses API. Tier 3 = consumer ChatGPT (OAuth pending). -->
+      <!-- Install — Claude Desktop only for now. Cursor / Codex CLI /
+           Generic / OpenAI Responses API / ChatGPT all stripped per
+           Aljosa's review 2026-06-15. OAuth is still on the roadmap;
+           when it lands, ChatGPT + the consumer surfaces come back. -->
       <section id="install">
         <div class="container">
           <p class="eyebrow">Install</p>
-          <h2>Three tiers. Pick yours.</h2>
-          <p class="lede">Veto speaks MCP over Streamable HTTP. Bearer-token auth. Get your token at <a href="#get-access" style="color: var(--accent); border-bottom: 0.5px solid var(--accent);">the form below</a>; paste it into the config that fits your client.</p>
+          <h2>Paste the config. Restart.</h2>
+          <p class="lede">Veto speaks MCP over Streamable HTTP with bearer-token auth. Get your token at <a href="#get-access" style="color: var(--accent); border-bottom: 0.5px solid var(--accent);">the form below</a>; paste this config into Claude Desktop.</p>
 
-          <!-- Tier 1 — works today -->
           <div class="install-tier">
-            <p class="tier-eyebrow">Tier 1 — Works today (bearer token)</p>
-            <h3>CLI-native MCP clients.</h3>
-
             <div class="client-block">
               <h4>Claude Desktop</h4>
               <p class="tagline">Anthropic's native desktop app. The reference MCP host.</p>
@@ -1407,80 +1403,6 @@
               </div>
               <p class="token-note">Replace <code>pv_&lt;your_token&gt;</code> with the token from your sign-in email. <a href="#get-access">Get your token →</a></p>
             </div>
-
-            <div class="client-block">
-              <h4>Cursor</h4>
-              <p class="tagline">VS Code fork with native MCP support.</p>
-              <p class="path">Path: <code>~/.cursor/mcp.json</code></p>
-              <div class="copy-row">
-                <div class="copy-input" data-copy="https://getvetoed.com/mcp">https://getvetoed.com/mcp</div>
-                <button class="copy-btn" type="button" data-copy-target="prev">Copy URL</button>
-              </div>
-              <div class="copy-row config">
-                <div class="copy-input">{
-  "mcpServers": {
-    "veto": {
-      "url": "https://getvetoed.com/mcp",
-      "headers": {
-        "Authorization": "Bearer pv_&lt;your_token&gt;"
-      }
-    }
-  }
-}</div>
-                <button class="copy-btn" type="button" data-copy-target="prev">Copy JSON</button>
-              </div>
-            </div>
-
-            <div class="client-block">
-              <h4>Codex CLI</h4>
-              <p class="tagline">OpenAI's terminal coding agent. MCP servers configured per project.</p>
-              <p class="path">Add to your <code>~/.codex/config.toml</code>:</p>
-              <div class="copy-row config">
-                <div class="copy-input">[mcp_servers.veto]
-url = "https://getvetoed.com/mcp"
-headers = { Authorization = "Bearer pv_&lt;your_token&gt;" }</div>
-                <button class="copy-btn" type="button" data-copy-target="prev">Copy TOML</button>
-              </div>
-            </div>
-
-            <div class="client-block">
-              <h4>Generic Streamable HTTP MCP</h4>
-              <p class="tagline">Cline, Goose, Aider, or any MCP-compliant client.</p>
-              <div class="copy-row">
-                <div class="copy-input" data-copy="https://getvetoed.com/mcp">URL: https://getvetoed.com/mcp</div>
-                <button class="copy-btn" type="button" data-copy-target="prev">Copy URL</button>
-              </div>
-              <div class="copy-row">
-                <div class="copy-input" data-copy="Authorization: Bearer pv_&lt;your_token&gt;">Header: Authorization: Bearer pv_&lt;your_token&gt;</div>
-                <button class="copy-btn" type="button" data-copy-target="prev">Copy Header</button>
-              </div>
-            </div>
-          </div>
-
-          <!-- Tier 2 — developer integration -->
-          <div class="install-tier">
-            <p class="tier-eyebrow">Tier 2 — Developer integration</p>
-            <h3>OpenAI Responses API.</h3>
-            <p>Pass Veto into a Responses API call as an MCP tool. For developers building agents on top of OpenAI's API — not a consumer ChatGPT install.</p>
-            <div class="copy-row config">
-              <div class="copy-input">{
-  "type": "mcp",
-  "server_label": "veto",
-  "server_url": "https://getvetoed.com/mcp",
-  "headers": {
-    "Authorization": "Bearer pv_&lt;your_token&gt;"
-  },
-  "require_approval": "never"
-}</div>
-              <button class="copy-btn" type="button" data-copy-target="prev">Copy JSON</button>
-            </div>
-          </div>
-
-          <!-- Tier 3 — coming when OAuth ships -->
-          <div class="install-tier">
-            <p class="tier-eyebrow">Tier 3 — Coming when OAuth ships</p>
-            <h3>Consumer ChatGPT.</h3>
-            <p>ChatGPT's Apps &amp; Connectors UI requires OAuth for MCP servers. Veto's bearer-token model doesn't connect here yet. OAuth is on the roadmap; when it lands, this section will show the connect flow.</p>
           </div>
         </div>
       </section>
