@@ -15,7 +15,6 @@
       /* ─────────────────────────────────────────────────────────────────
          Phase 06 T01 — BRAND.md design tokens.
          Single source of palette/type/spacing for the landing page.
-         Any change to BRAND.md color or typography lands here first.
          Per CONTEXT.md decision 10: vanilla CSS, no framework.
          Per executor judgment: inline <style> block (file < 800 lines
          total even after Stream A — multi-file CSS not warranted).
@@ -110,6 +109,26 @@
       img { max-width: 100%; display: block; }
       ::selection { background: var(--accent); color: var(--bg); }
 
+      /* ─────────────────────────────────────────────────────────────────
+         Layout primitives
+         ───────────────────────────────────────────────────────────────── */
+      .container {
+        max-width: var(--max-width);
+        margin: 0 auto;
+        padding: 0 var(--gutter);
+      }
+      @media (max-width: 768px) {
+        .container { padding: 0 16px; }
+      }
+      main { display: block; }
+      section { padding: var(--s-8) 0; }
+      @media (max-width: 768px) {
+        section { padding: var(--s-7) 0; }
+      }
+
+      /* ─────────────────────────────────────────────────────────────────
+         Typography helpers (T02 skeleton)
+         ───────────────────────────────────────────────────────────────── */
       .wordmark {
         font-family: var(--font-mono);
         font-weight: 500;
@@ -118,10 +137,179 @@
         color: var(--text);
         display: inline-block;
       }
+      .eyebrow {
+        font-family: var(--font-mono);
+        font-weight: 400;
+        font-size: var(--fs-eyebrow);
+        text-transform: uppercase;
+        letter-spacing: 0.10em;
+        color: var(--text-tertiary);
+        margin: 0 0 var(--s-4);
+      }
+      h1, h2, h3 {
+        font-family: var(--font-mono);
+        font-weight: 500;
+        letter-spacing: -0.02em;
+        margin: 0;
+        color: var(--text);
+        line-height: 1.1;
+      }
+      h2 { font-size: var(--fs-section); margin: 0 0 var(--s-5); }
+      h3 { font-size: var(--fs-sub); font-weight: 400; letter-spacing: -0.01em; line-height: 1.3; }
+      p { margin: 0 0 var(--s-3); color: var(--text-secondary); }
+
+      /* ─────────────────────────────────────────────────────────────────
+         Navigation (BRAND.md: wordmark + Docs / GitHub / Install)
+         ───────────────────────────────────────────────────────────────── */
+      .nav {
+        border-bottom: 1px solid var(--border);
+        padding: var(--s-4) 0;
+      }
+      .nav-inner {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--s-5);
+      }
+      .nav .wordmark {
+        font-size: 16px;
+      }
+      .nav-links {
+        display: flex;
+        gap: var(--s-5);
+        align-items: center;
+      }
+      .nav-links a {
+        font-family: var(--font-mono);
+        font-size: 12px;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: var(--text-secondary);
+        transition: color 120ms ease;
+      }
+      .nav-links a:hover { color: var(--text); }
+
+      /* ─────────────────────────────────────────────────────────────────
+         Footer (preserve LinkedIn + X links from prior phase)
+         ───────────────────────────────────────────────────────────────── */
+      footer.site-footer {
+        border-top: 0.5px solid var(--border);
+        padding: var(--s-6) 0;
+        margin-top: var(--s-7);
+      }
+      .footer-inner {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        align-items: center;
+        gap: var(--s-4);
+      }
+      .footer-inner .wordmark { font-size: 14px; }
+      .footer-links {
+        font-family: var(--font-mono);
+        font-size: 12px;
+        color: var(--text-tertiary);
+        letter-spacing: 0.04em;
+      }
+      .footer-links a {
+        color: var(--text-secondary);
+        margin: 0 var(--s-2);
+      }
+      .footer-links a:hover { color: var(--text); }
     </style>
   </head>
   <body>
-    <!-- Skeleton lands in T02. T01 is tokens-only. -->
-    <span class="wordmark" style="padding: 48px;">VETO</span>
+    <!-- ──────────────────────────────────────────────────────────────── -->
+    <!-- Navigation -->
+    <!-- ──────────────────────────────────────────────────────────────── -->
+    <header id="nav" class="nav">
+      <div class="container nav-inner">
+        <span class="wordmark" aria-label="Veto">VETO</span>
+        <nav class="nav-links" aria-label="Primary">
+          <a href="#mechanism">Docs</a>
+          <a href="https://github.com/aljosamakevic/devreluni-mcp" target="_blank" rel="noopener noreferrer">GitHub</a>
+          <a href="#install">Install</a>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <!-- Hero (T03) -->
+      <section id="hero" class="hero">
+        <div class="container">
+          <p class="eyebrow">Hero</p>
+          <h2>Pending T03.</h2>
+        </div>
+      </section>
+
+      <!-- Mechanism (T04) -->
+      <section id="mechanism">
+        <div class="container">
+          <p class="eyebrow">Mechanism</p>
+          <h2>How it works.</h2>
+        </div>
+      </section>
+
+      <!-- Evidence (T05) -->
+      <section id="evidence">
+        <div class="container">
+          <p class="eyebrow">Evidence</p>
+          <h2>Real output.</h2>
+        </div>
+      </section>
+
+      <!-- Verdict math (T06) -->
+      <section id="verdict-math">
+        <div class="container">
+          <p class="eyebrow">Verdict math</p>
+          <h2>The fail-2 rule.</h2>
+        </div>
+      </section>
+
+      <!-- Anti-confirmation-bias (T06) -->
+      <section id="anti-bias">
+        <div class="container">
+          <p class="eyebrow">Anti-bias by construction</p>
+          <h2>Four structural defenses.</h2>
+        </div>
+      </section>
+
+      <!-- Install (T07) -->
+      <section id="install">
+        <div class="container">
+          <p class="eyebrow">Install</p>
+          <h2>Three tiers. Pick yours.</h2>
+        </div>
+      </section>
+
+      <!-- Tools — auto-extracted (T09/T10) -->
+      <section id="tools">
+        <div class="container">
+          <!-- TOOLS_SECTION -->
+        </div>
+      </section>
+
+      <!-- Get access / magic-link signup (T07/landing copy) -->
+      <section id="get-access">
+        <div class="container">
+          <p class="eyebrow">Get access</p>
+          <h2>Get your token.</h2>
+        </div>
+      </section>
+    </main>
+
+    <!-- ──────────────────────────────────────────────────────────────── -->
+    <!-- Footer — preserves LinkedIn + X links from prior phase -->
+    <!-- ──────────────────────────────────────────────────────────────── -->
+    <footer id="footer" class="site-footer">
+      <div class="container footer-inner">
+        <span class="wordmark">VETO</span>
+        <div class="footer-links">
+          Built by Aljosa Makevic ·
+          <a href="https://www.linkedin.com/in/aljosamakevic/">LinkedIn</a> ·
+          <a href="https://x.com/aljoha_">X</a>
+        </div>
+      </div>
+    </footer>
   </body>
 </html>
