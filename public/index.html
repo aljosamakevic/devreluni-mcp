@@ -3,348 +3,125 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Veto — kill bad product ideas before you build them</title>
+    <title>Veto — Kill bad ideas before you build them</title>
     <meta
       name="description"
-      content="An MCP server that validates product ideas with unbiased, source-grounded evidence across 5 structured gates. Returns a GO / NO-GO / CONDITIONAL GO verdict."
+      content="An MCP server that validates product ideas across five structured gates. Five gates. One verdict. No cheerleading."
     >
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Inter:wght@400;500&display=swap">
     <style>
+      /* ─────────────────────────────────────────────────────────────────
+         Phase 06 T01 — BRAND.md design tokens.
+         Single source of palette/type/spacing for the landing page.
+         Any change to BRAND.md color or typography lands here first.
+         Per CONTEXT.md decision 10: vanilla CSS, no framework.
+         Per executor judgment: inline <style> block (file < 800 lines
+         total even after Stream A — multi-file CSS not warranted).
+         ───────────────────────────────────────────────────────────────── */
       :root {
-        --fg: #1a1a1a;
-        --muted: #555;
-        --bg: #fafaf7;
-        --accent: #c0392b;
-        --rule: #e5e5e0;
-        --max: 720px;
-      }
-      * { box-sizing: border-box; }
-      html, body { margin: 0; padding: 0; }
-      body {
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
-        font-size: 17px;
-        line-height: 1.6;
-        color: var(--fg);
-        background: var(--bg);
-        padding: 48px 24px 96px;
-      }
-      main { max-width: var(--max); margin: 0 auto; }
-      h1 {
-        font-size: 40px;
-        line-height: 1.15;
-        margin: 0 0 16px;
-        letter-spacing: -0.01em;
-      }
-      h2 {
-        font-size: 22px;
-        margin: 48px 0 12px;
-        padding-bottom: 8px;
-        border-bottom: 1px solid var(--rule);
-      }
-      h3 {
-        font-size: 17px;
-        margin: 24px 0 6px;
-      }
-      p { margin: 0 0 14px; }
-      .tagline {
-        font-size: 20px;
-        color: var(--muted);
-        margin: 0 0 36px;
-      }
-      .cta {
-        display: inline-block;
-        margin: 12px 0 8px;
-        padding: 12px 22px;
-        background: var(--accent);
-        color: #fff;
-        font-weight: 600;
-        text-decoration: none;
-        border-radius: 4px;
-      }
-      .cta:hover { opacity: 0.92; }
-      .gate {
-        margin: 18px 0;
-      }
-      .gate strong { color: var(--fg); }
-      footer {
-        margin-top: 64px;
-        padding-top: 24px;
-        border-top: 1px solid var(--rule);
-        color: var(--muted);
-        font-size: 14px;
-      }
-      footer a { color: var(--muted); }
-      code {
-        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-        background: #efece4;
-        padding: 1px 6px;
-        border-radius: 3px;
-        font-size: 14px;
+        /* Color — BRAND.md palette, single accent */
+        --bg: #111210;
+        --surface: #1A1A18;
+        --border: rgba(245, 244, 240, 0.10);
+        --border-emphasis: rgba(245, 244, 240, 0.20);
+        --text: #F5F4F0;
+        --text-secondary: rgba(245, 244, 240, 0.55);
+        --text-tertiary: rgba(245, 244, 240, 0.30);
+        --text-muted: rgba(245, 244, 240, 0.18);
+        --accent: #D4F233;
+        --accent-bg: rgba(212, 242, 51, 0.10);
+        --status-fail: #FF6B55;
+        --status-fail-bg: rgba(255, 107, 85, 0.10);
+        --status-inc: #FFB828;
+        --status-inc-bg: rgba(255, 184, 40, 0.10);
+
+        /* Tier color map (BRAND.md "Tier color map") */
+        --tier-s-text: #D4F233;
+        --tier-s-bg: rgba(212, 242, 51, 0.12);
+        --tier-a-text: #7DC8FF;
+        --tier-a-bg: rgba(99, 195, 255, 0.12);
+        --tier-b-text: #AAAAAA;
+        --tier-b-bg: rgba(150, 150, 130, 0.15);
+        --tier-c-text: #FFB828;
+        --tier-c-bg: rgba(255, 184, 40, 0.10);
+        --tier-d-text: #FF6B55;
+        --tier-d-bg: rgba(255, 107, 85, 0.10);
+
+        /* Spacing scale (4/8/12/16/24/32/48/64/96/128px) */
+        --s-1: 4px;
+        --s-2: 8px;
+        --s-3: 12px;
+        --s-4: 16px;
+        --s-5: 24px;
+        --s-6: 32px;
+        --s-7: 48px;
+        --s-8: 64px;
+        --s-9: 96px;
+        --s-10: 128px;
+
+        /* Type scale */
+        --fs-hero: 48px;
+        --fs-section: 28px;
+        --fs-sub: 20px;
+        --fs-body: 16px;
+        --fs-body-sm: 14px;
+        --fs-eyebrow: 10px;
+        --fs-stamp: 64px;
+        --fs-gate-id: 10px;
+        --fs-mono: 13px;
+
+        /* Border radius — BRAND.md "2px or less" */
+        --radius: 2px;
+        --radius-badge: 1px;
+
+        /* Font stacks — Google Fonts (DM Mono + Inter), system fallback */
+        --font-mono: "DM Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        --font-body: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+
+        /* Layout */
+        --max-width: 1200px;
+        --gutter: 32px;
       }
 
-      /* Phase 04 D-03-5 — signup form */
-      .signup-form {
-        margin: 18px 0 8px;
-        display: flex;
-        flex-direction: column;
-        gap: 12px;
+      /* ─────────────────────────────────────────────────────────────────
+         Reset + base typography
+         ───────────────────────────────────────────────────────────────── */
+      *, *::before, *::after { box-sizing: border-box; }
+      html, body { margin: 0; padding: 0; }
+      html { background: var(--bg); }
+      body {
+        background: var(--bg);
+        color: var(--text);
+        font-family: var(--font-body);
+        font-size: var(--fs-body);
+        line-height: 1.65;
+        letter-spacing: -0.01em;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
       }
-      .signup-form label {
-        font-weight: 600;
-        font-size: 14px;
-        color: var(--fg);
+      a { color: inherit; text-decoration: none; }
+      a:focus-visible,
+      button:focus-visible {
+        outline: 2px solid var(--accent);
+        outline-offset: 2px;
       }
-      .signup-form input[type="email"],
-      .signup-form input[type="text"] {
-        padding: 12px 14px;
-        font-size: 16px;
-        border: 1px solid var(--rule);
-        border-radius: 4px;
-        background: #fff;
-        color: var(--fg);
-        font-family: inherit;
-        width: 100%;
-      }
-      .signup-form input[type="email"]:focus,
-      .signup-form input[type="text"]:focus {
-        outline: none;
-        border-color: var(--accent);
-      }
-      .signup-form button {
-        align-self: flex-start;
-        margin: 0;
-        padding: 12px 22px;
-        background: var(--accent);
-        color: #fff;
-        font-weight: 600;
-        font-family: inherit;
-        font-size: 16px;
-        border: none;
-        border-radius: 4px;
-        cursor: pointer;
-      }
-      .signup-form button:hover { opacity: 0.92; }
-      .signup-form button:disabled { opacity: 0.6; cursor: wait; }
-      .signup-form .optional {
-        font-weight: 400;
-        color: var(--muted);
-      }
-      .signup-honeypot {
-        position: absolute;
-        left: -9999px;
-        top: -9999px;
-        height: 0;
-        width: 0;
-        overflow: hidden;
-      }
-      .signup-message {
-        margin: 8px 0 0;
-        font-size: 14px;
-        padding: 10px 12px;
-        border-radius: 4px;
-        display: none;
-      }
-      .signup-message.show { display: block; }
-      .signup-message.success {
-        background: #e9f5ec;
-        border: 1px solid #b9deca;
-        color: #1f5a2f;
-      }
-      .signup-message.error {
-        background: #fcecea;
-        border: 1px solid #f0b3aa;
-        color: #7a2820;
+      img { max-width: 100%; display: block; }
+      ::selection { background: var(--accent); color: var(--bg); }
+
+      .wordmark {
+        font-family: var(--font-mono);
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: -0.02em;
+        color: var(--text);
+        display: inline-block;
       }
     </style>
   </head>
   <body>
-    <main>
-      <h1>Veto</h1>
-      <p class="tagline">Kill bad product ideas before you build them.</p>
-
-      <p>
-        Veto is a Model Context Protocol server that validates product ideas
-        with unbiased, source-grounded evidence across five structured gates.
-        It returns a GO / NO-GO / CONDITIONAL GO verdict with citations &mdash;
-        not vibes. The framework is designed to make confirmation bias
-        structurally impossible.
-      </p>
-
-      <h2>How it works</h2>
-
-      <div class="gate">
-        <h3>Gate 1 &mdash; Direct Competitor Scan</h3>
-        <p>
-          Who is the closest existing thing, what have they shipped, where are
-          they weak? Veto surfaces the strongest direct competitor and reads
-          their public changelog for shipped features, then maps explicit
-          weaknesses you could exploit.
-        </p>
-      </div>
-
-      <div class="gate">
-        <h3>Gate 2 &mdash; Market Structure</h3>
-        <p>
-          Is the market shaped such that this idea can win a meaningful share?
-          For solopreneurs, that means a niche of roughly 1,000 reachable
-          customers through concentrated channels. For funded teams, a
-          plausible $1B+ TAM. Either bar, made explicit.
-        </p>
-      </div>
-
-      <div class="gate">
-        <h3>Gate 3 &mdash; Platform &amp; Big-Tech Risk</h3>
-        <p>
-          Will a platform shift or a hyperscaler shipping this as a system
-          primitive kill the idea inside 24 months? Veto checks Apple, Google,
-          Microsoft, and Meta for encroachment signals before any verdict.
-        </p>
-      </div>
-
-      <div class="gate">
-        <h3>Gate 4 &mdash; Willingness to Pay</h3>
-        <p>
-          Will the target customer actually pay enough to make this a business?
-          Public revenue from comparables is the strongest evidence. Auto-flag
-          if competitor pricing has fallen 25%+ over 24 months, or if the
-          category is freemium-only with no profitable paid tier.
-        </p>
-      </div>
-
-      <div class="gate">
-        <h3>Gate 5 &mdash; Why Now</h3>
-        <p>
-          What changed in the last 24 months that makes this possible or
-          necessary <em>now</em>? Must be a specific articulable thesis, not
-          &ldquo;AI got better.&rdquo; Automatic Inconclusive if no non-obvious
-          why-now exists.
-        </p>
-      </div>
-
-      <h2>Who it's for</h2>
-      <p>
-        Solopreneurs and small builder teams (1&ndash;5 people) evaluating
-        product ideas before committing build time. Funded founders pre-PRD
-        also welcome. If you ship code on weekends and have an idea graveyard,
-        Veto is built for you.
-      </p>
-
-      <section id="social-proof">
-        <!-- TODO: testimonials once 5 users have shipped a verdict -->
-      </section>
-
-      <h2>Get instant access</h2>
-      <p>
-        Enter your email; we'll send a one-click sign-in link. The link
-        delivers your bearer token plus a copy-paste snippet for your
-        Claude Desktop config. Then run <code>validate_idea</code> against
-        your next idea.
-      </p>
-
-      <form class="signup-form" id="signup-form" novalidate>
-        <div>
-          <label for="signup-email">Email</label>
-          <input
-            type="email"
-            id="signup-email"
-            name="email"
-            required
-            autocomplete="email"
-            placeholder="you@example.com"
-          >
-        </div>
-        <div class="signup-honeypot" aria-hidden="true">
-          <label for="signup-website">Website (leave blank)</label>
-          <input
-            type="text"
-            id="signup-website"
-            name="website"
-            autocomplete="off"
-            tabindex="-1"
-          >
-        </div>
-        <div>
-          <button type="submit" id="signup-submit">Send sign-in link</button>
-        </div>
-        <p class="signup-message" id="signup-message" role="status" aria-live="polite"></p>
-      </form>
-
-      <script>
-        // Phase 05a D-03-5 — inline magic-link form wiring.
-        // Posts JSON to /auth/magic-link/request, displays a friendly result
-        // message below the form. No framework, no external deps. Same
-        // honeypot semantics as Phase 04 — bots that fill `website` see an
-        // identical success message; humans see "Check your inbox".
-        (function () {
-          'use strict';
-          var form = document.getElementById('signup-form');
-          var submitBtn = document.getElementById('signup-submit');
-          var msgEl = document.getElementById('signup-message');
-
-          function showMessage(text, kind) {
-            msgEl.textContent = text;
-            msgEl.className = 'signup-message show ' + kind;
-          }
-          function clearMessage() {
-            msgEl.textContent = '';
-            msgEl.className = 'signup-message';
-          }
-
-          form.addEventListener('submit', function (ev) {
-            ev.preventDefault();
-            clearMessage();
-            submitBtn.disabled = true;
-
-            var email = (document.getElementById('signup-email').value || '').trim();
-            var website = (document.getElementById('signup-website').value || '').trim();
-
-            fetch('/auth/magic-link/request', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ email: email, website: website })
-            })
-              .then(function (res) {
-                return res.json().then(function (body) {
-                  return { status: res.status, retryAfter: res.headers.get('Retry-After'), body: body };
-                });
-              })
-              .then(function (result) {
-                if (result.status === 200 && result.body && result.body.ok) {
-                  form.reset();
-                  showMessage(
-                    result.body.message || 'Check your inbox for a sign-in link.',
-                    'success'
-                  );
-                } else if (result.status === 429) {
-                  var sec = result.body && result.body.retry_after_sec ? result.body.retry_after_sec : (result.retryAfter ? parseInt(result.retryAfter, 10) : 0);
-                  var mins = sec > 0 ? Math.ceil(sec / 60) : 0;
-                  showMessage(
-                    'Too many requests. Try again in about ' + (mins > 0 ? mins + ' minute' + (mins === 1 ? '' : 's') : 'a bit') + '.',
-                    'error'
-                  );
-                } else if (result.status === 400 && result.body && result.body.message) {
-                  showMessage(result.body.message, 'error');
-                } else {
-                  showMessage('Something went wrong. Please try again in a moment.', 'error');
-                }
-              })
-              .catch(function () {
-                showMessage('Network error. Please try again in a moment.', 'error');
-              })
-              .then(function () {
-                submitBtn.disabled = false;
-              });
-          });
-        })();
-      </script>
-
-      <footer>
-        <p>
-          Built by Aljosa Makevic &middot;
-          <a href="https://www.linkedin.com/in/aljosamakevic/">LinkedIn</a>
-          &middot;
-          <a href="https://x.com/aljoha_">X</a>
-        </p>
-      </footer>
-    </main>
+    <!-- Skeleton lands in T02. T01 is tokens-only. -->
+    <span class="wordmark" style="padding: 48px;">VETO</span>
   </body>
 </html>
