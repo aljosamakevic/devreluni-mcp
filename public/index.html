@@ -587,6 +587,228 @@
         font-weight: 500;
       }
 
+      /* ─────────────────────────────────────────────────────────────────
+         T07 — Install (3-tier section) + Get access (magic-link form)
+         + copy buttons + toast.
+         ───────────────────────────────────────────────────────────────── */
+      .install-tier { margin-bottom: var(--s-7); }
+      .install-tier h3 {
+        font-family: var(--font-mono);
+        font-size: 18px;
+        margin: 0 0 var(--s-2);
+      }
+      .install-tier .tier-eyebrow {
+        font-family: var(--font-mono);
+        font-size: var(--fs-eyebrow);
+        text-transform: uppercase;
+        letter-spacing: 0.10em;
+        color: var(--text-tertiary);
+        margin: 0 0 4px;
+      }
+      .install-tier > p {
+        color: var(--text-secondary);
+        max-width: 60ch;
+      }
+
+      .client-block {
+        border-top: 0.5px solid var(--border);
+        padding: var(--s-5) 0;
+      }
+      .client-block:last-child { border-bottom: 0.5px solid var(--border); }
+      .client-block h4 {
+        font-family: var(--font-mono);
+        font-size: 15px;
+        font-weight: 500;
+        color: var(--text);
+        margin: 0 0 4px;
+        letter-spacing: -0.01em;
+      }
+      .client-block .tagline {
+        font-family: var(--font-body);
+        font-size: 13px;
+        color: var(--text-secondary);
+        margin: 0 0 var(--s-3);
+      }
+      .client-block .path {
+        font-family: var(--font-mono);
+        font-size: 12px;
+        color: var(--text-tertiary);
+        margin: 0 0 var(--s-2);
+      }
+
+      .copy-row {
+        display: flex;
+        align-items: stretch;
+        gap: var(--s-2);
+        margin: var(--s-2) 0 var(--s-3);
+      }
+      .copy-row .copy-input {
+        flex: 1;
+        background: var(--surface);
+        border: 0.5px solid var(--border);
+        border-radius: var(--radius);
+        padding: 10px 12px;
+        font-family: var(--font-mono);
+        font-size: 12px;
+        color: var(--text);
+        overflow-x: auto;
+        white-space: nowrap;
+      }
+      .copy-btn {
+        flex-shrink: 0;
+        background: transparent;
+        color: var(--text-secondary);
+        font-family: var(--font-mono);
+        font-size: 11px;
+        letter-spacing: 0.06em;
+        padding: 0 14px;
+        border: 0.5px solid var(--border);
+        border-radius: var(--radius);
+        text-transform: uppercase;
+        cursor: pointer;
+        transition: color 120ms ease, border-color 120ms ease;
+      }
+      .copy-btn:hover {
+        color: var(--text);
+        border-color: var(--border-emphasis);
+      }
+      .copy-btn[data-state="copied"] {
+        color: var(--accent);
+        border-color: var(--accent);
+      }
+      .copy-row.config { flex-direction: column; }
+      .copy-row.config .copy-input {
+        white-space: pre;
+        font-size: 12px;
+        line-height: 1.5;
+        padding: var(--s-3) var(--s-4);
+        overflow-x: auto;
+      }
+      .copy-row.config .copy-btn {
+        align-self: flex-end;
+        margin-top: var(--s-2);
+        padding: 6px 14px;
+      }
+      .token-note {
+        font-family: var(--font-body);
+        font-size: 12px;
+        color: var(--text-tertiary);
+        margin: 0;
+      }
+      .token-note a {
+        color: var(--text-secondary);
+        border-bottom: 0.5px solid var(--border-emphasis);
+      }
+      .token-note a:hover {
+        color: var(--accent);
+        border-color: var(--accent);
+      }
+
+      /* Get access — magic-link signup card */
+      .signup-card {
+        border: 0.5px solid var(--border);
+        border-radius: var(--radius);
+        padding: var(--s-6);
+        background: var(--surface);
+        max-width: 560px;
+      }
+      .signup-form {
+        display: flex;
+        flex-direction: column;
+        gap: var(--s-3);
+        margin: var(--s-4) 0 0;
+      }
+      .signup-form label {
+        font-family: var(--font-mono);
+        font-size: var(--fs-eyebrow);
+        text-transform: uppercase;
+        letter-spacing: 0.10em;
+        color: var(--text-tertiary);
+      }
+      .signup-form input[type="email"],
+      .signup-form input[type="text"] {
+        background: var(--bg);
+        border: 0.5px solid var(--border);
+        border-radius: var(--radius);
+        padding: 12px 14px;
+        font-family: var(--font-body);
+        font-size: 15px;
+        color: var(--text);
+        width: 100%;
+      }
+      .signup-form input[type="email"]:focus,
+      .signup-form input[type="text"]:focus {
+        outline: none;
+        border-color: var(--accent);
+      }
+      .signup-form button {
+        align-self: flex-start;
+        background: var(--accent);
+        color: var(--bg);
+        font-family: var(--font-mono);
+        font-size: 13px;
+        font-weight: 500;
+        letter-spacing: 0.04em;
+        padding: 10px 20px;
+        border-radius: var(--radius);
+        border: none;
+        text-transform: uppercase;
+        cursor: pointer;
+        transition: opacity 120ms ease;
+      }
+      .signup-form button:hover { opacity: 0.88; }
+      .signup-form button:disabled { opacity: 0.4; cursor: wait; }
+      .signup-honeypot {
+        position: absolute;
+        left: -9999px;
+        top: -9999px;
+        height: 0;
+        width: 0;
+        overflow: hidden;
+      }
+      .signup-message {
+        margin: var(--s-3) 0 0;
+        font-family: var(--font-mono);
+        font-size: 12px;
+        letter-spacing: 0.04em;
+        padding: 10px 12px;
+        border-radius: var(--radius);
+        display: none;
+      }
+      .signup-message.show { display: block; }
+      .signup-message.success {
+        background: var(--accent-bg);
+        border: 0.5px solid var(--accent);
+        color: var(--accent);
+      }
+      .signup-message.error {
+        background: var(--status-fail-bg);
+        border: 0.5px solid var(--status-fail);
+        color: var(--status-fail);
+      }
+
+      /* Toast for copy buttons */
+      .toast {
+        position: fixed;
+        bottom: 24px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: var(--surface);
+        color: var(--text);
+        border: 0.5px solid var(--accent);
+        border-radius: var(--radius);
+        padding: 8px 16px;
+        font-family: var(--font-mono);
+        font-size: 12px;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 200ms ease;
+        z-index: 100;
+      }
+      .toast.show { opacity: 1; }
+
       /* Placeholder for hero-right column — animation lands in T08. */
       .hero-anim-placeholder {
         border: 0.5px dashed var(--border);
@@ -802,11 +1024,120 @@
         </div>
       </section>
 
-      <!-- Install (T07) -->
+      <!-- Install (T07) — three-tier section per CONTEXT.md decision 11.
+           Tier 1 = bearer-token works-today clients (Claude Desktop /
+           Cursor / Codex CLI / Generic Streamable HTTP). Tier 2 = OpenAI
+           Responses API. Tier 3 = consumer ChatGPT (OAuth pending). -->
       <section id="install">
         <div class="container">
           <p class="eyebrow">Install</p>
           <h2>Three tiers. Pick yours.</h2>
+          <p class="lede">Veto speaks MCP over Streamable HTTP. Bearer-token auth. Get your token at <a href="#get-access" style="color: var(--accent); border-bottom: 0.5px solid var(--accent);">the form below</a>; paste it into the config that fits your client.</p>
+
+          <!-- Tier 1 — works today -->
+          <div class="install-tier">
+            <p class="tier-eyebrow">Tier 1 — Works today (bearer token)</p>
+            <h3>CLI-native MCP clients.</h3>
+
+            <div class="client-block">
+              <h4>Claude Desktop</h4>
+              <p class="tagline">Anthropic's native desktop app. The reference MCP host.</p>
+              <p class="path">macOS: <code>~/Library/Application Support/Claude/claude_desktop_config.json</code></p>
+              <p class="path">Windows: <code>%APPDATA%\Claude\claude_desktop_config.json</code></p>
+              <div class="copy-row">
+                <div class="copy-input" data-copy="https://getvetoed.com/mcp">https://getvetoed.com/mcp</div>
+                <button class="copy-btn" type="button" data-copy-target="prev">Copy URL</button>
+              </div>
+              <div class="copy-row config">
+                <div class="copy-input">{
+  "mcpServers": {
+    "veto": {
+      "url": "https://getvetoed.com/mcp",
+      "headers": {
+        "Authorization": "Bearer pv_&lt;your_token&gt;"
+      }
+    }
+  }
+}</div>
+                <button class="copy-btn" type="button" data-copy-target="prev">Copy JSON</button>
+              </div>
+              <p class="token-note">Replace <code>pv_&lt;your_token&gt;</code> with the token from your sign-in email. <a href="#get-access">Get your token →</a></p>
+            </div>
+
+            <div class="client-block">
+              <h4>Cursor</h4>
+              <p class="tagline">VS Code fork with native MCP support.</p>
+              <p class="path">Path: <code>~/.cursor/mcp.json</code></p>
+              <div class="copy-row">
+                <div class="copy-input" data-copy="https://getvetoed.com/mcp">https://getvetoed.com/mcp</div>
+                <button class="copy-btn" type="button" data-copy-target="prev">Copy URL</button>
+              </div>
+              <div class="copy-row config">
+                <div class="copy-input">{
+  "mcpServers": {
+    "veto": {
+      "url": "https://getvetoed.com/mcp",
+      "headers": {
+        "Authorization": "Bearer pv_&lt;your_token&gt;"
+      }
+    }
+  }
+}</div>
+                <button class="copy-btn" type="button" data-copy-target="prev">Copy JSON</button>
+              </div>
+            </div>
+
+            <div class="client-block">
+              <h4>Codex CLI</h4>
+              <p class="tagline">OpenAI's terminal coding agent. MCP servers configured per project.</p>
+              <p class="path">Add to your <code>~/.codex/config.toml</code>:</p>
+              <div class="copy-row config">
+                <div class="copy-input">[mcp_servers.veto]
+url = "https://getvetoed.com/mcp"
+headers = { Authorization = "Bearer pv_&lt;your_token&gt;" }</div>
+                <button class="copy-btn" type="button" data-copy-target="prev">Copy TOML</button>
+              </div>
+            </div>
+
+            <div class="client-block">
+              <h4>Generic Streamable HTTP MCP</h4>
+              <p class="tagline">Cline, Goose, Aider, or any MCP-compliant client.</p>
+              <div class="copy-row">
+                <div class="copy-input" data-copy="https://getvetoed.com/mcp">URL: https://getvetoed.com/mcp</div>
+                <button class="copy-btn" type="button" data-copy-target="prev">Copy URL</button>
+              </div>
+              <div class="copy-row">
+                <div class="copy-input" data-copy="Authorization: Bearer pv_&lt;your_token&gt;">Header: Authorization: Bearer pv_&lt;your_token&gt;</div>
+                <button class="copy-btn" type="button" data-copy-target="prev">Copy Header</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tier 2 — developer integration -->
+          <div class="install-tier">
+            <p class="tier-eyebrow">Tier 2 — Developer integration</p>
+            <h3>OpenAI Responses API.</h3>
+            <p>Pass Veto into a Responses API call as an MCP tool. For developers building agents on top of OpenAI's API — not a consumer ChatGPT install.</p>
+            <div class="copy-row config">
+              <div class="copy-input">{
+  "type": "mcp",
+  "server_label": "veto",
+  "server_url": "https://getvetoed.com/mcp",
+  "headers": {
+    "Authorization": "Bearer pv_&lt;your_token&gt;"
+  },
+  "require_approval": "never"
+}</div>
+              <button class="copy-btn" type="button" data-copy-target="prev">Copy JSON</button>
+            </div>
+          </div>
+
+          <!-- Tier 3 — coming when OAuth ships -->
+          <div class="install-tier">
+            <p class="tier-eyebrow">Tier 3 — Coming when OAuth ships</p>
+            <h3>Consumer ChatGPT.</h3>
+            <p>ChatGPT's Apps &amp; Connectors UI requires OAuth for MCP servers. Veto's bearer-token model doesn't connect here yet. OAuth is on the roadmap; when it lands, this section will show the connect flow.</p>
+          </div>
         </div>
       </section>
 
@@ -817,11 +1148,38 @@
         </div>
       </section>
 
-      <!-- Get access / magic-link signup (T07/landing copy) -->
+      <!-- Get access (T07) — magic-link signup form. Restyled per
+           BRAND.md; preserves the Phase 05a POST /auth/magic-link/request
+           wire + honeypot semantics. -->
       <section id="get-access">
         <div class="container">
           <p class="eyebrow">Get access</p>
           <h2>Get your token.</h2>
+          <div class="signup-card">
+            <p>Enter your email. You get a one-click sign-in link. The link delivers your bearer token plus the copy-paste config for your client.</p>
+            <form class="signup-form" id="signup-form" novalidate>
+              <div>
+                <label for="signup-email">Email</label>
+                <input
+                  type="email"
+                  id="signup-email"
+                  name="email"
+                  required
+                  autocomplete="email"
+                  placeholder="you@example.com"
+                  style="margin-top: 6px;"
+                >
+              </div>
+              <div class="signup-honeypot" aria-hidden="true">
+                <label for="signup-website">Website (leave blank)</label>
+                <input type="text" id="signup-website" name="website" autocomplete="off" tabindex="-1">
+              </div>
+              <div>
+                <button type="submit" id="signup-submit">Send sign-in link</button>
+              </div>
+              <p class="signup-message" id="signup-message" role="status" aria-live="polite"></p>
+            </form>
+          </div>
         </div>
       </section>
     </main>
@@ -839,5 +1197,136 @@
         </div>
       </div>
     </footer>
+
+    <!-- Toast for copy buttons (T07) -->
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+    <script>
+      // ─────────────────────────────────────────────────────────────────
+      // T07 — Copy buttons (vanilla navigator.clipboard with
+      // document.execCommand fallback). Each button has
+      // data-copy-target="prev"; copies the previous .copy-input sibling.
+      // The data-copy attribute (when present) takes precedence over
+      // textContent so machine-clean strings are copied independent of
+      // display HTML (e.g. literal <> in display becomes & l t / & g t).
+      // ─────────────────────────────────────────────────────────────────
+      (function () {
+        'use strict';
+        var toast = document.getElementById('toast');
+        function showToast(msg) {
+          if (!toast) return;
+          toast.textContent = msg;
+          toast.classList.add('show');
+          setTimeout(function () { toast.classList.remove('show'); }, 1600);
+        }
+        function copyText(text, btn) {
+          var done = function () {
+            btn.setAttribute('data-state', 'copied');
+            var orig = btn.textContent;
+            btn.textContent = 'Copied';
+            showToast('Copied to clipboard');
+            setTimeout(function () {
+              btn.textContent = orig;
+              btn.removeAttribute('data-state');
+            }, 1600);
+          };
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(text).then(done, function () {
+              fallback(text, done, btn);
+            });
+          } else {
+            fallback(text, done, btn);
+          }
+        }
+        function fallback(text, done, btn) {
+          var ta = document.createElement('textarea');
+          ta.value = text;
+          ta.style.position = 'fixed';
+          ta.style.left = '-9999px';
+          document.body.appendChild(ta);
+          ta.select();
+          try { document.execCommand('copy'); done(); }
+          catch (e) { btn.textContent = 'Copy failed'; }
+          document.body.removeChild(ta);
+        }
+        var buttons = document.querySelectorAll('.copy-btn');
+        Array.prototype.forEach.call(buttons, function (btn) {
+          btn.addEventListener('click', function () {
+            var target = btn.previousElementSibling;
+            if (!target) return;
+            var text = target.getAttribute('data-copy') || target.textContent || '';
+            copyText(text.trim(), btn);
+          });
+        });
+      })();
+
+      // ─────────────────────────────────────────────────────────────────
+      // T07 — Magic-link signup form (Phase 05a wire preserved).
+      // POSTs to /auth/magic-link/request; honeypot semantics unchanged:
+      // bots that fill `website` see an identical success message.
+      // ─────────────────────────────────────────────────────────────────
+      (function () {
+        'use strict';
+        var form = document.getElementById('signup-form');
+        if (!form) return;
+        var submitBtn = document.getElementById('signup-submit');
+        var msgEl = document.getElementById('signup-message');
+
+        function showMessage(text, kind) {
+          msgEl.textContent = text;
+          msgEl.className = 'signup-message show ' + kind;
+        }
+        function clearMessage() {
+          msgEl.textContent = '';
+          msgEl.className = 'signup-message';
+        }
+
+        form.addEventListener('submit', function (ev) {
+          ev.preventDefault();
+          clearMessage();
+          submitBtn.disabled = true;
+
+          var email = (document.getElementById('signup-email').value || '').trim();
+          var website = (document.getElementById('signup-website').value || '').trim();
+
+          fetch('/auth/magic-link/request', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: email, website: website })
+          })
+            .then(function (res) {
+              return res.json().then(function (body) {
+                return { status: res.status, retryAfter: res.headers.get('Retry-After'), body: body };
+              });
+            })
+            .then(function (result) {
+              if (result.status === 200 && result.body && result.body.ok) {
+                form.reset();
+                showMessage(
+                  result.body.message || 'Check your inbox for a sign-in link.',
+                  'success'
+                );
+              } else if (result.status === 429) {
+                var sec = result.body && result.body.retry_after_sec ? result.body.retry_after_sec : (result.retryAfter ? parseInt(result.retryAfter, 10) : 0);
+                var mins = sec > 0 ? Math.ceil(sec / 60) : 0;
+                showMessage(
+                  'Too many requests. Try again in about ' + (mins > 0 ? mins + ' minute' + (mins === 1 ? '' : 's') : 'a bit') + '.',
+                  'error'
+                );
+              } else if (result.status === 400 && result.body && result.body.message) {
+                showMessage(result.body.message, 'error');
+              } else {
+                showMessage('Something went wrong. Please try again in a moment.', 'error');
+              }
+            })
+            .catch(function () {
+              showMessage('Network error. Please try again in a moment.', 'error');
+            })
+            .then(function () {
+              submitBtn.disabled = false;
+            });
+        });
+      })();
+    </script>
   </body>
 </html>
