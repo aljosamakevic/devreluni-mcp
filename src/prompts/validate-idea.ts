@@ -55,9 +55,12 @@ Step 0 — Framing
 Restate framing. If audience/builder not provided, ask before proceeding.
 
 Step 1 — Run Gates 1-5 (each producing DOK-layered blocks)
+
+TOOL CALLING CONVENTION (read before your first tool call): every gate tool takes \`idea_description: string\` as the primary argument — NOT \`idea\`, NOT \`description\`, NOT \`query\`. Most tools also accept optional tool-specific args (e.g. \`category\`, \`category_keywords\`, \`explicit_platforms\`); inspect each tool's \`inputSchema\` from \`tools/list\` before invoking. If a tool call returns \`isError: true\` with a path like \`["idea_description"] Required\`, you used the wrong argument name — fix and retry, do not interpret the error as a server timeout.
+
 For each gate:
   a. Identify relevant tools from Tool-to-Gate Map resource
-  b. Call tools. Enter facts as DOK 1 with tier+bias citations
+  b. Call tools (pass \`idea_description\` + any tool-specific args from the schema). Enter facts as DOK 1 with tier+bias citations
   c. Write DOK 2 summary (plain language, no interpretation)
   d. Write DOK 3 insights (LABEL as "⚠️ Model judgment:")
   e. Search for contradicting evidence — add to Contradicting Evidence block
