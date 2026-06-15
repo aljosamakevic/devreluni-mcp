@@ -1,6 +1,7 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 import type { ToolResult } from '../types.js';
+import { okResult } from '../lib/envelope.js';
 import { serperSearch, serperSource, serperConfidenceNote, isSerperLive } from '../lib/serper.js';
 import { searchProductHunt, phSource, phConfidenceNote, isPHLive } from '../lib/producthunt.js';
 import { searchHN, hnSource } from '../lib/hn.js';
@@ -111,12 +112,12 @@ export function registerFindClosestCompetitor(server: McpServer): void {
         );
       }
 
-      const result: ToolResult<FindClosestCompetitorData> = {
-        data: { competitors, hn_mentions, ph_launches, recommendation },
-        sources: builtSources,
-        confidence_note: confidenceParts.join(' '),
-        fallbacks_used: fallbacksUsed,
-      };
+      const result: ToolResult<FindClosestCompetitorData> = okResult(
+        { competitors, hn_mentions, ph_launches, recommendation },
+        builtSources,
+        confidenceParts.join(' '),
+        fallbacksUsed,
+      );
 
       return {
         content: [{ type: 'text', text: JSON.stringify(result, null, 2) }],

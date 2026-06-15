@@ -11,6 +11,7 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 import type { ToolResult, ToolSource } from '../types.js';
+import { okResult } from '../lib/envelope.js';
 import {
   serperSearch,
   isSerperLive,
@@ -358,8 +359,8 @@ export function registerCheckBigTechEncroachment(server: McpServer): void {
         verdict = `Gate 3 likely PASS on encroachment alone. Adjacency ${score}/5: ${label}. Still verify with assess_platform_dependency for ToS/integration risks.`;
       }
 
-      const result: ToolResult<CheckBigTechEncroachmentData> = {
-        data: {
+      const result: ToolResult<CheckBigTechEncroachmentData> = okResult(
+        {
           adjacency_score: score,
           adjacency_label: label,
           conference_mentions: conferenceMentions.filter((c) => c.recency_signal === 'last_24mo').slice(0, 10),
@@ -370,9 +371,9 @@ export function registerCheckBigTechEncroachment(server: McpServer): void {
           killshot_risk: killshotRisk,
         },
         sources,
-        confidence_note: `Searched ${confSearchInputs.length} conference site/feature filters across ${new Set(HYPERSCALER_CONFERENCES.map((c) => c.hyperscaler)).size} hyperscalers (${HYPERSCALER_CONFERENCES.length} base + ${confSearchInputs.length - HYPERSCALER_CONFERENCES.length} platform-feature expansions) + ${apiQueries.length} API queries + 1 acquisition query. Adjacency score is heuristic from signal counts — review the raw mentions before treating verdict as final. Recency detection relies on year strings in titles/snippets and can miss recent dateless pages.${!isSerperLive() ? ' Serper not configured — results are stubbed.' : ''}`,
-        fallbacks_used: fallbacksUsed,
-      };
+        `Searched ${confSearchInputs.length} conference site/feature filters across ${new Set(HYPERSCALER_CONFERENCES.map((c) => c.hyperscaler)).size} hyperscalers (${HYPERSCALER_CONFERENCES.length} base + ${confSearchInputs.length - HYPERSCALER_CONFERENCES.length} platform-feature expansions) + ${apiQueries.length} API queries + 1 acquisition query. Adjacency score is heuristic from signal counts — review the raw mentions before treating verdict as final. Recency detection relies on year strings in titles/snippets and can miss recent dateless pages.${!isSerperLive() ? ' Serper not configured — results are stubbed.' : ''}`,
+        fallbacksUsed,
+      );
 
       cacheSet(cacheKey, result, TTL.SHORT);
       return {

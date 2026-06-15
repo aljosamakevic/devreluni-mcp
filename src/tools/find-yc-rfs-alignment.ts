@@ -1,6 +1,7 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 import type { ToolResult, ToolSource } from '../types.js';
+import { okResult } from '../lib/envelope.js';
 
 const RFS_VINTAGE = 'YC Summer 2026';
 const RFS_SOURCE_URL = 'https://www.ycombinator.com/rfs';
@@ -173,17 +174,16 @@ export function registerFindYCRFSAlignment(server: McpServer): void {
         contribution: `YC ${RFS_VINTAGE} Request for Startups — YC's strategic priorities (positioning signal, not endorsement). Not a funding commitment.`,
       };
 
-      const result: ToolResult<FindYCRFSAlignmentData> = {
-        data: {
+      const result: ToolResult<FindYCRFSAlignmentData> = okResult(
+        {
           categories,
           top_match: topMatch.name,
           verdict,
           rfs_vintage: RFS_VINTAGE,
         },
-        sources: [source],
-        confidence_note: `Static dataset — YC S26 RFS baked in. Update quarterly or when YC publishes a new RFS. Keyword matching is heuristic — manual review recommended for borderline scores.`,
-        fallbacks_used: [],
-      };
+        [source],
+        `Static dataset — YC S26 RFS baked in. Update quarterly or when YC publishes a new RFS. Keyword matching is heuristic — manual review recommended for borderline scores.`,
+      );
 
       return {
         content: [{ type: 'text', text: JSON.stringify(result, null, 2) }],

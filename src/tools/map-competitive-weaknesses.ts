@@ -1,6 +1,7 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 import type { ToolResult } from '../types.js';
+import { okResult, honestGapResult } from '../lib/envelope.js';
 import { serperSearch, serperSource, serperConfidenceNote, isSerperLive } from '../lib/serper.js';
 import { searchReddit, redditSource, redditConfidenceNote, isRedditLive } from '../lib/reddit.js';
 import { searchHN, hnSource } from '../lib/hn.js';
@@ -152,26 +153,30 @@ export function registerMapCompetitiveWeaknesses(server: McpServer): void {
         interpretation = `Found ${signals.length} weakness signals but none are structural (3+ independent sources). Themes: ${themes.slice(0, 3).map((t) => t.theme).join(', ')}. Surface-level weaknesses — competitor could fix these; don't build a moat on them.`;
       }
 
-      const result: ToolResult<MapCompetitiveWeaknessesData> = {
-        data: {
-          signals: signals.slice(0, 20),
-          weakness_themes: themes,
-          structural_weaknesses,
-          feature_gaps,
-          interpretation,
-        },
-        sources: [
-          serperSource(negativeQuery),
-          redditSource(competitor_name),
-          hnSource(baseQuery),
-        ],
-        confidence_note: [
-          serperConfidenceNote(),
-          redditConfidenceNote(),
-          'HN data is live.',
-        ].join(' '),
-        fallbacks_used: fallbacksUsed,
+      // Phase 09: no signals + no themes → honest gap (searches ran, no
+      // complaints surfaced). Model logs and continues; does NOT retry,
+      // does NOT invent infra error.
+      const envelopeData = {
+        signals: signals.slice(0, 20),
+        weakness_themes: themes,
+        structural_weaknesses,
+        feature_gaps,
+        interpretation,
       };
+      const envelopeSources = [
+        serperSource(negativeQuery),
+        redditSource(competitor_name),
+        hnSource(baseQuery),
+      ];
+      const envelopeNote = [
+        serperConfidenceNote(),
+        redditConfidenceNote(),
+        'HN data is live.',
+      ].join(' ');
+      const result: ToolResult<MapCompetitiveWeaknessesData> =
+        signals.length === 0 && themes.length === 0
+          ? honestGapResult(envelopeData, envelopeSources, envelopeNote, fallbacksUsed)
+          : okResult(envelopeData, envelopeSources, envelopeNote, fallbacksUsed);
 
       return {
         content: [{ type: 'text', text: JSON.stringify(result, null, 2) }],

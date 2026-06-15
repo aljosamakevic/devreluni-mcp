@@ -23,6 +23,7 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 import type { ToolResult, ToolSource } from '../types.js';
+import { okResult, honestGapResult } from '../lib/envelope.js';
 import {
   serperSearch,
   isSerperLive,
@@ -587,20 +588,24 @@ export function registerFindPublicRevenueSignals(server: McpServer): void {
         `Source mix: ${independentCount} independent, ${conflictedCount} conflicted${unknownCount > 0 ? `, ${unknownCount} unknown→vendor-funded for math (spec §4 rule 4)` : ''}.`,
       );
 
-      const result: ToolResult<FindPublicRevenueSignalsData> = {
-        data: {
-          indiehackers_entries: ih,
-          founder_mrr_tweets: tweets,
-          sec_filings: sec,
-          openstartup_entries: os,
-          revenue_summary: summary,
-          gate2_wtp_signal_strength: strength,
-          verdict,
-        },
-        sources,
-        confidence_note: confidenceParts.join(' '),
-        fallbacks_used: fallbacksUsed,
+      // Phase 09: zero signals across all four families → honest gap.
+      // SMB SaaS often has no public revenue data — header comment
+      // "Honest empties: SEC filings often return nothing for SMB SaaS"
+      // is exactly this case. Models must treat it as evidence gap.
+      const envelopeData = {
+        indiehackers_entries: ih,
+        founder_mrr_tweets: tweets,
+        sec_filings: sec,
+        openstartup_entries: os,
+        revenue_summary: summary,
+        gate2_wtp_signal_strength: strength,
+        verdict,
       };
+      const totalSignals = ih.length + tweets.length + sec.length + os.length;
+      const result: ToolResult<FindPublicRevenueSignalsData> =
+        totalSignals === 0
+          ? honestGapResult(envelopeData, sources, confidenceParts.join(' '), fallbacksUsed)
+          : okResult(envelopeData, sources, confidenceParts.join(' '), fallbacksUsed);
 
       cacheSet(cacheKey, result, TTL.SHORT);
       return {

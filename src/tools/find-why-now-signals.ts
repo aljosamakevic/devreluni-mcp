@@ -15,6 +15,7 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 import type { ToolResult, ToolSource } from '../types.js';
+import { okResult } from '../lib/envelope.js';
 import {
   serperSearch,
   isSerperLive,
@@ -453,8 +454,8 @@ export function registerFindWhyNowSignals(server: McpServer): void {
         confidenceParts.push('Serper not configured — results are stubbed; treat verdict as illustrative only.');
       }
 
-      const result: ToolResult<FindWhyNowSignalsData> = {
-        data: {
+      const result: ToolResult<FindWhyNowSignalsData> = okResult(
+        {
           recent_enablers: recentEnablers.slice(0, 12),
           yc_rfs_touchpoints: ycTouchpoints,
           macro_demand_shifts: launchCluster.slice(0, 8),
@@ -462,9 +463,9 @@ export function registerFindWhyNowSignals(server: McpServer): void {
           gate5_signal_strength: gate5SignalStrength,
         },
         sources,
-        confidence_note: confidenceParts.join(' '),
-        fallbacks_used: fallbacksUsed,
-      };
+        confidenceParts.join(' '),
+        fallbacksUsed,
+      );
 
       cacheSet(cacheKey, result, TTL.SHORT);
       return {

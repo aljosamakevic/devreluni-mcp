@@ -1,6 +1,7 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 import type { ToolResult, ToolSource } from '../types.js';
+import { okResult, honestGapResult } from '../lib/envelope.js';
 import { fetchPage, stripHtml, guessChangelogUrls } from '../lib/webfetch.js';
 import { serperSearch, isSerperLive } from '../lib/serper.js';
 
@@ -245,20 +246,27 @@ export function registerReadCompetitorChangelog(server: McpServer): void {
         }
       }
 
-      const result: ToolResult<ReadCompetitorChangelogData> = {
-        data: {
-          resolved_url: resolvedUrl,
-          fetched,
-          entries,
-          failure_signals_found: allSignals,
-          interpretation,
-        },
-        sources,
-        confidence_note: fetched
-          ? `Live changelog fetched from ${resolvedUrl}. Source is competitor-controlled (conflicted bias) but content is immutable at fetch time (S tier).`
-          : `Could not fetch live changelog. Results based on search snippets only — lower confidence.`,
-        fallbacks_used: fallbacksUsed,
+      // Phase 09: classify the response.
+      //   - fetched: false + no entries → honest gap (search snippets had nothing too)
+      //   - fetched: true + no entries → ok (changelog exists, just no relevant entries)
+      //   - any entries → ok
+      // Note: when the changelog page itself can't be fetched AND search
+      // returned nothing, that's still an honest gap, not an error — we
+      // never had a tool-level exception, just a clean empty result.
+      const envelopeData = {
+        resolved_url: resolvedUrl,
+        fetched,
+        entries,
+        failure_signals_found: allSignals,
+        interpretation,
       };
+      const envelopeNote = fetched
+        ? `Live changelog fetched from ${resolvedUrl}. Source is competitor-controlled (conflicted bias) but content is immutable at fetch time (S tier).`
+        : `Could not fetch live changelog. Results based on search snippets only — lower confidence.`;
+      const result: ToolResult<ReadCompetitorChangelogData> =
+        entries.length === 0 && !fetched
+          ? honestGapResult(envelopeData, sources, envelopeNote, fallbacksUsed)
+          : okResult(envelopeData, sources, envelopeNote, fallbacksUsed);
 
       return {
         content: [{ type: 'text', text: JSON.stringify(result, null, 2) }],

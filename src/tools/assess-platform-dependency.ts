@@ -30,6 +30,7 @@
 // deplatforming story.
 
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import { okResult, honestGapResult } from '../lib/envelope.js';
 import { z } from 'zod';
 import type { ToolResult, ToolSource } from '../types.js';
 import {
@@ -400,10 +401,11 @@ export function registerAssessPlatformDependency(server: McpServer): void {
           ? detectFromExplicit(explicit_platforms)
           : detectFromIdea(`${idea_description} ${category}`);
 
-      // Defensive short-circuit: no platforms → score 1 + helpful verdict.
+      // Defensive short-circuit: no platforms → honest gap. Tool ran cleanly,
+      // no platform dependencies were detected. The absence IS the finding.
       if (detected.length === 0) {
-        const result: ToolResult<AssessPlatformDependencyData> = {
-          data: {
+        const result: ToolResult<AssessPlatformDependencyData> = honestGapResult(
+          {
             detected_platforms: [],
             tos_history_signals: [],
             deplatforming_retros: [],
@@ -413,10 +415,10 @@ export function registerAssessPlatformDependency(server: McpServer): void {
             verdict:
               'No platform dependency detected from idea description or category. If you know your idea depends on a specific platform (e.g. Twitter API, App Store, Shopify), pass `explicit_platforms` and re-run for a real assessment.',
           },
-          sources: [],
-          confidence_note: `Substring-matched ${PLATFORM_KEYWORDS.length} known platforms against idea+category text — zero hits. No Serper calls fired (no platforms to investigate). Pass explicit_platforms to force a scan.`,
-          fallbacks_used: ['no_platforms_detected (heuristic miss — pass explicit_platforms to override)'],
-        };
+          [],
+          `Substring-matched ${PLATFORM_KEYWORDS.length} known platforms against idea+category text — zero hits. No Serper calls fired (no platforms to investigate). Pass explicit_platforms to force a scan.`,
+          ['no_platforms_detected (heuristic miss — pass explicit_platforms to override)'],
+        );
         cacheSet(cacheKey, result, TTL.SHORT);
         return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
       }
@@ -546,8 +548,8 @@ export function registerAssessPlatformDependency(server: McpServer): void {
         'No deplatforming stories are fabricated — empty retros[] means search returned no matches, not that the platform is safe.',
       );
 
-      const result: ToolResult<AssessPlatformDependencyData> = {
-        data: {
+      const result: ToolResult<AssessPlatformDependencyData> = okResult(
+        {
           detected_platforms: detected,
           tos_history_signals: tosSignals.slice(0, 20),
           deplatforming_retros: retros.slice(0, 20),
@@ -557,9 +559,9 @@ export function registerAssessPlatformDependency(server: McpServer): void {
           verdict,
         },
         sources,
-        confidence_note: noteParts.join(' '),
-        fallbacks_used: fallbacksUsed,
-      };
+        noteParts.join(' '),
+        fallbacksUsed,
+      );
 
       cacheSet(cacheKey, result, TTL.SHORT);
       return {

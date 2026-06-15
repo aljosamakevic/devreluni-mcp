@@ -1,6 +1,7 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 import type { ToolResult } from '../types.js';
+import { okResult, honestGapResult } from '../lib/envelope.js';
 import {
   searchProductHunt,
   searchPostsByTopic,
@@ -114,23 +115,24 @@ export function registerScanProductHuntLaunches(server: McpServer): void {
       const baseSource = phSource(category);
       const sources = [{ ...baseSource, contribution: sourceContribution }];
 
-      const result: ToolResult<ScanProductHuntLaunchesData> = {
-        data: { launches },
-        sources,
-        confidence_note: [
-          phConfidenceNote(),
-          fetchPathNote ?? '',
-          highConviction > 0
-            ? `${highConviction} high-conviction launch(es) found (engagement ratio >15%).`
-            : 'No high-conviction launches found.',
-          viralShallow > 0
-            ? `${viralShallow} viral-but-shallow launch(es) (high votes, low comment ratio — curiosity, not deep need).`
-            : '',
-        ]
-          .filter(Boolean)
-          .join(' '),
-        fallbacks_used: fallbacksUsed,
-      };
+      // Phase 09: zero launches → honest gap (PH search ran cleanly, no
+      // matches). Models log this as evidence gap, never as a tool failure.
+      const envelopeNote = [
+        phConfidenceNote(),
+        fetchPathNote ?? '',
+        highConviction > 0
+          ? `${highConviction} high-conviction launch(es) found (engagement ratio >15%).`
+          : 'No high-conviction launches found.',
+        viralShallow > 0
+          ? `${viralShallow} viral-but-shallow launch(es) (high votes, low comment ratio — curiosity, not deep need).`
+          : '',
+      ]
+        .filter(Boolean)
+        .join(' ');
+      const result: ToolResult<ScanProductHuntLaunchesData> =
+        launches.length === 0
+          ? honestGapResult({ launches }, sources, envelopeNote, fallbacksUsed)
+          : okResult({ launches }, sources, envelopeNote, fallbacksUsed);
 
       return {
         content: [{ type: 'text', text: JSON.stringify(result, null, 2) }],

@@ -1,6 +1,7 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 import type { ToolResult } from '../types.js';
+import { okResult, honestGapResult } from '../lib/envelope.js';
 import { serperSearch, serperSource, serperConfidenceNote, isSerperLive } from '../lib/serper.js';
 import { searchReddit, redditSource, redditConfidenceNote, isRedditLive } from '../lib/reddit.js';
 import { searchHN, hnSource } from '../lib/hn.js';
@@ -163,20 +164,25 @@ export function registerGetCategoryFailureModes(server: McpServer): void {
         verdict = `Low structural risk — ${failure_modes.length} failure patterns found but none confirmed by 3+ sources. Most are surface-level risks that can be mitigated with good execution.`;
       }
 
-      const result: ToolResult<GetCategoryFailureModesData> = {
-        data: { category, failure_modes, structural_count, verdict },
-        sources: [
-          serperSource(serperQuery),
-          redditSource(redditQuery),
-          hnSource(hnQuery),
-        ],
-        confidence_note: [
-          serperConfidenceNote(),
-          redditConfidenceNote(),
-          'HN data is live.',
-        ].join(' '),
-        fallbacks_used: fallbacksUsed,
-      };
+      // Phase 09: if the structural search returned no failure modes, this is
+      // a successful run with an "evidence gap" finding — not a failure.
+      // Models that read `status: 'honest_gap'` MUST log the gap and continue;
+      // they MUST NOT invent infrastructure causes (no DB, no schema errors).
+      const envelopeData = { category, failure_modes, structural_count, verdict };
+      const envelopeSources = [
+        serperSource(serperQuery),
+        redditSource(redditQuery),
+        hnSource(hnQuery),
+      ];
+      const envelopeNote = [
+        serperConfidenceNote(),
+        redditConfidenceNote(),
+        'HN data is live.',
+      ].join(' ');
+      const result: ToolResult<GetCategoryFailureModesData> =
+        failure_modes.length === 0
+          ? honestGapResult(envelopeData, envelopeSources, envelopeNote, fallbacksUsed)
+          : okResult(envelopeData, envelopeSources, envelopeNote, fallbacksUsed);
 
       return {
         content: [{ type: 'text', text: JSON.stringify(result, null, 2) }],

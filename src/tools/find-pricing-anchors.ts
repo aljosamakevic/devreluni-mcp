@@ -1,6 +1,7 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 import type { ToolResult, ToolSource } from '../types.js';
+import { okResult } from '../lib/envelope.js';
 import { fetchPage, stripHtml } from '../lib/webfetch.js';
 import { serperSearch, serperSource, serperConfidenceNote, isSerperLive } from '../lib/serper.js';
 import { waybackLookup, waybackSource, waybackConfidenceNote } from '../lib/wayback.js';
@@ -394,8 +395,8 @@ export function registerFindPricingAnchors(server: McpServer): void {
       confidenceParts.push(serperConfidenceNote());
       confidenceParts.push('G2/Capterra data via Serper snippets (B/independent).');
 
-      const result: ToolResult<FindPricingAnchorsData> = {
-        data: {
+      const result: ToolResult<FindPricingAnchorsData> = okResult(
+        {
           current_pricing,
           pricing_history,
           category_pricing_pattern,
@@ -404,9 +405,9 @@ export function registerFindPricingAnchors(server: McpServer): void {
           auto_flags,
         },
         sources,
-        confidence_note: confidenceParts.join(' '),
-        fallbacks_used: fallbacksUsed,
-      };
+        confidenceParts.join(' '),
+        fallbacksUsed,
+      );
 
       cacheSet(cacheKey, result, TTL.SHORT);
       return {

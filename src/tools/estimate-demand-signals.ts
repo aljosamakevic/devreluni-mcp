@@ -20,6 +20,7 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 import type { ToolResult, ToolSource } from '../types.js';
+import { okResult } from '../lib/envelope.js';
 import {
   searchRepos,
   isGitHubLive,
@@ -465,8 +466,8 @@ export function registerEstimateDemandSignals(server: McpServer): void {
         `Source mix: ${independentCount} independent, ${conflictedCount} conflicted${unknownCount > 0 ? `, ${unknownCount} unknown→vendor-funded for math (spec §4 rule 4)` : ''}.`,
       );
 
-      const result: ToolResult<EstimateDemandSignalsData> = {
-        data: {
+      const result: ToolResult<EstimateDemandSignalsData> = okResult(
+        {
           github_signals: githubData,
           reddit_signals: redditData.signals,
           launch_cluster_signals: launchData,
@@ -474,9 +475,9 @@ export function registerEstimateDemandSignals(server: McpServer): void {
           verdict,
         },
         sources,
-        confidence_note: confidenceParts.join(' '),
-        fallbacks_used: fallbacksUsed,
-      };
+        confidenceParts.join(' '),
+        fallbacksUsed,
+      );
 
       cacheSet(cacheKey, result, TTL.SHORT);
       return {
