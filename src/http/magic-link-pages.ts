@@ -253,13 +253,23 @@ function escapeHtml(s: string): string {
  */
 export function renderMagicLinkSuccessPage(bearerToken: string): string {
   const safeToken = escapeHtml(bearerToken);
+  // Claude Desktop does not yet support the native streamable-HTTP MCP
+  // shape ({ url, headers }) — entries in that shape are silently rejected
+  // as "not a valid MCP server configuration". The community-standard fix
+  // is the `mcp-remote` stdio shim: a tiny npx-launched bridge that speaks
+  // stdio to Claude Desktop and Streamable HTTP to our server. See
+  // docs/HOSTED_SETUP.md §2 for the full rationale.
   const configJson = `{
   "mcpServers": {
     "veto": {
-      "url": "https://getvetoed.com/mcp",
-      "headers": {
-        "Authorization": "Bearer ${bearerToken}"
-      }
+      "command": "npx",
+      "args": [
+        "-y",
+        "mcp-remote",
+        "https://getvetoed.com/mcp",
+        "--header",
+        "Authorization:Bearer ${bearerToken}"
+      ]
     }
   }
 }`;

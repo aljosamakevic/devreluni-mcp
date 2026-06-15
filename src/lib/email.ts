@@ -87,10 +87,14 @@ export function buildTextBody(token: string, adminNote: string | null): string {
   lines.push('{');
   lines.push('  "mcpServers": {');
   lines.push('    "veto": {');
-  lines.push('      "url": "https://getvetoed.com/mcp",');
-  lines.push('      "headers": {');
-  lines.push(`        "Authorization": "Bearer ${token}"`);
-  lines.push('      }');
+  lines.push('      "command": "npx",');
+  lines.push('      "args": [');
+  lines.push('        "-y",');
+  lines.push('        "mcp-remote",');
+  lines.push('        "https://getvetoed.com/mcp",');
+  lines.push('        "--header",');
+  lines.push(`        "Authorization:Bearer ${token}"`);
+  lines.push('      ]');
   lines.push('    }');
   lines.push('  }');
   lines.push('}');
@@ -153,13 +157,21 @@ export function buildHtmlBody(token: string, adminNote: string | null): string {
 `
       : '';
 
+  // Claude Desktop today does not natively accept the streamable-HTTP MCP
+  // shape ({ url, headers }) — it rejects such entries as "not a valid MCP
+  // server configuration". Use the `mcp-remote` stdio shim instead. See
+  // docs/HOSTED_SETUP.md §2.
   const configJson = `{
   "mcpServers": {
     "veto": {
-      "url": "https://getvetoed.com/mcp",
-      "headers": {
-        "Authorization": "Bearer ${esc(token)}"
-      }
+      "command": "npx",
+      "args": [
+        "-y",
+        "mcp-remote",
+        "https://getvetoed.com/mcp",
+        "--header",
+        "Authorization:Bearer ${esc(token)}"
+      ]
     }
   }
 }`;

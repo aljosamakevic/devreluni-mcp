@@ -1938,16 +1938,20 @@
                 <div class="copy-input">{
   "mcpServers": {
     "veto": {
-      "url": "https://getvetoed.com/mcp",
-      "headers": {
-        "Authorization": "Bearer pv_&lt;your_token&gt;"
-      }
+      "command": "npx",
+      "args": [
+        "-y",
+        "mcp-remote",
+        "https://getvetoed.com/mcp",
+        "--header",
+        "Authorization:Bearer pv_&lt;your_token&gt;"
+      ]
     }
   }
 }</div>
                 <button class="copy-btn" type="button" data-copy-target="prev">Copy JSON</button>
               </div>
-              <p class="token-note">Replace <code>pv_&lt;your_token&gt;</code> with the token from your sign-in email. <a href="#get-access">Get your token →</a></p>
+              <p class="token-note">Replace <code>pv_&lt;your_token&gt;</code> with the token from your sign-in email. <a href="#get-access">Get your token →</a>. Claude Desktop uses the <code>mcp-remote</code> npx shim because it doesn't yet ship native Streamable HTTP support. Cursor and Codex CLI accept the URL + headers directly.</p>
             </div>
           </div>
         </div>
