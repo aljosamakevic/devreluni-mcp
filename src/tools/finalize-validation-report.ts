@@ -37,6 +37,7 @@ import type {
   ValidationReport,
 } from '../validation/types.js';
 import { MINIMAL_VALID_SKELETON } from '../resources/report-schema.js';
+import { okResult, errorResult, TOOL_ERROR_CODES } from '../lib/envelope.js';
 
 // ──────────────────────────────────────────────────────────────────────────
 // Result envelope
@@ -286,8 +287,30 @@ export function registerFinalizeValidationReport(server: McpServer): void {
     },
     async ({ report_json }) => {
       const result = finalizeValidationReport(report_json);
+      // Phase 09 — wrap the pipeline output in the status envelope so this
+      // tool's wire shape matches the other 12. The inner `result` object
+      // (FinalizeResult: success branch with markdown / adjustments_made, OR
+      // failure branch with stage / issues / hints / expected_skeleton from
+      // Phase 08) goes inside `data`. Pipeline order (parse → schema →
+      // structural → verdict → render) and the Phase 08 enriched failure
+      // envelope are unchanged.
+      const envelope =
+        result.status === 'ok'
+          ? okResult(result, [], '')
+          : errorResult(
+              TOOL_ERROR_CODES.INVALID_INPUT,
+              `ValidationReport rejected at stage: ${result.stage}. See data.issues and data.hints for path-localized guidance; copy data.expected_skeleton's shape and retry once.`,
+            );
+      // The error envelope carries the full result inside data, so the LLM
+      // gets the same enriched payload it got pre-Phase-09. We're adding
+      // the discriminator, not replacing the contract.
+      if (envelope.status === 'error') {
+        // Embed the pipeline failure result so the LLM can still read
+        // issues / hints / expected_skeleton.
+        (envelope as { data: unknown }).data = result;
+      }
       return {
-        content: [{ type: 'text', text: JSON.stringify(result, null, 2) }],
+        content: [{ type: 'text', text: JSON.stringify(envelope, null, 2) }],
       };
     }
   );
