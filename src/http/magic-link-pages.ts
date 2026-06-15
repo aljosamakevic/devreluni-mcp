@@ -31,25 +31,25 @@ const ERROR_COPY: Record<
   { title: string; headline: string; body: string; badge: string }
 > = {
   missing_token: {
-    title: "Sign-in link missing token — Veto",
+    title: "Sign-in link missing token | Veto",
     headline: "That link is missing its token.",
     body: "We couldn't find a token in the URL. Request a new sign-in link and try again.",
     badge: 'MISSING TOKEN',
   },
   not_found: {
-    title: "Sign-in link not found — Veto",
+    title: "Sign-in link not found | Veto",
     headline: "We couldn't find that link.",
     body: "This link doesn't match any sign-in request. It may have been mistyped or already expired. Request a new one and try again.",
     badge: 'NOT FOUND',
   },
   expired: {
-    title: "Sign-in link expired — Veto",
+    title: "Sign-in link expired | Veto",
     headline: "This link has expired.",
     body: "Sign-in links work for 15 minutes. Request a new one and try again.",
     badge: 'EXPIRED',
   },
   already_used: {
-    title: "Sign-in link already used — Veto",
+    title: "Sign-in link already used | Veto",
     headline: "This link has already been used.",
     body: "Each sign-in link only works once. If you already have your token, you're set. Otherwise, request a new sign-in link.",
     badge: 'ALREADY USED',
@@ -270,7 +270,7 @@ export function renderMagicLinkSuccessPage(bearerToken: string): string {
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>You're in — Veto</title>
+    <title>You're in | Veto</title>
     <meta name="robots" content="noindex,nofollow">${FONT_LINKS}
     <style>${SHARED_STYLE}</style>
   </head>
@@ -293,7 +293,7 @@ export function renderMagicLinkSuccessPage(bearerToken: string): string {
       <p class="path">macOS: <code>~/Library/Application Support/Claude/claude_desktop_config.json</code></p>
       <p class="path">Windows: <code>%APPDATA%\\Claude\\claude_desktop_config.json</code></p>
       <pre class="config">${safeConfig}</pre>
-      <p>Restart Claude Desktop, then run <code>validate_idea</code>. Cursor, Codex CLI, and other clients use the same MCP URL with their own config shape — see <a href="https://getvetoed.com/#install" style="color: var(--accent); border-bottom: 0.5px solid var(--accent);">the install section</a> on getvetoed.com.</p>
+      <p>Restart Claude Desktop, then run <code>validate_idea</code>. Cursor, Codex CLI, and other clients use the same MCP URL with their own config shape. See <a href="https://getvetoed.com/#install" style="color: var(--accent); border-bottom: 0.5px solid var(--accent);">the install section</a> on getvetoed.com.</p>
 
       <footer>
         <a href="https://getvetoed.com/">Back to getvetoed.com</a>
@@ -314,7 +314,7 @@ export function renderMagicLinkSuccessPage(bearerToken: string): string {
           };
           if (navigator.clipboard && navigator.clipboard.writeText) {
             navigator.clipboard.writeText(token).then(done, function () {
-              msg.textContent = 'Copy failed — select and copy manually.';
+              msg.textContent = 'Copy failed. Select and copy manually.';
             });
           } else {
             var range = document.createRange();
@@ -322,7 +322,7 @@ export function renderMagicLinkSuccessPage(bearerToken: string): string {
             var sel = window.getSelection();
             if (sel) { sel.removeAllRanges(); sel.addRange(range); }
             try { document.execCommand('copy'); done(); }
-            catch (e) { msg.textContent = 'Copy failed — select and copy manually.'; }
+            catch (e) { msg.textContent = 'Copy failed. Select and copy manually.'; }
           }
         });
       })();

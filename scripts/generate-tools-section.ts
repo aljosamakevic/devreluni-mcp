@@ -53,7 +53,7 @@ const REGISTER_RX =
 // without a corresponding landing copy update).
 const TOOL_DESCRIPTIONS: Record<string, string> = {
   find_closest_competitor:
-    "Surfaces the closest existing thing in your category — across Web, Product Hunt, and Hacker News.",
+    "Surfaces the closest existing thing in your category, across Web, Product Hunt, and Hacker News.",
   read_competitor_changelog:
     "Reads a competitor's changelog for failure signals: setup creep, churn language, platform gaps.",
   map_competitive_weaknesses:
@@ -69,11 +69,11 @@ const TOOL_DESCRIPTIONS: Record<string, string> = {
   check_big_tech_encroachment:
     "Scans Apple WWDC, Google I/O, MS Build, Meta Connect, AWS re:Invent for category overlap. The 'will Apple ship this' check.",
   find_why_now_signals:
-    "Surfaces recent enablers — new APIs, platform shifts, YC RFS touchpoints — that make this idea possible now, not 2 years ago.",
+    "Surfaces recent enablers (new APIs, platform shifts, YC RFS touchpoints) that make this idea possible now, not 2 years ago.",
   estimate_demand_signals:
     "Composes GitHub activity, subreddit subscribers, and search-cluster mentions into one demand signal: strong / moderate / weak / none.",
   find_public_revenue_signals:
-    "Surfaces public revenue evidence — IndieHackers entries, MRR tweets, SEC filings — for your category and its competitors.",
+    "Surfaces public revenue evidence (IndieHackers entries, MRR tweets, SEC filings) for your category and its competitors.",
   assess_platform_dependency:
     "Detects platforms your product sits on top of (App Store, OpenAI, Shopify, etc.) and scores deplatforming risk.",
   finalize_validation_report:
@@ -96,7 +96,7 @@ const PROMPTS: PromptMeta[] = [
   {
     name: 'generate_test_cards',
     description:
-      'Input your business idea, get 3-7 hypotheses that must be true for the business to work — each with a cheap test design, an exact metric, and a pass/fail threshold. Strategyzer Test Card format. Pair with validate_idea to focus tests on the weakest gates.',
+      'Input your business idea. Get 3-7 hypotheses that must be true for the business to work, each with a cheap test design, an exact metric, and a pass/fail threshold. Strategyzer Test Card format. Pair with validate_idea to focus tests on the weakest gates.',
   },
   {
     name: 'run_single_gate',
@@ -111,7 +111,7 @@ const PROMPTS: PromptMeta[] = [
   {
     name: 'quick_kill_check',
     description:
-      'Five-minute disqualification scan. Cheap, surface-level — catches the obvious kills before you commit to a full validation.',
+      'Five-minute disqualification scan. Cheap, surface-level. Catches the obvious kills before you commit to a full validation.',
   },
 ];
 
@@ -195,11 +195,11 @@ async function parseGateMap(): Promise<Record<string, number[]>> {
 }
 
 const GATE_NAMES: Record<number, string> = {
-  1: 'Gate 1 — Direct Competitor Scan',
-  2: 'Gate 2 — Market Structure',
-  3: 'Gate 3 — Platform Risk',
-  4: 'Gate 4 — Willingness to Pay',
-  5: 'Gate 5 — Why Now',
+  1: 'Gate 1 · Direct Competitor Scan',
+  2: 'Gate 2 · Market Structure',
+  3: 'Gate 3 · Platform Risk',
+  4: 'Gate 4 · Willingness to Pay',
+  5: 'Gate 5 · Why Now',
 };
 
 const UNGATED_GROUP = 'Cross-gate (synthesis)';
@@ -240,7 +240,7 @@ function renderHtmlFragment(tools: ToolMeta[], gateMap: Record<string, number[]>
   sections.push(`<p class="eyebrow">${promptCount} prompts &middot; ${toolCount} tools</p>`);
   sections.push(`<h2>Inside the framework.</h2>`);
   sections.push(
-    `<p class="lede">Prompts are what you call from Claude Desktop. Tools are what runs underneath — the LLM picks them as it works through each gate.</p>`
+    `<p class="lede">Prompts are what you call from Claude Desktop. Tools are what runs underneath. The LLM picks them as it works through each gate.</p>`
   );
 
   // What you call — prompts block.

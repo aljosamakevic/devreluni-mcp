@@ -56,7 +56,7 @@ export type SendApprovalEmailResult =
   | { ok: true; id: string }
   | { ok: false; error: string };
 
-const SUBJECT = 'Welcome to Veto — your access token is inside';
+const SUBJECT = 'Welcome to Veto. Your access token is inside.';
 
 /**
  * Build the plain-text body. Token appears verbatim so screen readers and
@@ -99,10 +99,10 @@ export function buildTextBody(token: string, adminNote: string | null): string {
   lines.push('');
   lines.push('Docs and full setup: https://getvetoed.com/');
   lines.push('');
-  lines.push("Questions or anything broken? Write to aljosa.sandbox@gmail.com — happy to help.");
-  lines.push("(This inbox doesn't accept replies — please use the address above.)");
+  lines.push("Questions or anything broken? Write to aljosa.sandbox@gmail.com. Happy to help.");
+  lines.push("(This inbox doesn't accept replies. Please use the address above.)");
   lines.push('');
-  lines.push('— Aljosa');
+  lines.push('Aljosa');
 
   return lines.join('\n');
 }
@@ -195,7 +195,7 @@ export function buildHtmlBody(token: string, adminNote: string | null): string {
               <p style="font-family:'DM Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12px;color:rgba(245,244,240,0.55);margin:0 0 6px;">macOS: <code style="color:#F5F4F0;">~/Library/Application Support/Claude/claude_desktop_config.json</code></p>
               <p style="font-family:'DM Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12px;color:rgba(245,244,240,0.55);margin:0 0 12px;">Windows: <code style="color:#F5F4F0;">%APPDATA%\\Claude\\claude_desktop_config.json</code></p>
               <pre style="background:#1A1A18;border:1px solid rgba(245,244,240,0.10);padding:14px 16px;border-radius:2px;font-family:'DM Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12px;color:#F5F4F0;line-height:1.5;overflow-x:auto;margin:0;white-space:pre;">${esc(configJson)}</pre>
-              <p style="font-family:Inter,-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;font-size:14px;color:rgba(245,244,240,0.55);margin:16px 0 0;">Restart Claude Desktop, then run <code style="font-family:'DM Mono',ui-monospace,monospace;color:#F5F4F0;">validate_idea</code> against your next idea. Cursor, Codex CLI, and other clients use the same MCP URL with their own config shape — see the install section on getvetoed.com.</p>
+              <p style="font-family:Inter,-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;font-size:14px;color:rgba(245,244,240,0.55);margin:16px 0 0;">Restart Claude Desktop, then run <code style="font-family:'DM Mono',ui-monospace,monospace;color:#F5F4F0;">validate_idea</code> against your next idea. Cursor, Codex CLI, and other clients use the same MCP URL with their own config shape. See the install section on getvetoed.com.</p>
             </td>
           </tr>
           <tr>
@@ -205,9 +205,9 @@ export function buildHtmlBody(token: string, adminNote: string | null): string {
           </tr>
           <tr>
             <td style="padding:24px 0 16px;border-top:1px solid rgba(245,244,240,0.10);">
-              <p style="font-family:Inter,-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;font-size:13px;color:rgba(245,244,240,0.55);margin:0 0 8px;">Questions or anything broken? Write to <a href="mailto:aljosa.sandbox@gmail.com" style="color:#F5F4F0;text-decoration:underline;">aljosa.sandbox@gmail.com</a> — happy to help.</p>
-              <p style="font-family:Inter,-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;font-size:12px;color:rgba(245,244,240,0.30);margin:0 0 16px;">(This inbox doesn't accept replies — please use the address above.)</p>
-              <p style="font-family:Inter,-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;font-size:14px;color:rgba(245,244,240,0.55);margin:0;">— Aljosa</p>
+              <p style="font-family:Inter,-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;font-size:13px;color:rgba(245,244,240,0.55);margin:0 0 8px;">Questions or anything broken? Write to <a href="mailto:aljosa.sandbox@gmail.com" style="color:#F5F4F0;text-decoration:underline;">aljosa.sandbox@gmail.com</a> . Happy to help.</p>
+              <p style="font-family:Inter,-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;font-size:12px;color:rgba(245,244,240,0.30);margin:0 0 16px;">(This inbox doesn't accept replies. Please use the address above.)</p>
+              <p style="font-family:Inter,-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;font-size:14px;color:rgba(245,244,240,0.55);margin:0;">Aljosa</p>
             </td>
           </tr>
         </table>
@@ -339,7 +339,7 @@ export function buildMagicLinkTextBody(url: string): string {
     '\n' +
     'Questions? Write to aljosa.sandbox@gmail.com (this inbox does not accept replies).\n' +
     '\n' +
-    '— Veto'
+    'Veto'
   );
 }
 
@@ -400,8 +400,8 @@ export function buildMagicLinkHtmlBody(url: string): string {
           <tr>
             <td style="padding:24px 0 16px;border-top:1px solid rgba(245,244,240,0.10);">
               <p style="font-family:Inter,-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;font-size:13px;color:rgba(245,244,240,0.55);margin:0 0 8px;">Questions? Write to <a href="mailto:aljosa.sandbox@gmail.com" style="color:#F5F4F0;text-decoration:underline;">aljosa.sandbox@gmail.com</a>.</p>
-              <p style="font-family:Inter,-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;font-size:12px;color:rgba(245,244,240,0.30);margin:0 0 16px;">(This inbox doesn't accept replies — please use the address above.)</p>
-              <p style="font-family:Inter,-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;font-size:14px;color:rgba(245,244,240,0.55);margin:0;">— Veto</p>
+              <p style="font-family:Inter,-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;font-size:12px;color:rgba(245,244,240,0.30);margin:0 0 16px;">(This inbox doesn't accept replies. Please use the address above.)</p>
+              <p style="font-family:Inter,-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;font-size:14px;color:rgba(245,244,240,0.55);margin:0;">Veto</p>
             </td>
           </tr>
         </table>
