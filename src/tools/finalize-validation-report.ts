@@ -276,7 +276,7 @@ export function registerFinalizeValidationReport(server: McpServer): void {
     'finalize_validation_report',
     {
       description:
-        'Finalize a ValidationReport. Pass the JSON you constructed in `validate_idea` (load `resource://report-schema` first for the live JSON Schema, minimal-valid skeleton, and worked example). Returns the validated markdown artifact, or a `validation_failed` envelope with `issues[]`, `hints[]` (one per issue, path-localized), and `expected_skeleton` (the minimal-valid shape to copy from). On failure, fix using the hints and retry once. **This is the ONLY way to emit the final validation artifact — do not output markdown directly, do not skip this step.**',
+        "Finalize a ValidationReport. Pass the JSON you constructed in `validate_idea` (load `resource://report-schema` first for the live JSON Schema, minimal-valid skeleton, and worked example). Returns the validated markdown artifact, or a `validation_failed` envelope with `issues[]`, `hints[]` (one per issue, path-localized), and `expected_skeleton` (the minimal-valid shape to copy from). On failure, fix using the hints and retry once. **This is the ONLY way to emit the final validation artifact — do not output markdown directly, do not skip this step.** Envelope: { status: 'ok'|'error', data, sources, confidence_note, fallbacks_used, error? }. On status='error', code='invalid_input', and data carries the full FinalizeResult with issues / hints / expected_skeleton.",
       inputSchema: {
         report_json: z
           .string()

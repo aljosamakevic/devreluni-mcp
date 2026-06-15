@@ -133,7 +133,7 @@ export function registerFindPricingAnchors(server: McpServer): void {
     'find_pricing_anchors',
     {
       description:
-        'Fetch competitor pricing pages (live + Wayback), research pricing history, and scan G2/Capterra for churn signals. Returns current pricing models, historical trends, and auto-generated WTP flags.',
+        "Fetch competitor pricing pages (live + Wayback), research pricing history, and scan G2/Capterra for churn signals. Returns current pricing models, historical trends, and auto-generated WTP flags. Envelope: { status: 'ok'|'honest_gap'|'error', data, sources, confidence_note, fallbacks_used, error? }. status='honest_gap' = ran cleanly, no substantive data found (evidence gap, not failure).",
       inputSchema: {
         category: z.string().describe('Product category (e.g., "project management", "analytics dashboard")'),
         competitors: z

@@ -27,7 +27,7 @@ export function registerFindClosestCompetitor(server: McpServer): void {
     'find_closest_competitor',
     {
       description:
-        'Find the closest competitors to a product idea using web search, Product Hunt, and Hacker News. Returns a list of competitors with tier/bias-annotated sources.',
+        "Find the closest competitors to a product idea using web search, Product Hunt, and Hacker News. Returns a list of competitors with tier/bias-annotated sources. Envelope: { status: 'ok'|'honest_gap'|'error', data, sources, confidence_note, fallbacks_used, error? }. status='honest_gap' = ran cleanly, no substantive data found (evidence gap, not failure).",
       inputSchema: {
         idea_description: z.string().describe('Description of the product idea to find competitors for'),
         search_angle: z

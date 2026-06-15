@@ -123,7 +123,7 @@ export function registerCheckBigTechEncroachment(server: McpServer): void {
     'check_big_tech_encroachment',
     {
       description:
-        'Assess platform / big-tech encroachment risk (Gate 3). Scans Apple WWDC, Google I/O, Microsoft Build, Meta Connect, and AWS re:Invent sessions in the last 24mo for category overlap. Also looks for new platform APIs and acquisitions in the space. Returns adjacency score 1-5 where 5 = hyperscaler already shipping.',
+        "Assess platform / big-tech encroachment risk (Gate 3). Scans Apple WWDC, Google I/O, Microsoft Build, Meta Connect, and AWS re:Invent sessions in the last 24mo for category overlap. Also looks for new platform APIs and acquisitions in the space. Returns adjacency score 1-5 where 5 = hyperscaler already shipping. Envelope: { status: 'ok'|'honest_gap'|'error', data, sources, confidence_note, fallbacks_used, error? }. status='honest_gap' = ran cleanly, no substantive data found (evidence gap, not failure).",
       inputSchema: {
         idea_description: z
           .string()

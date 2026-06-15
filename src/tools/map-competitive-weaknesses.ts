@@ -73,7 +73,7 @@ export function registerMapCompetitiveWeaknesses(server: McpServer): void {
     'map_competitive_weaknesses',
     {
       description:
-        'Surface user-reported weaknesses of a competitor by searching Reddit, HN, and the web. Identifies structural vs. surface-level weaknesses and common complaint themes.',
+        "Surface user-reported weaknesses of a competitor by searching Reddit, HN, and the web. Identifies structural vs. surface-level weaknesses and common complaint themes. Envelope: { status: 'ok'|'honest_gap'|'error', data, sources, confidence_note, fallbacks_used, error? }. status='honest_gap' = ran cleanly, no substantive data found (evidence gap, not failure).",
       inputSchema: {
         competitor_name: z.string().describe('Name of the competitor to analyze'),
         category: z

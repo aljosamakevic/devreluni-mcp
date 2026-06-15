@@ -353,7 +353,7 @@ export function registerAssessPlatformDependency(server: McpServer): void {
     'assess_platform_dependency',
     {
       description:
-        'Gate 3 P1: assess platform dependency risk. Detects which platforms (App Store, Twitter API, Shopify, Chrome Web Store, OpenAI, etc.) the product sits on top of — either from explicit_platforms input or by inference from idea_description. For each, surfaces recent ToS-change news + founder deplatforming retros. Returns gate3_platform_risk_score 1..5 (5 = existential). Framing-aware: dev_tools framing lowers the risk threshold per spec §9. Never fabricates deplatforming stories.',
+        "Gate 3 P1: assess platform dependency risk. Detects which platforms (App Store, Twitter API, Shopify, Chrome Web Store, OpenAI, etc.) the product sits on top of — either from explicit_platforms input or by inference from idea_description. For each, surfaces recent ToS-change news + founder deplatforming retros. Returns gate3_platform_risk_score 1..5 (5 = existential). Framing-aware: dev_tools framing lowers the risk threshold per spec §9. Never fabricates deplatforming stories. Envelope: { status: 'ok'|'honest_gap'|'error', data, sources, confidence_note, fallbacks_used, error? }. status='honest_gap' = ran cleanly, no substantive data found (evidence gap, not failure).",
       inputSchema: {
         idea_description: z
           .string()

@@ -222,7 +222,7 @@ export function registerFindWhyNowSignals(server: McpServer): void {
     'find_why_now_signals',
     {
       description:
-        'Assess Gate 5 (Why Now) — surfaces recent platform/API enablers (last 24mo), YC RFS touchpoints, and launch-cluster signals for the category. Returns gate5_signal_strength (strong/moderate/weak/none) plus a verdict tying signals to Gate 5.',
+        "Assess Gate 5 (Why Now) — surfaces recent platform/API enablers (last 24mo), YC RFS touchpoints, and launch-cluster signals for the category. Returns gate5_signal_strength (strong/moderate/weak/none) plus a verdict tying signals to Gate 5. Envelope: { status: 'ok'|'honest_gap'|'error', data, sources, confidence_note, fallbacks_used, error? }. status='honest_gap' = ran cleanly, no substantive data found (evidence gap, not failure).",
       inputSchema: {
         idea_description: z
           .string()

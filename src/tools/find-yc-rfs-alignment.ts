@@ -141,7 +141,7 @@ export function registerFindYCRFSAlignment(server: McpServer): void {
     'find_yc_rfs_alignment',
     {
       description:
-        `Assess alignment between a product idea and YC's Request for Startups (${RFS_VINTAGE}). Uses static dataset — update quarterly. Returns scored alignment across all 6 YC S26 categories.`,
+        `Assess alignment between a product idea and YC's Request for Startups (${RFS_VINTAGE}). Uses static dataset — update quarterly. Returns scored alignment across all 6 YC S26 categories. Envelope: { status: 'ok'|'honest_gap'|'error', data, sources, confidence_note, fallbacks_used, error? }. status='honest_gap' = ran cleanly, no substantive data found (evidence gap, not failure).`,
       inputSchema: {
         idea_description: z
           .string()

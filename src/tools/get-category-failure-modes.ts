@@ -70,7 +70,7 @@ export function registerGetCategoryFailureModes(server: McpServer): void {
     'get_category_failure_modes',
     {
       description:
-        'Research historical failure modes in a product category by searching for post-mortems, shutdowns, and user complaints. Returns structural failure patterns relevant to the category.',
+        "Research historical failure modes in a product category by searching for post-mortems, shutdowns, and user complaints. Returns structural failure patterns relevant to the category. Envelope: { status: 'ok'|'honest_gap'|'error', data, sources, confidence_note, fallbacks_used, error? }. status='honest_gap' = ran cleanly, no substantive data found (evidence gap, not failure).",
       inputSchema: {
         category: z.string().describe('Product category to research (e.g., "project management", "B2B analytics")'),
         known_products: z

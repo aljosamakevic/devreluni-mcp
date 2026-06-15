@@ -397,7 +397,7 @@ export function registerFindPublicRevenueSignals(server: McpServer): void {
     'find_public_revenue_signals',
     {
       description:
-        'Surface public revenue evidence (IndieHackers entries, founder MRR tweets, SEC filings, OpenStartup pages) for a product category and its competitors. Strengthens Gate 2 (market demand via paid comparables) and Gate 4 (WTP via observed price points). Returns gate2_wtp_signal_strength + verdict. Never fabricates: empty arrays mean nothing surfaced.',
+        "Surface public revenue evidence (IndieHackers entries, founder MRR tweets, SEC filings, OpenStartup pages) for a product category and its competitors. Strengthens Gate 2 (market demand via paid comparables) and Gate 4 (WTP via observed price points). Returns gate2_wtp_signal_strength + verdict. Never fabricates: empty arrays mean nothing surfaced. Envelope: { status: 'ok'|'honest_gap'|'error', data, sources, confidence_note, fallbacks_used, error? }. status='honest_gap' = ran cleanly, no substantive data found (evidence gap, not failure).",
       inputSchema: {
         category: z
           .string()

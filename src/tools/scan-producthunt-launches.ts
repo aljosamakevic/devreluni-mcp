@@ -48,7 +48,7 @@ export function registerScanProductHuntLaunches(server: McpServer): void {
     'scan_producthunt_launches',
     {
       description:
-        'Search Product Hunt for launches in a category. Computes engagement ratio (comments/votes) to distinguish high-conviction launches from viral-but-shallow ones.',
+        "Search Product Hunt for launches in a category. Computes engagement ratio (comments/votes) to distinguish high-conviction launches from viral-but-shallow ones. Envelope: { status: 'ok'|'honest_gap'|'error', data, sources, confidence_note, fallbacks_used, error? }. status='honest_gap' = ran cleanly, no substantive data found (evidence gap, not failure).",
       inputSchema: {
         category: z.string().describe('Category or topic to search for on Product Hunt'),
         date_range: z

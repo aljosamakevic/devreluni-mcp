@@ -139,7 +139,7 @@ export function registerReadCompetitorChangelog(server: McpServer): void {
     'read_competitor_changelog',
     {
       description:
-        'Fetch and parse a competitor changelog, detecting failure signals like setup creep, churn language, and platform gaps. Falls back to search if no changelog URL is known.',
+        "Fetch and parse a competitor changelog, detecting failure signals like setup creep, churn language, and platform gaps. Falls back to search if no changelog URL is known. Envelope: { status: 'ok'|'honest_gap'|'error', data, sources, confidence_note, fallbacks_used, error? }. status='honest_gap' = ran cleanly, no substantive data found (evidence gap, not failure).",
       inputSchema: {
         product: z
           .string()

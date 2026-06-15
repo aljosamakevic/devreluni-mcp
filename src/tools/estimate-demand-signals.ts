@@ -280,7 +280,7 @@ export function registerEstimateDemandSignals(server: McpServer): void {
     'estimate_demand_signals',
     {
       description:
-        'Assess Gate 2 (Market Demand) — composes GitHub repo activity, Reddit subreddit subscriber counts, and Serper-aggregated launch-cluster mentions into a single gate2_signal_strength (strong/moderate/weak/none) plus a verdict. Google Trends + SimilarWeb are explicitly deferred in v1.',
+        "Assess Gate 2 (Market Demand) — composes GitHub repo activity, Reddit subreddit subscriber counts, and Serper-aggregated launch-cluster mentions into a single gate2_signal_strength (strong/moderate/weak/none) plus a verdict. Google Trends + SimilarWeb are explicitly deferred in v1. Envelope: { status: 'ok'|'honest_gap'|'error', data, sources, confidence_note, fallbacks_used, error? }. status='honest_gap' = ran cleanly, no substantive data found (evidence gap, not failure).",
       inputSchema: {
         idea_description: z
           .string()
