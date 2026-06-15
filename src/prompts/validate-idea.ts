@@ -58,6 +58,11 @@ Step 1 — Run Gates 1-5 (each producing DOK-layered blocks)
 
 TOOL CALLING CONVENTION (read before your first tool call): every gate tool takes \`idea_description: string\` as the primary argument — NOT \`idea\`, NOT \`description\`, NOT \`query\`. Most tools also accept optional tool-specific args (e.g. \`category\`, \`category_keywords\`, \`explicit_platforms\`); inspect each tool's \`inputSchema\` from \`tools/list\` before invoking. If a tool call returns \`isError: true\` with a path like \`["idea_description"] Required\`, you used the wrong argument name — fix and retry, do not interpret the error as a server timeout.
 
+READ THE STATUS FIELD on every tool response. Every tool returns \`{ status, data, sources, confidence_note, fallbacks_used, error? }\`. Three values:
+  - \`status: 'ok'\` — substantive data in \`data\`. Use it.
+  - \`status: 'honest_gap'\` — the tool ran successfully and found no substantive data. **The absence IS the finding.** Log it in \`methodology_notes.tool_calls\` with \`succeeded: true\` and a brief \`failure_note\` describing the gap (e.g. "no historical failure modes surfaced for category X"). Then continue with the gate. Do NOT call the tool again with different args; do NOT call a different tool to "verify the gap"; do NOT skip the gate.
+  - \`status: 'error'\` — the tool actually failed. \`error.code\` is one of \`external_api_failure\` / \`rate_limited\` / \`invalid_input\` / \`internal_error\`. Log \`succeeded: false\` with the code, then continue. **NEVER invent infrastructure root causes** — no "DB error", no "server timing out", no "schema is undocumented", no "directory doesn't exist". \`error.code\` is the source of truth. If you find yourself writing prose to explain an error rather than reading \`error.code\`, stop and read the field.
+
 For each gate:
   a. Identify relevant tools from Tool-to-Gate Map resource
   b. Call tools (pass \`idea_description\` + any tool-specific args from the schema). Enter facts as DOK 1 with tier+bias citations
