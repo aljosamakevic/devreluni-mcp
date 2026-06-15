@@ -41,14 +41,84 @@ const BUILD_DIR = path.join(REPO_ROOT, 'build');
 const REGISTER_RX =
   /server\.registerTool\(\s*['"]([a-z_0-9]+)['"]\s*,\s*\{\s*description\s*:\s*([\s\S]*?),\s*inputSchema/;
 
-// Hand-curated overrides for the rare descriptions that embed runtime
-// constants via template literals. Keeping these in code (rather than
-// trying to evaluate the literal at extract time) keeps the extractor
-// dependency-free and predictable.
-const DESCRIPTION_OVERRIDES: Record<string, string> = {
+// Landing-page descriptions — hand-curated per tool/prompt to read in
+// plain English for first-time visitors. The MCP `description` fields
+// in src/tools/*.ts and src/prompts/*.ts target an LLM-orchestrator
+// reader; those strings are accurate but techy. The landing displays
+// these overrides instead — accurate, simpler, voice-rule compliant
+// (BRAND.md: no "powerful," "insights," "AI-powered," etc.).
+//
+// Tools where no override is set fall back to the auto-extracted MCP
+// description (preserves the no-drift property for any new tool added
+// without a corresponding landing copy update).
+const TOOL_DESCRIPTIONS: Record<string, string> = {
+  find_closest_competitor:
+    "Surfaces the closest existing thing in your category — across Web, Product Hunt, and Hacker News.",
+  read_competitor_changelog:
+    "Reads a competitor's changelog for failure signals: setup creep, churn language, platform gaps.",
+  map_competitive_weaknesses:
+    "Mines Reddit, HN, and the wider web for user complaints. Separates structural weaknesses from surface gripes.",
+  scan_producthunt_launches:
+    "Pulls Product Hunt launches in your category. Weighs engagement (comments / votes) to spot high-conviction vs. viral-but-shallow.",
+  get_category_failure_modes:
+    "Searches post-mortems and shutdown stories. Returns the structural failure patterns specific to your category.",
   find_yc_rfs_alignment:
-    "Assess alignment between a product idea and YC's current Request for Startups vintage. Uses a static dataset — refreshed quarterly. Returns scored alignment across all 6 YC S26 categories.",
+    "Scores your idea against YC's current Request for Startups. A signal that smart investors think the category matters.",
+  find_pricing_anchors:
+    "Reads competitor pricing pages (live + Wayback) and scans G2/Capterra. Auto-flags categories where pricing dropped 25%+ in 24 months.",
+  check_big_tech_encroachment:
+    "Scans Apple WWDC, Google I/O, MS Build, Meta Connect, AWS re:Invent for category overlap. The 'will Apple ship this' check.",
+  find_why_now_signals:
+    "Surfaces recent enablers — new APIs, platform shifts, YC RFS touchpoints — that make this idea possible now, not 2 years ago.",
+  estimate_demand_signals:
+    "Composes GitHub activity, subreddit subscribers, and search-cluster mentions into one demand signal: strong / moderate / weak / none.",
+  find_public_revenue_signals:
+    "Surfaces public revenue evidence — IndieHackers entries, MRR tweets, SEC filings — for your category and its competitors.",
+  assess_platform_dependency:
+    "Detects platforms your product sits on top of (App Store, OpenAI, Shopify, etc.) and scores deplatforming risk.",
+  finalize_validation_report:
+    "The rollup. Takes the per-gate evidence and produces the final markdown artifact with verdict, killshots, and blank Spiky POV.",
 };
+
+// Prompts are the user-invokable verbs of Veto. Tools are called by the
+// LLM while executing a prompt; prompts are what a user types into
+// Claude Desktop. The 6 prompts and their landing-page descriptions:
+interface PromptMeta {
+  name: string;
+  description: string;
+}
+const PROMPTS: PromptMeta[] = [
+  {
+    name: 'validate_idea',
+    description:
+      'Runs the full 5-gate validation on a product idea. Calls every tool the gates need; produces a NO-GO / GO / CONDITIONAL GO verdict with sourced evidence.',
+  },
+  {
+    name: 'validate_assumption',
+    description:
+      'Verifies ONE specific claim instead of running the full sweep. Same anti-bias rigor (tier-graded sources, forced contradicting evidence) at claim granularity.',
+  },
+  {
+    name: 'run_single_gate',
+    description:
+      'Runs a single gate in isolation. Useful when you want to stress-test just the platform-risk dimension, or just the pricing, without the full report.',
+  },
+  {
+    name: 'steelman_against',
+    description:
+      'Argues against your own idea. Forces the strongest possible case that this product should not exist.',
+  },
+  {
+    name: 'generate_test_cards',
+    description:
+      'Turns your assumptions into testable cards. Each one is a falsifiable hypothesis with a concrete experiment design.',
+  },
+  {
+    name: 'quick_kill_check',
+    description:
+      'Five-minute disqualification scan. Cheap, surface-level — catches the obvious kills before you commit to a full validation.',
+  },
+];
 
 // Strip a leading/trailing single- or double-quote pair and collapse
 // JS string-concatenation (rare but possible) into one line.
@@ -89,7 +159,10 @@ async function extractTools(): Promise<ToolMeta[]> {
       continue;
     }
     const name = m[1]!;
-    let desc = DESCRIPTION_OVERRIDES[name] ?? normalizeDescription(m[2]!);
+    // Prefer the landing-page override (user-friendly copy) over the
+    // techy MCP description. If no override exists, fall back to the
+    // extracted MCP description so a newly-added tool isn't missing.
+    let desc = TOOL_DESCRIPTIONS[name] ?? normalizeDescription(m[2]!);
     // Truncate at 240 chars to avoid landing-page bloat (Risk R3 mitigation).
     if (desc.length > 240) {
       desc = desc.slice(0, 237).trimEnd() + '…';
@@ -164,29 +237,50 @@ function renderHtmlFragment(tools: ToolMeta[], gateMap: Record<string, number[]>
     groups[GATE_NAMES[g]!]!.push(t);
   }
 
-  const total = tools.length;
+  const promptCount = PROMPTS.length;
+  const toolCount = tools.length;
   const sections: string[] = [];
-  sections.push(`<p class="eyebrow">${total} tools</p>`);
+
+  // Section header (overall).
+  sections.push(`<p class="eyebrow">${promptCount} prompts &middot; ${toolCount} tools</p>`);
   sections.push(`<h2>Inside the framework.</h2>`);
   sections.push(
-    `<p class="lede">Each gate calls a specific set of tools. Descriptions below are pulled verbatim from each tool's MCP registration at build time — no drift between code and docs.</p>`
+    `<p class="lede">Prompts are what you call from Claude Desktop. Tools are what runs underneath — the LLM picks them as it works through each gate.</p>`
   );
 
+  // What you call — prompts block.
+  sections.push(`<div class="tools-subgroup">`);
+  sections.push(`  <p class="subgroup-eyebrow">What you call</p>`);
+  sections.push(`  <ul class="prompts-list">`);
+  for (const p of PROMPTS) {
+    sections.push(`    <li>`);
+    sections.push(`      <span class="t-name">${escapeHtml(p.name)}</span>`);
+    sections.push(`      <span class="t-desc">${escapeHtml(p.description)}</span>`);
+    sections.push(`    </li>`);
+  }
+  sections.push(`  </ul>`);
+  sections.push(`</div>`);
+
+  // What runs underneath — tools, grouped by gate.
+  sections.push(`<div class="tools-subgroup">`);
+  sections.push(`  <p class="subgroup-eyebrow">What runs underneath</p>`);
   for (const groupName of [GATE_NAMES[1]!, GATE_NAMES[2]!, GATE_NAMES[3]!, GATE_NAMES[4]!, GATE_NAMES[5]!, UNGATED_GROUP]) {
     const items = groups[groupName];
     if (!items || items.length === 0) continue;
-    sections.push(`<div class="tools-group">`);
-    sections.push(`  <h3>${escapeHtml(groupName)}</h3>`);
-    sections.push(`  <ul>`);
+    sections.push(`  <div class="tools-group">`);
+    sections.push(`    <h3>${escapeHtml(groupName)}</h3>`);
+    sections.push(`    <ul>`);
     for (const t of items) {
-      sections.push(`    <li>`);
-      sections.push(`      <span class="t-name">${escapeHtml(t.name)}</span>`);
-      sections.push(`      <span class="t-desc">${escapeHtml(t.description)}</span>`);
-      sections.push(`    </li>`);
+      sections.push(`      <li>`);
+      sections.push(`        <span class="t-name">${escapeHtml(t.name)}</span>`);
+      sections.push(`        <span class="t-desc">${escapeHtml(t.description)}</span>`);
+      sections.push(`      </li>`);
     }
-    sections.push(`  </ul>`);
-    sections.push(`</div>`);
+    sections.push(`    </ul>`);
+    sections.push(`  </div>`);
   }
+  sections.push(`</div>`);
+
   return sections.join('\n');
 }
 
