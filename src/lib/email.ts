@@ -111,6 +111,11 @@ export function buildTextBody(token: string, adminNote: string | null): string {
  * Build the HTML body. Token appears both inside a <code> block AND as
  * plain text on the same line so accessibility tools that strip HTML
  * can still recover it.
+ *
+ * Phase 06 T13 restyle: BRAND.md tokens applied within the email-client-
+ * safe subset (table-based layout, inline style attributes, web-safe font
+ * fallbacks, hardcoded color values — no CSS custom properties because
+ * email clients don't support them).
  */
 export function buildHtmlBody(token: string, adminNote: string | null): string {
   const esc = (s: string): string =>
@@ -121,13 +126,30 @@ export function buildHtmlBody(token: string, adminNote: string | null): string {
       .replace(/"/g, '&quot;')
       .replace(/'/g, '&#39;');
 
+  // Hardcoded color values — email clients ignore CSS custom properties.
+  // BRAND.md palette mapped:
+  //   bg #111210, surface #1A1A18, text #F5F4F0, text-secondary
+  //   rgba(245,244,240,0.55) ≈ #8A8985, text-tertiary
+  //   rgba(245,244,240,0.30) ≈ #4D4C4A, accent #D4F233.
+  // Email-safe font stacks: DM Mono primary with system mono fallback;
+  // Inter primary with system sans fallback (so clients without Google
+  // Fonts loaded still get a sensible monospace / sans-serif).
+
   const noteBlock =
     adminNote && adminNote.trim().length > 0
       ? `
-    <div style="background:#fffbe6;border:1px solid #f0e3a3;border-radius:4px;padding:12px 16px;margin:0 0 24px;color:#5a4a10;">
-      <strong>A quick note from the team:</strong><br>
-      ${esc(adminNote.trim()).replace(/\n/g, '<br>')}
-    </div>
+                <tr>
+                  <td style="padding:0 0 24px;">
+                    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#1A1A18;border:1px solid rgba(255,184,40,0.30);border-radius:2px;">
+                      <tr>
+                        <td style="padding:14px 18px;color:#F5F4F0;font-family:Inter,-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;font-size:14px;line-height:1.55;">
+                          <div style="font-family:'DM Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:10px;letter-spacing:0.10em;text-transform:uppercase;color:#FFB828;margin:0 0 6px;">A quick note from the team</div>
+                          ${esc(adminNote.trim()).replace(/\n/g, '<br>')}
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
 `
       : '';
 
@@ -143,28 +165,55 @@ export function buildHtmlBody(token: string, adminNote: string | null): string {
 }`;
 
   return `<!DOCTYPE html>
-<html><body style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;font-size:16px;line-height:1.6;color:#1a1a1a;max-width:600px;margin:0 auto;padding:24px;">
-${noteBlock}
-    <p>You're in. Welcome to Veto.</p>
-
-    <p>Your access token:</p>
-
-    <p><code style="display:block;background:#efece4;padding:12px 14px;border-radius:4px;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:14px;word-break:break-all;">${esc(token)}</code></p>
-
-    <p>Token (plain text, for accessibility): ${esc(token)}</p>
-
-    <p>Add this to your Claude Desktop config (<code>~/Library/Application Support/Claude/claude_desktop_config.json</code> on macOS, <code>%APPDATA%\\Claude\\claude_desktop_config.json</code> on Windows):</p>
-
-    <pre style="background:#efece4;padding:14px 16px;border-radius:4px;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;overflow-x:auto;">${esc(configJson)}</pre>
-
-    <p>Restart Claude Desktop, then run <code>validate_idea</code> against your next idea.</p>
-
-    <p>Docs and full setup: <a href="https://getvetoed.com/">https://getvetoed.com/</a></p>
-
-    <p>Questions or anything broken? Write to <a href="mailto:aljosa.sandbox@gmail.com">aljosa.sandbox@gmail.com</a> — happy to help.</p>
-    <p style="font-size:13px;color:#777;">(This inbox doesn't accept replies — please use the address above.)</p>
-
-    <p>— Aljosa</p>
+<html><body style="margin:0;padding:0;background:#111210;color:#F5F4F0;font-family:Inter,-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#111210;">
+    <tr>
+      <td align="center" style="padding:32px 16px 64px;">
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="600" style="max-width:600px;width:100%;background:#111210;">
+          <tr>
+            <td style="padding:0 0 32px;border-bottom:1px solid rgba(245,244,240,0.10);">
+              <span style="font-family:'DM Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-weight:500;font-size:16px;letter-spacing:-0.02em;text-transform:uppercase;color:#F5F4F0;">VETO</span>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:32px 0 16px;">${noteBlock}
+              <div style="font-family:'DM Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:10px;letter-spacing:0.10em;text-transform:uppercase;color:rgba(245,244,240,0.55);margin:0 0 12px;">Access granted</div>
+              <h1 style="font-family:'DM Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-weight:500;font-size:28px;letter-spacing:-0.02em;line-height:1.1;color:#F5F4F0;margin:0 0 16px;">You're in. Welcome to Veto.</h1>
+              <p style="font-family:Inter,-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;font-size:16px;line-height:1.6;color:rgba(245,244,240,0.55);margin:0 0 24px;">Your bearer token is below. Paste it into your client config and run validate_idea against your next idea.</p>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:0 0 24px;">
+              <div style="font-family:'DM Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:10px;letter-spacing:0.10em;text-transform:uppercase;color:rgba(245,244,240,0.55);margin:0 0 8px;">Your access token</div>
+              <code style="display:block;background:#1A1A18;border:1px solid rgba(245,244,240,0.10);padding:14px 16px;border-radius:2px;font-family:'DM Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:14px;color:#F5F4F0;word-break:break-all;">${esc(token)}</code>
+              <p style="font-family:Inter,-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;font-size:12px;color:rgba(245,244,240,0.30);margin:8px 0 0;">Token (plain text, for accessibility): ${esc(token)}</p>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:8px 0 24px;">
+              <div style="font-family:'DM Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:10px;letter-spacing:0.10em;text-transform:uppercase;color:rgba(245,244,240,0.55);margin:0 0 8px;">Add this to your Claude Desktop config</div>
+              <p style="font-family:'DM Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12px;color:rgba(245,244,240,0.55);margin:0 0 6px;">macOS: <code style="color:#F5F4F0;">~/Library/Application Support/Claude/claude_desktop_config.json</code></p>
+              <p style="font-family:'DM Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12px;color:rgba(245,244,240,0.55);margin:0 0 12px;">Windows: <code style="color:#F5F4F0;">%APPDATA%\\Claude\\claude_desktop_config.json</code></p>
+              <pre style="background:#1A1A18;border:1px solid rgba(245,244,240,0.10);padding:14px 16px;border-radius:2px;font-family:'DM Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12px;color:#F5F4F0;line-height:1.5;overflow-x:auto;margin:0;white-space:pre;">${esc(configJson)}</pre>
+              <p style="font-family:Inter,-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;font-size:14px;color:rgba(245,244,240,0.55);margin:16px 0 0;">Restart Claude Desktop, then run <code style="font-family:'DM Mono',ui-monospace,monospace;color:#F5F4F0;">validate_idea</code> against your next idea. Cursor, Codex CLI, and other clients use the same MCP URL with their own config shape — see the install section on getvetoed.com.</p>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:8px 0 24px;">
+              <a href="https://getvetoed.com/#install" style="display:inline-block;background:#D4F233;color:#111210;font-family:'DM Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;font-weight:500;letter-spacing:0.04em;text-transform:uppercase;padding:10px 20px;border-radius:2px;text-decoration:none;">Install docs</a>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:24px 0 16px;border-top:1px solid rgba(245,244,240,0.10);">
+              <p style="font-family:Inter,-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;font-size:13px;color:rgba(245,244,240,0.55);margin:0 0 8px;">Questions or anything broken? Write to <a href="mailto:aljosa.sandbox@gmail.com" style="color:#F5F4F0;text-decoration:underline;">aljosa.sandbox@gmail.com</a> — happy to help.</p>
+              <p style="font-family:Inter,-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;font-size:12px;color:rgba(245,244,240,0.30);margin:0 0 16px;">(This inbox doesn't accept replies — please use the address above.)</p>
+              <p style="font-family:Inter,-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;font-size:14px;color:rgba(245,244,240,0.55);margin:0;">— Aljosa</p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
 </body></html>`;
 }
 
