@@ -509,6 +509,84 @@
       }
       .stamp.stamp-fail { color: var(--status-fail); }
 
+      /* ─────────────────────────────────────────────────────────────────
+         T06 — Verdict math + Anti-bias callout
+         Document-layout, not dashboard. Table = math; ordered list = the
+         four structural defenses.
+         ───────────────────────────────────────────────────────────────── */
+      .math-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: var(--s-7);
+        align-items: start;
+      }
+      @media (max-width: 900px) {
+        .math-grid { grid-template-columns: 1fr; gap: var(--s-7); }
+      }
+      table.verdict-math {
+        width: 100%;
+        border-collapse: collapse;
+        font-family: var(--font-mono);
+        font-size: 13px;
+        margin-top: var(--s-3);
+      }
+      table.verdict-math th,
+      table.verdict-math td {
+        text-align: left;
+        padding: 10px 0;
+        border-bottom: 0.5px solid var(--border);
+      }
+      table.verdict-math th {
+        font-weight: 400;
+        font-size: var(--fs-eyebrow);
+        letter-spacing: 0.10em;
+        text-transform: uppercase;
+        color: var(--text-tertiary);
+      }
+      table.verdict-math td {
+        color: var(--text-secondary);
+      }
+      table.verdict-math td.verdict-cell {
+        color: var(--text);
+        font-weight: 500;
+        text-align: right;
+      }
+      .verdict-cell .v-go { color: var(--accent); }
+      .verdict-cell .v-nogo { color: var(--status-fail); }
+      .verdict-cell .v-cond { color: var(--status-inc); }
+
+      ol.anti-bias {
+        list-style: none;
+        padding: 0;
+        margin: var(--s-3) 0 0;
+        counter-reset: ab;
+      }
+      ol.anti-bias li {
+        counter-increment: ab;
+        padding: var(--s-3) 0;
+        border-bottom: 0.5px solid var(--border);
+        font-family: var(--font-body);
+        color: var(--text-secondary);
+        line-height: 1.55;
+        position: relative;
+        padding-left: 48px;
+      }
+      ol.anti-bias li::before {
+        content: counter(ab, decimal-leading-zero);
+        position: absolute;
+        left: 0;
+        top: var(--s-3);
+        font-family: var(--font-mono);
+        font-size: 12px;
+        font-weight: 500;
+        letter-spacing: 0.04em;
+        color: var(--text-tertiary);
+      }
+      ol.anti-bias li b {
+        color: var(--text);
+        font-weight: 500;
+      }
+
       /* Placeholder for hero-right column — animation lands in T08. */
       .hero-anim-placeholder {
         border: 0.5px dashed var(--border);
@@ -668,19 +746,59 @@
         </div>
       </section>
 
-      <!-- Verdict math (T06) -->
+      <!-- Verdict math + anti-bias (T06) — two tightly-coupled small
+           sections rendered side-by-side on desktop, stacked on mobile.
+           Math: table (not prose). Anti-bias: 4-item ordered list. -->
       <section id="verdict-math">
         <div class="container">
-          <p class="eyebrow">Verdict math</p>
-          <h2>The fail-2 rule.</h2>
-        </div>
-      </section>
-
-      <!-- Anti-confirmation-bias (T06) -->
-      <section id="anti-bias">
-        <div class="container">
-          <p class="eyebrow">Anti-bias by construction</p>
-          <h2>Four structural defenses.</h2>
+          <div class="math-grid">
+            <div>
+              <p class="eyebrow">Verdict math</p>
+              <h2>The fail-2 rule.</h2>
+              <p>Five gate verdicts collapse to one overall verdict by a fixed table. No model discretion at the rollup.</p>
+              <table class="verdict-math" aria-label="Verdict math">
+                <thead>
+                  <tr>
+                    <th>Gate verdicts</th>
+                    <th style="text-align: right;">Overall</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>5 PASS</td>
+                    <td class="verdict-cell"><span class="v-go">GO</span></td>
+                  </tr>
+                  <tr>
+                    <td>4 PASS + 1 INCONCLUSIVE</td>
+                    <td class="verdict-cell"><span class="v-cond">CONDITIONAL GO</span></td>
+                  </tr>
+                  <tr>
+                    <td>4 PASS + 1 FAIL</td>
+                    <td class="verdict-cell"><span class="v-cond">CONDITIONAL GO</span></td>
+                  </tr>
+                  <tr>
+                    <td>3 PASS + 2 (FAIL or INCONCLUSIVE)</td>
+                    <td class="verdict-cell"><span class="v-cond">CONDITIONAL GO</span></td>
+                  </tr>
+                  <tr>
+                    <td>2+ FAIL</td>
+                    <td class="verdict-cell"><span class="v-nogo">NO-GO</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div id="anti-bias">
+              <p class="eyebrow">Anti-bias by construction</p>
+              <h2>Four structural defenses.</h2>
+              <p>Confirmation bias is the failure mode of every idea-validation tool. Veto answers it at four points in the pipeline.</p>
+              <ol class="anti-bias">
+                <li><b>Every fact carries a quality tier (S/A/B/C/D) and a bias flag.</b> No fact ships without provenance.</li>
+                <li><b>Contradicting-evidence search is mandatory.</b> Every gate fans out a counter-search before the verdict resolves.</li>
+                <li><b>Three Validation Checks audit verdicts before they render.</b> Internal consistency, source quality, anti-confirmation.</li>
+                <li><b>The Spiky POV section is blank.</b> The framework never decides for the user. The reader writes the take.</li>
+              </ol>
+            </div>
+          </div>
         </div>
       </section>
 
