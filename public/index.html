@@ -298,6 +298,52 @@
         border-color: var(--border-emphasis);
       }
 
+      /* ─────────────────────────────────────────────────────────────────
+         T04 — Mechanism (5-gate sequence)
+         Numbered list is appropriate here — BRAND.md: "the gates are a
+         genuine sequence". DM Mono for IDs + names, Inter for descriptions.
+         ───────────────────────────────────────────────────────────────── */
+      .gates-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        border-top: 0.5px solid var(--border);
+      }
+      .gates-list li {
+        display: grid;
+        grid-template-columns: 56px 220px 1fr;
+        gap: var(--s-5);
+        align-items: baseline;
+        padding: var(--s-5) 0;
+        border-bottom: 0.5px solid var(--border);
+      }
+      @media (max-width: 768px) {
+        .gates-list li {
+          grid-template-columns: 1fr;
+          gap: var(--s-1);
+        }
+      }
+      .gates-list .g-id {
+        font-family: var(--font-mono);
+        font-size: 14px;
+        font-weight: 500;
+        letter-spacing: 0.04em;
+        color: var(--text-tertiary);
+      }
+      .gates-list .g-name {
+        font-family: var(--font-mono);
+        font-size: 16px;
+        font-weight: 500;
+        color: var(--text);
+        letter-spacing: -0.01em;
+      }
+      .gates-list .g-desc {
+        font-family: var(--font-body);
+        color: var(--text-secondary);
+        line-height: 1.5;
+        margin: 0;
+      }
+
       /* Placeholder for hero-right column — animation lands in T08. */
       .hero-anim-placeholder {
         border: 0.5px dashed var(--border);
@@ -353,11 +399,38 @@
         </div>
       </section>
 
-      <!-- Mechanism (T04) -->
+      <!-- Mechanism (T04) — 5 gates as a numbered sequence. -->
       <section id="mechanism">
         <div class="container">
           <p class="eyebrow">Mechanism</p>
           <h2>How it works.</h2>
+          <ol class="gates-list">
+            <li>
+              <span class="g-id">G1</span>
+              <span class="g-name">Direct Competitor Scan</span>
+              <p class="g-desc">Who is the closest existing thing, what have they shipped, where are they weak?</p>
+            </li>
+            <li>
+              <span class="g-id">G2</span>
+              <span class="g-name">Market Structure</span>
+              <p class="g-desc">Is the market shaped so this idea can win meaningful share?</p>
+            </li>
+            <li>
+              <span class="g-id">G3</span>
+              <span class="g-name">Platform Risk</span>
+              <p class="g-desc">Will a platform shift or hyperscaler ship this in 24 months?</p>
+            </li>
+            <li>
+              <span class="g-id">G4</span>
+              <span class="g-name">Willingness to Pay</span>
+              <p class="g-desc">Will the target customer actually pay enough to make this a business?</p>
+            </li>
+            <li>
+              <span class="g-id">G5</span>
+              <span class="g-name">Why Now</span>
+              <p class="g-desc">What changed in the last 24 months that makes this possible <em>now</em>?</p>
+            </li>
+          </ol>
         </div>
       </section>
 
