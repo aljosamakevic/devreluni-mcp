@@ -465,15 +465,71 @@
         margin: 0 0 var(--s-3);
       }
 
+      /* Evidence frame — styled as a LIGHT DOCUMENT against the dark page.
+         The frame is the visual artifact: a piece of paper laid on the
+         dark surface. Everything inside it switches to dark-ink-on-cream
+         document palette. The cross-gate snippets above stay dark theme;
+         only this deep-dive block reads as "here's the actual report." */
       .evidence-frame {
-        border: 0.5px solid var(--border);
+        --doc-bg: #f5f1e8;
+        --doc-text: #1a1815;
+        --doc-text-secondary: rgba(26, 24, 21, 0.72);
+        --doc-text-tertiary: rgba(26, 24, 21, 0.48);
+        --doc-border: rgba(26, 24, 21, 0.14);
+        --doc-edge: rgba(26, 24, 21, 0.22);
+
+        background: var(--doc-bg);
+        color: var(--doc-text);
+        border: none;
+        border-top: 3px solid var(--doc-edge);
         border-radius: var(--radius);
-        padding: var(--s-6);
-        background: var(--surface);
+        padding: var(--s-7) var(--s-7) var(--s-6);
+        box-shadow:
+          0 1px 0 rgba(0, 0, 0, 0.25),
+          0 12px 36px rgba(0, 0, 0, 0.45),
+          0 32px 80px rgba(0, 0, 0, 0.35);
+        position: relative;
+        max-width: 760px;
+        margin: 0 auto;
       }
       @media (max-width: 768px) {
         .evidence-frame { padding: var(--s-4); }
       }
+      .evidence-frame .evidence-meta {
+        color: var(--doc-text-tertiary);
+        border-bottom-color: var(--doc-border);
+      }
+      .evidence-frame .evidence-meta b { color: var(--doc-text-secondary); }
+      .evidence-frame .dok-eyebrow { color: var(--doc-text-tertiary); }
+      .evidence-frame .fact-block {
+        color: var(--doc-text-secondary);
+        border-left-color: var(--doc-edge);
+      }
+      .evidence-frame .fact-source { color: var(--doc-text-tertiary); }
+      /* Tier badges — tuned for ink-on-paper readability (dark text on
+         slight-tint background) instead of the dark-theme rgba-on-dark. */
+      .evidence-frame .tier-s { background: rgba(60, 110, 30, 0.14); color: #3d6a1a; }
+      .evidence-frame .tier-a { background: rgba(30, 90, 180, 0.13); color: #1a4d96; }
+      .evidence-frame .tier-b { background: rgba(80, 80, 80, 0.12); color: #4a4a4a; }
+      .evidence-frame .tier-c { background: rgba(180, 130, 30, 0.13); color: #7a5210; }
+      .evidence-frame .tier-d { background: rgba(170, 50, 35, 0.13); color: #962614; }
+
+      .evidence-frame .dok-summary,
+      .evidence-frame .dok-insight { color: var(--doc-text-secondary); }
+      .evidence-frame .dok-summary .elision,
+      .evidence-frame .dok-insight .elision { color: var(--doc-text-tertiary); }
+      .evidence-frame .dok-insight { border-left-color: #b88210; }
+      .evidence-frame .dok-insight .warn { color: #b88210; }
+
+      .evidence-frame .contradicting-callout {
+        background: rgba(26, 24, 21, 0.04);
+        border-color: var(--doc-border);
+        color: var(--doc-text-secondary);
+      }
+      .evidence-frame .contradicting-callout strong { color: var(--doc-text-tertiary); }
+      .evidence-frame .verdict-row { border-top-color: var(--doc-border); }
+      .evidence-frame .verdict-row .label { color: var(--doc-text-tertiary); }
+      .evidence-frame .verdict-row .conf { color: var(--doc-text-secondary); }
       .evidence-meta {
         display: flex;
         flex-wrap: wrap;
