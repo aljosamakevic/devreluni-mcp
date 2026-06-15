@@ -465,21 +465,15 @@
         margin: 0 0 var(--s-3);
       }
 
-      /* Evidence frames — each gate is a stacked LIGHT DOCUMENT
-         (<details> accordion) against the dark page. The frame is the
-         visual artifact: a piece of paper laid on the dark surface.
-         Everything inside switches to dark-ink-on-cream document
-         palette. Clicking the summary expands to show the full DOK
-         structure for that gate. Gate 4 (the killshot) is open by
-         default; the others can be expanded one at a time or together. */
+      /* Evidence — ONE LIGHT DOCUMENT containing 5 stacked gate
+         sections, separated by horizontal rules. The whole wrapper is
+         the piece of paper; each gate is a section within it. Clicking
+         a section's summary expands its full DOK content beneath.
+         Gate 4 (the killshot) is open by default. */
       .gate-accordion {
-        max-width: 760px;
-        margin: 0 auto;
-        display: flex;
-        flex-direction: column;
-        gap: var(--s-5);
-      }
-      .evidence-frame {
+        /* Document-palette tokens are scoped here so every descendant
+           (.evidence-frame, .gate-summary, .gate-body, etc.) inherits
+           them and renders ink-on-cream automatically. */
         --doc-bg: #f5f1e8;
         --doc-text: #1a1815;
         --doc-text-secondary: rgba(26, 24, 21, 0.72);
@@ -487,43 +481,64 @@
         --doc-border: rgba(26, 24, 21, 0.14);
         --doc-edge: rgba(26, 24, 21, 0.22);
 
+        max-width: 760px;
+        margin: 0 auto;
         background: var(--doc-bg);
         color: var(--doc-text);
-        border: none;
         border-top: 3px solid var(--doc-edge);
         border-radius: var(--radius);
-        padding: 0;
         box-shadow:
           0 1px 0 rgba(0, 0, 0, 0.25),
           0 12px 36px rgba(0, 0, 0, 0.45),
           0 32px 80px rgba(0, 0, 0, 0.35);
+        overflow: hidden;
+      }
+      /* Each .evidence-frame is a SECTION inside the document, not its
+         own card. No background, no shadow — just a thin bottom rule
+         between gates (except the last one). */
+      .evidence-frame {
+        background: transparent;
+        border: none;
+        border-bottom: 0.5px solid var(--doc-border);
+        border-radius: 0;
+        padding: 0;
+        box-shadow: none;
         position: relative;
         overflow: hidden;
       }
+      .evidence-frame:last-of-type { border-bottom: none; }
+
       /* The summary is the clickable accordion header (always visible).
          BRAND.md: structure carries weight — this is a functional control,
          not a decoration. Custom chevron replaces the default browser
-         disclosure triangle. */
+         disclosure triangle. Layout: two-row flex column.
+            Row 1: id, name, verdict pill, confidence, chevron
+            Row 2: 1-2 sentence DOK 3 insight (model judgment) — gives
+                   visitors the "what would I learn here" preview without
+                   needing to expand the section. */
       .gate-summary {
-        display: grid;
-        grid-template-columns: auto 1fr auto auto auto;
-        align-items: center;
-        gap: var(--s-4);
+        display: flex;
+        flex-direction: column;
+        gap: var(--s-3);
         padding: var(--s-5) var(--s-7);
         cursor: pointer;
         list-style: none;
         user-select: none;
         transition: background 0.12s ease;
       }
-      .gate-summary:hover {
-        background: rgba(26, 24, 21, 0.04);
-      }
+      .gate-summary:hover { background: rgba(26, 24, 21, 0.04); }
       .gate-summary:focus-visible {
         outline: 2px solid var(--accent);
         outline-offset: -2px;
       }
       .gate-summary::-webkit-details-marker { display: none; }
       .gate-summary::marker { content: ''; }
+      .gate-summary-header {
+        display: grid;
+        grid-template-columns: auto 1fr auto auto auto;
+        align-items: center;
+        gap: var(--s-4);
+      }
       .gate-summary .gate-id {
         font-family: var(--font-mono);
         font-size: 11px;
@@ -544,8 +559,8 @@
         font-weight: 500;
         letter-spacing: 0.04em;
       }
-      /* In light-document mode the cross-gate verdict pill colors need
-         to shift to print-ink palette so they stay legible on cream. */
+      /* In light-document mode the verdict pill colors shift to
+         print-ink palette so they stay legible on cream. */
       .gate-summary .v-go { color: #2a6f1c; }
       .gate-summary .v-nogo { color: #962614; }
       .gate-summary .v-cond { color: #7a5210; }
@@ -555,6 +570,23 @@
         letter-spacing: 0.04em;
         text-transform: uppercase;
         color: var(--doc-text-tertiary);
+      }
+      .gate-insight {
+        display: block;
+        font-family: var(--font-body);
+        font-size: 13px;
+        line-height: 1.6;
+        color: var(--doc-text-secondary);
+        margin: 0;
+      }
+      .gate-insight .warn {
+        display: inline-block;
+        font-family: var(--font-mono);
+        font-size: 10px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: #b88210;
+        margin-right: var(--s-2);
       }
       /* Chevron — CSS-drawn rotating arrow. Closed: > pointing right.
          Open: v pointing down. Pure functional indicator, not decoration. */
@@ -577,7 +609,8 @@
         padding-top: var(--s-5);
       }
       @media (max-width: 768px) {
-        .gate-summary { padding: var(--s-4); grid-template-columns: auto 1fr auto auto; }
+        .gate-summary { padding: var(--s-4); }
+        .gate-summary-header { grid-template-columns: auto 1fr auto auto; }
         .gate-summary .gate-conf { display: none; }
         .gate-body { padding: var(--s-4); padding-top: var(--s-4); }
       }
@@ -1520,11 +1553,14 @@
 
             <details class="evidence-frame">
               <summary class="gate-summary">
-                <span class="gate-id">G1</span>
-                <span class="gate-name">Direct Competitor Scan</span>
-                <span class="v-nogo gate-verdict">FAIL</span>
-                <span class="gate-conf">Confidence Low</span>
-                <span class="summary-chevron" aria-hidden="true"></span>
+                <span class="gate-summary-header">
+                  <span class="gate-id">G1</span>
+                  <span class="gate-name">Direct Competitor Scan</span>
+                  <span class="v-nogo gate-verdict">FAIL</span>
+                  <span class="gate-conf">Confidence Low</span>
+                  <span class="summary-chevron" aria-hidden="true"></span>
+                </span>
+                <span class="gate-insight"><span class="warn">⚠ Model judgment</span>At least 3 directly-overlapping AI-screen-monitoring products are shipping today. The founder doesn't enter as a first-mover. The "I have the problem too" angle doesn't produce structural differentiation.</span>
               </summary>
               <div class="gate-body">
                 <p class="dok-eyebrow">DOK 1 · Facts (sourced)</p>
@@ -1574,11 +1610,14 @@
 
             <details class="evidence-frame">
               <summary class="gate-summary">
-                <span class="gate-id">G2</span>
-                <span class="gate-name">Market Demand</span>
-                <span class="v-go gate-verdict">PASS</span>
-                <span class="gate-conf">Confidence Medium</span>
-                <span class="summary-chevron" aria-hidden="true"></span>
+                <span class="gate-summary-header">
+                  <span class="gate-id">G2</span>
+                  <span class="gate-name">Market Demand</span>
+                  <span class="v-go gate-verdict">PASS</span>
+                  <span class="gate-conf">Confidence Medium</span>
+                  <span class="summary-chevron" aria-hidden="true"></span>
+                </span>
+                <span class="gate-insight"><span class="warn">⚠ Model judgment</span>Demand for "focus" tools is real and large, but the only profitable comparable surfaced (Rize, $10k+ MRR) is a time-tracker, not an AI-screen-monitoring app. The demand may be for a different shape of product.</span>
               </summary>
               <div class="gate-body">
                 <p class="dok-eyebrow">DOK 1 · Facts (sourced)</p>
@@ -1628,11 +1667,14 @@
 
             <details class="evidence-frame">
               <summary class="gate-summary">
-                <span class="gate-id">G3</span>
-                <span class="gate-name">Platform &amp; Big-Tech Risk</span>
-                <span class="v-nogo gate-verdict">FAIL</span>
-                <span class="gate-conf">Confidence Low</span>
-                <span class="summary-chevron" aria-hidden="true"></span>
+                <span class="gate-summary-header">
+                  <span class="gate-id">G3</span>
+                  <span class="gate-name">Platform &amp; Big-Tech Risk</span>
+                  <span class="v-nogo gate-verdict">FAIL</span>
+                  <span class="gate-conf">Confidence Low</span>
+                  <span class="summary-chevron" aria-hidden="true"></span>
+                </span>
+                <span class="gate-insight"><span class="warn">⚠ Model judgment</span>Apple owns the Screen Time / Managed Settings API the product must call, and the same App Review Guidelines surface that killed Spotlight-style and Notes-style third-party apps gates entry. Android Digital Wellbeing applies the same vector on the Android side.</span>
               </summary>
               <div class="gate-body">
                 <p class="dok-eyebrow">DOK 1 · Facts (sourced)</p>
@@ -1688,11 +1730,14 @@
 
             <details class="evidence-frame" open>
               <summary class="gate-summary">
-                <span class="gate-id">G4</span>
-                <span class="gate-name">Willingness to Pay</span>
-                <span class="v-nogo gate-verdict">FAIL</span>
-                <span class="gate-conf">Confidence Low</span>
-                <span class="summary-chevron" aria-hidden="true"></span>
+                <span class="gate-summary-header">
+                  <span class="gate-id">G4</span>
+                  <span class="gate-name">Willingness to Pay</span>
+                  <span class="v-nogo gate-verdict">FAIL</span>
+                  <span class="gate-conf">Confidence Low</span>
+                  <span class="summary-chevron" aria-hidden="true"></span>
+                </span>
+                <span class="gate-insight"><span class="warn">⚠ Model judgment</span>New entrants face a ~$10/mo category ceiling combined with the documented "ADHD-tax" churn pattern. Cloud-screenshot processing adds inference cost on top of an already-thin margin profile.</span>
               </summary>
               <div class="gate-body">
                 <p class="dok-eyebrow">DOK 1 · Facts (sourced)</p>
@@ -1754,11 +1799,14 @@
 
             <details class="evidence-frame">
               <summary class="gate-summary">
-                <span class="gate-id">G5</span>
-                <span class="gate-name">Why Now</span>
-                <span class="v-cond gate-verdict">INCONCLUSIVE</span>
-                <span class="gate-conf">Confidence Low</span>
-                <span class="summary-chevron" aria-hidden="true"></span>
+                <span class="gate-summary-header">
+                  <span class="gate-id">G5</span>
+                  <span class="gate-name">Why Now</span>
+                  <span class="v-cond gate-verdict">INCONCLUSIVE</span>
+                  <span class="gate-conf">Confidence Low</span>
+                  <span class="summary-chevron" aria-hidden="true"></span>
+                </span>
+                <span class="gate-insight"><span class="warn">⚠ Model judgment</span>"AI got better" is the spec's canonical anti-pattern for Why Now. The evidence doesn't surface a sharper thesis (specific API opening, regulatory change, remote-work behavior shift). The absence of evidence is itself the signal.</span>
               </summary>
               <div class="gate-body">
                 <p class="dok-eyebrow">DOK 1 · Facts (sourced)</p>
