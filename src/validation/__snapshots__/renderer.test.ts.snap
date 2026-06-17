@@ -184,6 +184,7 @@ Consulted: 2 | Tiers: S:0 A:0 B:2 C:0 D:0 | Bias: indep:2 vendor:0 conflicted:0 
 | Dimension | Finding |
 | --- | --- |
 | Authority | mixed B/A tier |
+| Recency | sources within 18 months |
 
 Outcome: No issues
 

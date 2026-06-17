@@ -112,7 +112,10 @@ function makeValidationChecks(
   return [
     {
       name: 'Source Quality Audit',
-      rows: [{ dimension: 'Authority', finding: 'mixed B/A tier' }],
+      rows: [
+        { dimension: 'Authority', finding: 'mixed B/A tier' },
+        { dimension: 'Recency', finding: 'sources within 18 months' },
+      ],
       outcome: a!,
       notes: '',
     },

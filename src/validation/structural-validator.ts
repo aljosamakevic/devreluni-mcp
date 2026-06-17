@@ -248,6 +248,80 @@ function checkSpikyPov(
 }
 
 // ──────────────────────────────────────────────────────────────────────────
+// Report-level checks — Phase 12 (audit V-H2, V-M2, V-M4)
+// ──────────────────────────────────────────────────────────────────────────
+
+/** Canonical gate-3 identity. The verdict-validator's existential veto keys on
+ * gate number 3 being "Platform / Moat Risk"; pin that so a mislabeled or
+ * reordered gate can't dodge or misdirect the veto. */
+const GATE3_NAME_PATTERN = /platform|moat|big.?tech|incumbent/i;
+
+function checkGateIdentity(report: ValidationReport, issues: ValidationIssue[]): void {
+  // V-M2 — gate numbers must be the canonical 1..5 and gate 3 must be the
+  // platform/moat gate (the one the existential veto depends on).
+  const numbers = report.gates.map((g) => g.gate).sort((a, b) => a - b);
+  const canonical = [1, 2, 3, 4, 5];
+  if (JSON.stringify(numbers) !== JSON.stringify(canonical)) {
+    issues.push(
+      issue('major', 'gate_numbers_noncanonical', `Gates must be numbered 1..5 exactly once each; got [${numbers.join(',')}].`, 'gates')
+    );
+  }
+  const g3 = report.gates.find((g) => g.gate === 3);
+  if (g3 && !GATE3_NAME_PATTERN.test(g3.name)) {
+    issues.push(
+      issue(
+        'major',
+        'gate3_identity_mismatch',
+        `Gate 3 is "${g3.name}" but must be the Platform / Moat Risk gate — the existential veto keys on gate 3. Re-number so platform/incumbent risk is gate 3.`,
+        'gates[2].name'
+      )
+    );
+  }
+}
+
+function checkKillshotCitations(report: ValidationReport, issues: ValidationIssue[]): void {
+  // V-H2 — killshots must cite real DOK 1 source URLs (spec §11: "cite specific
+  // DOK 1 source URLs, not DOK 3 vibes"). Previously documented but unenforced.
+  const killshots = report.verdict?.killshots ?? [];
+  if (killshots.length === 0) return;
+
+  const dok1Urls = new Set<string>();
+  for (const g of report.gates ?? []) {
+    for (const f of g.dok1_facts ?? []) {
+      if (f?.source?.url) dok1Urls.add(f.source.url);
+    }
+  }
+
+  killshots.forEach((k, idx) => {
+    const urls = k.cited_source_urls ?? [];
+    if (urls.length === 0) {
+      issues.push(
+        issue('major', 'killshot_no_citation', `Killshot #${idx + 1} cites no source URL — killshots must cite the DOK 1 facts that justify them.`, `verdict.killshots[${idx}].cited_source_urls`)
+      );
+      return;
+    }
+    const orphan = urls.filter((u) => !dok1Urls.has(u));
+    if (orphan.length > 0) {
+      issues.push(
+        issue('major', 'killshot_citation_not_in_dok1', `Killshot #${idx + 1} cites URL(s) not present in any DOK 1 fact: ${orphan.join(', ')}. Killshots must cite DOK 1 evidence, not unsourced claims.`, `verdict.killshots[${idx}].cited_source_urls`)
+      );
+    }
+  });
+}
+
+function checkSourceQualityAuditDepth(report: ValidationReport, issues: ValidationIssue[]): void {
+  // V-M4 (soft) — the Source Quality Audit is the load-bearing anti-bias check;
+  // a single-row stub means the conflicted/recency sub-checks weren't really
+  // performed. Advisory (minor) so it doesn't block, but it surfaces the gap.
+  const sqa = report.validation_checks?.find((c) => c.name === 'Source Quality Audit');
+  if (sqa && (sqa.rows?.length ?? 0) < 2) {
+    issues.push(
+      issue('minor', 'source_quality_audit_shallow', 'Source Quality Audit has <2 rows — it should cover authority/recency/citation/bias dimensions, not a single line.', 'validation_checks')
+    );
+  }
+}
+
+// ──────────────────────────────────────────────────────────────────────────
 // Public entry point
 // ──────────────────────────────────────────────────────────────────────────
 
@@ -283,6 +357,9 @@ export function structuralValidate(
     checkDok1FactCitations(gate, issues);
   }
   checkSpikyPov(report, issues);
+  checkGateIdentity(report, issues);        // V-M2
+  checkKillshotCitations(report, issues);   // V-H2
+  checkSourceQualityAuditDepth(report, issues); // V-M4 (advisory)
 
   return issues;
 }

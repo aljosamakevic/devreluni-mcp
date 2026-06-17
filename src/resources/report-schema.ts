@@ -110,7 +110,10 @@ export const MINIMAL_VALID_SKELETON: ValidationReport = {
   validation_checks: [
     {
       name: 'Source Quality Audit',
-      rows: [{ dimension: 'Authority', finding: 'Replace with a finding.' }],
+      rows: [
+        { dimension: 'Authority', finding: 'Replace — are sources credible and relevant?' },
+        { dimension: 'Recency', finding: 'Replace — are sources current (<18 months)?' },
+      ],
       outcome: 'No issues',
       notes: '',
     },
