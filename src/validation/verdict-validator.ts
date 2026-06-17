@@ -42,6 +42,19 @@ import type {
 
 const DECIDING_TIERS = new Set<ToolSource['tier']>(['S', 'A', 'B']);
 
+/**
+ * Phase 10 — existential-gate veto (spec amendment, user-authorized 2026-06-17).
+ *
+ * Gate 3 is "Platform / Moat Risk — can a platform or incumbent kill this?".
+ * A FAIL there is categorically existential (e.g. Apple absorbing the
+ * category zeros the company), unlike a FAIL on competition or why-now.
+ * The Fail-2 math counts all FAILs equally, so a lone Gate 3 FAIL would
+ * otherwise yield only CONDITIONAL GO — demoting an existential risk to a
+ * soft vote. This constant marks the gate whose FAIL vetoes the verdict
+ * to NO-GO regardless of the count.
+ */
+const EXISTENTIAL_GATE_NUMBER = 3;
+
 function issue(
   severity: ValidationIssue['severity'],
   code: string,
@@ -153,6 +166,39 @@ function computeFail2(gates: GateReport[]): OverallVerdict {
 }
 
 // ──────────────────────────────────────────────────────────────────────────
+// Existential-gate veto (Phase 10 spec amendment)
+// ──────────────────────────────────────────────────────────────────────────
+
+/**
+ * If the existential gate (Gate 3, Platform / Moat Risk) is a FAIL, force the
+ * overall verdict to NO-GO regardless of the fail-2 count. A platform/incumbent
+ * kill is not survivable by strength elsewhere, so it vetoes rather than votes.
+ *
+ * Runs AFTER fail-2 math and BEFORE the decision matrix, so a Fundamental
+ * validation-check can still override the result to INCONCLUSIVE (a broken
+ * analysis cannot even conclude NO-GO).
+ */
+function applyExistentialVeto(
+  gates: GateReport[],
+  fail2Verdict: OverallVerdict,
+  issues: ValidationIssue[]
+): OverallVerdict {
+  const existential = gates.find((g) => g.gate === EXISTENTIAL_GATE_NUMBER);
+  if (!existential || existential.status !== 'FAIL') return fail2Verdict;
+  if (fail2Verdict === 'NO-GO') return fail2Verdict; // already vetoed by count
+
+  issues.push(
+    issue(
+      'major',
+      'existential_gate_veto',
+      `Gate ${EXISTENTIAL_GATE_NUMBER} (Platform / Moat Risk) is a FAIL — an existential platform/incumbent risk vetoes the verdict to NO-GO regardless of the fail-2 count (overrode "${fail2Verdict}").`,
+      `gates[${EXISTENTIAL_GATE_NUMBER - 1}].status`
+    )
+  );
+  return 'NO-GO';
+}
+
+// ──────────────────────────────────────────────────────────────────────────
 // Validation-check decision matrix (H5)
 // ──────────────────────────────────────────────────────────────────────────
 
@@ -248,7 +294,9 @@ export interface VerdictValidationResult {
  * Order (Appendix B(5) — mechanical-then-override):
  *   1. Per-gate source-count and bias rules → mutate gate.status/confidence.
  *   2. Fail-2 math on the adjusted gate verdicts → tentative overall verdict.
- *   3. Validation-Check decision matrix → may override overall verdict.
+ *   2b. Existential-gate veto (Phase 10) → Gate 3 FAIL forces NO-GO.
+ *   3. Validation-Check decision matrix → may override overall verdict
+ *      (a Fundamental check → INCONCLUSIVE still wins over the veto).
  */
 export function verdictValidate(
   report: ValidationReport
@@ -275,8 +323,12 @@ export function verdictValidate(
   // Step 2 — fail-2 math on adjusted gate verdicts.
   const fail2 = computeFail2(adjusted.gates);
 
-  // Step 3 — decision matrix override.
-  const { overall, confidence } = applyDecisionMatrix(adjusted, fail2, issues);
+  // Step 2b — existential-gate veto (Phase 10): a Gate 3 FAIL forces NO-GO.
+  const afterVeto = applyExistentialVeto(adjusted.gates, fail2, issues);
+
+  // Step 3 — decision matrix override (can still force INCONCLUSIVE on a
+  // Fundamental validation-check, even over the veto).
+  const { overall, confidence } = applyDecisionMatrix(adjusted, afterVeto, issues);
 
   // Apply overrides to the report.
   if (adjusted.verdict.overall !== overall) {
@@ -284,7 +336,7 @@ export function verdictValidate(
       issue(
         overall === 'INCONCLUSIVE' ? 'major' : 'minor',
         'overall_verdict_override',
-        `Overall verdict overridden from "${adjusted.verdict.overall}" to "${overall}" by mechanical rules (fail-2 math + decision matrix).`,
+        `Overall verdict overridden from "${adjusted.verdict.overall}" to "${overall}" by mechanical rules (fail-2 math + existential-gate veto + decision matrix).`,
         'verdict.overall'
       )
     );
