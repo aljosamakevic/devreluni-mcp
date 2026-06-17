@@ -116,9 +116,12 @@ function scoreAlignment(
   const rawScore = matchCount / maxScore;
   const alignment_score = Math.round(rawScore * 100);
 
+  // Phase 11 — a single buzzword must not read as "strong" RFS alignment.
+  // "strong" requires both a high density AND >=2 distinct keyword hits, so a
+  // one-line idea matching one generic term can reach at most "moderate".
   let fit: Fit;
-  if (alignment_score >= 60) fit = 'strong';
-  else if (alignment_score >= 30) fit = 'moderate';
+  if (alignment_score >= 60 && matchCount >= 2) fit = 'strong';
+  else if (alignment_score >= 30 || (matchCount >= 2 && alignment_score >= 20)) fit = 'moderate';
   else if (alignment_score >= 10) fit = 'weak';
   else fit = 'none';
 

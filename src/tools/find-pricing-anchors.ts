@@ -7,6 +7,7 @@ import { serperSearch, serperSource, serperConfidenceNote, isSerperLive } from '
 import { waybackLookup, waybackSource, waybackConfidenceNote } from '../lib/wayback.js';
 import { resolveCompetitorDomain } from '../lib/competitor-domain.js';
 import { cacheGet, cacheSet, makeCacheKey, TTL } from '../lib/cache.js';
+import { isRelevant, competitorAppears, buildRelevanceTerms } from '../lib/relevance.js';
 
 type PricingModel = 'subscription' | 'one-time' | 'freemium' | 'usage-based' | 'unknown';
 
@@ -294,9 +295,22 @@ export function registerFindPricingAnchors(server: McpServer): void {
         contribution: `G2/Capterra review aggregation for ${category} — churn and cancellation language`,
       });
 
+      // Phase 11 — only count churn language from reviews that are actually
+      // about this category or a named competitor. The unscoped review query
+      // otherwise pulls cancellation prose from unrelated products and asserts
+      // "the category has a retention problem" off noise.
+      const churnTerms = buildRelevanceTerms(category, []);
+      let droppedChurn = 0;
       for (const r of reviewResults) {
-        const signals = extractChurnLanguage(r.snippet);
-        all_churn_signals.push(...signals);
+        const text = `${r.title} ${r.snippet}`;
+        const relevant =
+          isRelevant(text, churnTerms, category) ||
+          competitors.some((c) => competitorAppears(text, c));
+        if (!relevant) {
+          droppedChurn++;
+          continue;
+        }
+        all_churn_signals.push(...extractChurnLanguage(r.snippet));
       }
       // Deduplicate churn signals
       const churn_signals = [...new Set(all_churn_signals)].slice(0, 8);
@@ -394,6 +408,11 @@ export function registerFindPricingAnchors(server: McpServer): void {
       confidenceParts.push(waybackConfidenceNote(waybackFound, waybackAttempted));
       confidenceParts.push(serperConfidenceNote());
       confidenceParts.push('G2/Capterra data via Serper snippets (B/independent).');
+      if (droppedChurn > 0) {
+        confidenceParts.push(
+          `Excluded ${droppedChurn} review snippet(s) not relevant to "${category}" or a named competitor before counting churn (off-topic guard).`,
+        );
+      }
 
       const result: ToolResult<FindPricingAnchorsData> = okResult(
         {

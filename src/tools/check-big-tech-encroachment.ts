@@ -19,6 +19,7 @@ import {
 } from '../lib/serper.js';
 import { expandHyperscalerQueries } from '../lib/category-platform-features.js';
 import { detectRecency } from '../lib/recency.js';
+import { isRelevant, hasWholeWord, buildRelevanceTerms } from '../lib/relevance.js';
 import { cacheGet, cacheSet, makeCacheKey, TTL } from '../lib/cache.js';
 
 type Hyperscaler = 'Apple' | 'Google' | 'Microsoft' | 'Meta' | 'Amazon';
@@ -162,6 +163,14 @@ export function registerCheckBigTechEncroachment(server: McpServer): void {
       const keywords = category_keywords ?? [];
       const queryBase = [category, ...keywords].join(' ');
 
+      // Phase 11 — relevance gate. site:-scoped queries still return off-topic
+      // SERP hits; a mention counts only if it's about the category (base
+      // queries) or actually names the platform feature (feature queries).
+      // Prevents two stray WWDC pages from reading as "existential".
+      const relevanceTerms = buildRelevanceTerms(category, keywords);
+      const mentionRelevant = (text: string, feature: string | null): boolean =>
+        feature ? hasWholeWord(text.toLowerCase(), feature.toLowerCase()) : isRelevant(text, relevanceTerms, category);
+
       // Per CONCERNS.md M5: a literal `${queryBase} site:developer.apple.com`
       // query won't match platform features that don't share the category's
       // keywords (e.g. "Apple Intelligence", "Screen Time", "Focus Modes" for
@@ -219,6 +228,7 @@ export function registerCheckBigTechEncroachment(server: McpServer): void {
         const { input, results } = settled.value;
         for (const r of results) {
           const text = `${r.title} ${r.snippet}`;
+          if (!mentionRelevant(text, input.feature)) continue; // Phase 11 relevance gate
           conferenceMentions.push({
             hyperscaler: input.conf.hyperscaler,
             event: input.conf.event,
@@ -263,8 +273,10 @@ export function registerCheckBigTechEncroachment(server: McpServer): void {
         try {
           const results = await serperSearch(q, 3);
           for (const r of results) {
-            // Only count results that mention recent years
-            if (detectRecency(`${r.title} ${r.snippet}`) === 'last_24mo') {
+            const apiText = `${r.title} ${r.snippet}`;
+            // Phase 11 — must be recent AND relevant (names the feature, since
+            // these are feature-scoped queries) to count toward the score.
+            if (detectRecency(apiText) === 'last_24mo' && mentionRelevant(apiText, feature)) {
               platformApiSignals.push({
                 hyperscaler,
                 api_or_feature: r.title,
@@ -297,6 +309,9 @@ export function registerCheckBigTechEncroachment(server: McpServer): void {
         const results = await serperSearch(acquisitionQuery, 5);
         for (const r of results) {
           const text = `${r.title} ${r.snippet}`;
+          // Phase 11 — drop acquisitions not actually in this category (the
+          // query is category-scoped but the SERP drifts).
+          if (!isRelevant(text, relevanceTerms, category)) continue;
           // Identify which hyperscaler is mentioned
           let hyperscaler: Hyperscaler | null = null;
           if (/apple/i.test(text)) hyperscaler = 'Apple';
