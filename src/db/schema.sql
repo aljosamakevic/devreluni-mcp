@@ -71,3 +71,51 @@ CREATE INDEX IF NOT EXISTS idx_magic_link_tokens_email
   ON magic_link_tokens(email_normalized, created_at);
 CREATE INDEX IF NOT EXISTS idx_magic_link_tokens_expires
   ON magic_link_tokens(expires_at);
+
+-- Phase 14 — OAuth 2.1 Authorization Server. veto is its own AS + Resource
+-- Server: OAuth-issued access tokens are minted into `tokens` (same pv_ shape,
+-- same authRequired validation), so these tables hold only OAuth-specific
+-- state (registered clients, short-lived auth codes, refresh tokens).
+
+-- Dynamically-registered clients (RFC 7591). Public clients (PKCE, no secret).
+CREATE TABLE IF NOT EXISTS oauth_clients (
+  client_id TEXT PRIMARY KEY,             -- opaque, server-generated
+  client_name TEXT,                        -- from registration metadata (display only)
+  redirect_uris TEXT NOT NULL,             -- JSON array of exact-match redirect URIs
+  created_at TEXT NOT NULL                 -- ISO UTC
+);
+
+-- Authorization codes (OAuth 2.1, single-use, ~60s). Plaintext never stored.
+CREATE TABLE IF NOT EXISTS oauth_codes (
+  code_hash TEXT PRIMARY KEY,              -- sha256(plaintext code)
+  client_id TEXT NOT NULL REFERENCES oauth_clients(client_id),
+  redirect_uri TEXT NOT NULL,              -- must match the one used at /authorize
+  code_challenge TEXT NOT NULL,            -- PKCE S256 challenge
+  email TEXT NOT NULL,                     -- the human authenticated via magic-link
+  scope TEXT,                              -- granted scope (space-delimited)
+  created_at TEXT NOT NULL,                -- ISO UTC
+  expires_at TEXT NOT NULL,                -- ISO UTC (created_at + 60s)
+  consumed_at TEXT                         -- ISO UTC when redeemed; NULL = unused
+);
+CREATE INDEX IF NOT EXISTS idx_oauth_codes_expires ON oauth_codes(expires_at);
+
+-- Refresh tokens (hashed). Bound to the issued access token's user + client.
+CREATE TABLE IF NOT EXISTS oauth_refresh_tokens (
+  token_hash TEXT PRIMARY KEY,             -- sha256(plaintext refresh token)
+  client_id TEXT NOT NULL REFERENCES oauth_clients(client_id),
+  email TEXT NOT NULL,
+  created_at TEXT NOT NULL,                -- ISO UTC
+  revoked_at TEXT                          -- ISO UTC when rotated/revoked; NULL = active
+);
+
+-- Phase 14 — waitlist (tier interest capture, no payment).
+CREATE TABLE IF NOT EXISTS waitlist (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  email TEXT NOT NULL,
+  email_normalized TEXT NOT NULL,
+  tier TEXT,                               -- requested tier label (free text)
+  note TEXT,                               -- optional free text
+  ip_hash TEXT,
+  created_at TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_waitlist_email ON waitlist(email_normalized);
