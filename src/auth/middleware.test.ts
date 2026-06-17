@@ -69,7 +69,8 @@ describe('authRequired — missing header', () => {
     const res = await request(app).post('/mcp').send({ jsonrpc: '2.0', method: 'ping' });
     expect(res.status).toBe(401);
     // Exact-string lock per T08.
-    expect(res.headers['www-authenticate']).toBe('Bearer realm="vetoed"');
+    expect(res.headers['www-authenticate']).toContain('Bearer realm="vetoed"');
+    expect(res.headers['www-authenticate']).toContain('resource_metadata=');
     expect(res.body).toEqual({
       error: 'unauthorized',
       reason: 'missing_or_malformed_authorization_header',
@@ -83,7 +84,8 @@ describe('authRequired — missing header', () => {
       .set('Authorization', 'Basic abc:def')
       .send({});
     expect(res.status).toBe(401);
-    expect(res.headers['www-authenticate']).toBe('Bearer realm="vetoed"');
+    expect(res.headers['www-authenticate']).toContain('Bearer realm="vetoed"');
+    expect(res.headers['www-authenticate']).toContain('resource_metadata=');
     expect(res.body.reason).toBe('missing_or_malformed_authorization_header');
   });
 
@@ -103,7 +105,8 @@ describe('authRequired — invalid token', () => {
       .set('Authorization', 'Bearer pv_bogus_never_issued')
       .send({});
     expect(res.status).toBe(401);
-    expect(res.headers['www-authenticate']).toBe('Bearer realm="vetoed"');
+    expect(res.headers['www-authenticate']).toContain('Bearer realm="vetoed"');
+    expect(res.headers['www-authenticate']).toContain('resource_metadata=');
     expect(res.body).toEqual({
       error: 'unauthorized',
       reason: 'invalid_or_revoked_token',

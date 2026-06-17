@@ -165,6 +165,82 @@ export function consumeAuthCode(input: {
   return { ok: true, email: row.email, scope: row.scope ?? ACCESS_TOKEN_SCOPE };
 }
 
+// ── Authorize requests (carry OAuth context across the magic-link email) ──
+
+export interface AuthorizeRequest {
+  id: string;
+  client_id: string;
+  redirect_uri: string;
+  code_challenge: string;
+  scope: string | null;
+  state: string | null;
+}
+
+const AUTHORIZE_REQUEST_TTL_MS = 15 * 60_000; // matches magic-link TTL
+
+export function createAuthorizeRequest(input: {
+  clientId: string;
+  redirectUri: string;
+  codeChallenge: string;
+  scope?: string | null;
+  state?: string | null;
+}): string {
+  const id = `var_${base64url(randomBytes(18))}`;
+  const now = Date.now();
+  getDb()
+    .prepare(
+      `INSERT INTO oauth_authorize_requests (id, client_id, redirect_uri, code_challenge, scope, state, created_at, expires_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
+    )
+    .run(
+      id,
+      input.clientId,
+      input.redirectUri,
+      input.codeChallenge,
+      input.scope ?? ACCESS_TOKEN_SCOPE,
+      input.state ?? null,
+      new Date(now).toISOString(),
+      new Date(now + AUTHORIZE_REQUEST_TTL_MS).toISOString()
+    );
+  return id;
+}
+
+/** Atomically consume an authorize request (single-use, unexpired). */
+export function consumeAuthorizeRequest(id: string): AuthorizeRequest | null {
+  const db = getDb();
+  const row = db
+    .prepare(
+      `SELECT id, client_id, redirect_uri, code_challenge, scope, state, expires_at, consumed_at
+         FROM oauth_authorize_requests WHERE id = ?`
+    )
+    .get(id) as
+    | {
+        id: string;
+        client_id: string;
+        redirect_uri: string;
+        code_challenge: string;
+        scope: string | null;
+        state: string | null;
+        expires_at: string;
+        consumed_at: string | null;
+      }
+    | undefined;
+  if (!row || row.consumed_at !== null) return null;
+  if (Date.parse(row.expires_at) < Date.now()) return null;
+  const claimed = db
+    .prepare(`UPDATE oauth_authorize_requests SET consumed_at = ? WHERE id = ? AND consumed_at IS NULL`)
+    .run(new Date().toISOString(), id);
+  if (claimed.changes !== 1) return null;
+  return {
+    id: row.id,
+    client_id: row.client_id,
+    redirect_uri: row.redirect_uri,
+    code_challenge: row.code_challenge,
+    scope: row.scope,
+    state: row.state,
+  };
+}
+
 // ── Refresh tokens ─────────────────────────────────────────────────────────
 
 export function createRefreshToken(clientId: string, email: string): string {

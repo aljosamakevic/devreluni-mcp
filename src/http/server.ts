@@ -19,6 +19,7 @@ import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { authRequired } from '../auth/middleware.js';
 import { adminAuthRequired } from '../auth/admin-middleware.js';
 import { registerAdminApi } from './admin-api.js';
+import { registerOAuthRoutes } from './oauth-routes.js';
 import { rateLimit } from '../ratelimit/middleware.js';
 import { checkAndIncrementSignupIp } from '../ratelimit/signup-ip.js';
 import { checkAndIncrementMagicLinkIp } from '../ratelimit/magic-link-ip.js';
@@ -107,6 +108,11 @@ export function createHttpServer(getServer: () => McpServer): HttpServerHandle {
   // in /signup). Set to 1 (not true) so the rest of the chain is still
   // treated as untrusted — limits header-spoofing surface.
   app.set('trust proxy', 1);
+
+  // Phase 14 — OAuth 2.1 AS endpoints (discovery metadata, DCR, authorize,
+  // callback, token). Public (they ARE the auth flow); mounted before the
+  // bearer-gated /mcp. Additive — static bearer tokens are unaffected.
+  registerOAuthRoutes(app, MAGIC_LINK_BASE_URL);
 
   // In-memory map keyed by mcp-session-id header. Stateful mode.
   const transports: Record<string, StreamableHTTPServerTransport> = {};

@@ -108,6 +108,22 @@ CREATE TABLE IF NOT EXISTS oauth_refresh_tokens (
   revoked_at TEXT                          -- ISO UTC when rotated/revoked; NULL = active
 );
 
+-- Authorization requests in flight — created at GET /authorize, carried
+-- through the magic-link email round-trip (the id is in the callback URL),
+-- consumed at /oauth/callback to mint the auth code. ~15min TTL.
+CREATE TABLE IF NOT EXISTS oauth_authorize_requests (
+  id TEXT PRIMARY KEY,                     -- random; appears in the callback URL
+  client_id TEXT NOT NULL,
+  redirect_uri TEXT NOT NULL,
+  code_challenge TEXT NOT NULL,            -- PKCE S256
+  scope TEXT,
+  state TEXT,                              -- client CSRF/state, echoed back
+  created_at TEXT NOT NULL,
+  expires_at TEXT NOT NULL,
+  consumed_at TEXT
+);
+CREATE INDEX IF NOT EXISTS idx_oauth_authorize_requests_expires ON oauth_authorize_requests(expires_at);
+
 -- Phase 14 — waitlist (tier interest capture, no payment).
 CREATE TABLE IF NOT EXISTS waitlist (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
