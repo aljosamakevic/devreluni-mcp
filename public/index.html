@@ -37,7 +37,7 @@
       "@type": "WebApplication",
       "name": "Veto",
       "applicationCategory": "BusinessApplication",
-      "operatingSystem": "Cross-platform (Claude Desktop)",
+      "operatingSystem": "Cross-platform (Claude, ChatGPT)",
       "description": "An MCP server that validates product ideas across five structured gates. Returns GO / NO-GO / CONDITIONAL GO verdicts backed by source-grounded evidence.",
       "url": "https://getvetoed.com/",
       "author": {
@@ -1926,15 +1926,16 @@
         </div>
       </section>
 
-      <!-- Install — two paths as of 2026-06-18 (Phase 14 OAuth shipped):
-           (1) claude.ai custom connector over OAuth (recommended, no token),
-           (2) Claude Desktop / other clients via a bearer token from the form.
-           Cursor / Codex CLI accept the same URL + headers directly. -->
+      <!-- Install — connector-only onboarding as of 2026-06-18 (Phase 14 OAuth).
+           Claude and ChatGPT both add Veto as a custom connector via one URL
+           (https://getvetoed.com/mcp) + OAuth email sign-in. No config-paste.
+           Other MCP clients (Cursor, Codex CLI) can still use a bearer token
+           from the get-access form. -->
       <section id="install">
         <div class="container">
           <p class="eyebrow">Install</p>
-          <h2>Two ways in.</h2>
-          <p class="lede">Veto speaks MCP over Streamable HTTP. The fastest path is the claude.ai custom connector: sign in with email, nothing to paste. Prefer Claude Desktop or another client? Get a bearer token from <a href="#get-access" style="color: var(--accent); border-bottom: 0.5px solid var(--accent);">the form below</a> and paste the config.</p>
+          <h2>Add the connector.</h2>
+          <p class="lede">Veto speaks MCP over Streamable HTTP. Add it as a custom connector in Claude or ChatGPT using one URL, sign in with email, and you're connected. Nothing to paste, no config file. Using another MCP client like Cursor or Codex CLI? Grab a bearer token from <a href="#get-access" style="color: var(--accent); border-bottom: 0.5px solid var(--accent);">the form below</a>.</p>
 
           <div class="install-tier">
             <div class="client-block">
@@ -1954,32 +1955,19 @@
             </div>
 
             <div class="client-block">
-              <h4>Claude Desktop</h4>
-              <p class="tagline">Anthropic's native desktop app. The reference MCP host.</p>
-              <p class="path">macOS: <code>~/Library/Application Support/Claude/claude_desktop_config.json</code></p>
-              <p class="path">Windows: <code>%APPDATA%\Claude\claude_desktop_config.json</code></p>
+              <p class="tier-eyebrow">Also supported</p>
+              <h4>ChatGPT custom connector</h4>
+              <p class="tagline">Same URL, added as a connector. No token to paste.</p>
+              <ol class="connector-steps">
+                <li>In ChatGPT, open <strong>Settings &rarr; Connectors</strong> and choose <strong>Add custom connector</strong>.</li>
+                <li>Paste the connector URL below and add it.</li>
+                <li>Sign in with your email when Veto asks. Once connected, ask ChatGPT to validate an idea.</li>
+              </ol>
               <div class="copy-row">
                 <div class="copy-input" data-copy="https://getvetoed.com/mcp">https://getvetoed.com/mcp</div>
                 <button class="copy-btn" type="button" data-copy-target="prev">Copy URL</button>
               </div>
-              <div class="copy-row config">
-                <div class="copy-input">{
-  "mcpServers": {
-    "veto": {
-      "command": "npx",
-      "args": [
-        "-y",
-        "mcp-remote",
-        "https://getvetoed.com/mcp",
-        "--header",
-        "Authorization:Bearer pv_&lt;your_token&gt;"
-      ]
-    }
-  }
-}</div>
-                <button class="copy-btn" type="button" data-copy-target="prev">Copy JSON</button>
-              </div>
-              <p class="token-note">Replace <code>pv_&lt;your_token&gt;</code> with the token from your sign-in email. <a href="#get-access">Get your token →</a>. Claude Desktop uses the <code>mcp-remote</code> npx shim because it doesn't yet ship native Streamable HTTP support. Cursor and Codex CLI accept the URL + headers directly.</p>
+              <p class="token-note">Same <code>https://getvetoed.com/mcp</code> endpoint, same OAuth email sign-in, same 400 tool-calls/day free tier.</p>
             </div>
           </div>
         </div>
@@ -1991,7 +1979,7 @@
           <!-- TOOLS_SECTION:BEGIN -->
           <p class="eyebrow">5 prompts &middot; 13 tools</p>
           <h2>Inside the framework.</h2>
-          <p class="lede">Prompts are what you call from Claude Desktop. Tools are what runs underneath. The LLM picks them as it works through each gate.</p>
+          <p class="lede">Prompts are what you call from Claude or ChatGPT. Tools are what runs underneath. The LLM picks them as it works through each gate.</p>
           <div class="tools-subgroup">
             <p class="subgroup-eyebrow">What you call</p>
             <ul class="prompts-list">
@@ -2114,7 +2102,7 @@
           <p class="eyebrow">Get access</p>
           <h2>Get your token.</h2>
           <div class="signup-card">
-            <p>For Claude Desktop and other clients that need a bearer token. Enter your email and you get a one-click sign-in link that delivers your token plus the copy-paste config. Using the claude.ai connector instead? You don't need this; just <a href="#install" style="color: var(--accent); border-bottom: 0.5px solid var(--accent);">add the connector</a> and sign in there.</p>
+            <p>Only for other MCP clients that need a bearer token, like Cursor or Codex CLI. Enter your email and you get a one-click sign-in link that delivers your token. On Claude or ChatGPT you don't need this; just <a href="#install" style="color: var(--accent); border-bottom: 0.5px solid var(--accent);">add the connector</a> and sign in there.</p>
             <form class="signup-form" id="signup-form" novalidate>
               <div>
                 <label for="signup-email">Email</label>
