@@ -268,6 +268,35 @@ describe('buildMagicLinkTextBody / buildMagicLinkHtmlBody', () => {
     expect(html.includes('&lt;x&gt;')).toBe(true);
     expect(html.includes('&amp;b=')).toBe(true);
   });
+
+  it("default purpose ('token') uses token-centric copy", async () => {
+    const { buildMagicLinkTextBody, buildMagicLinkHtmlBody } = await import('./email.js');
+    const url = 'https://getvetoed.com/auth/magic-link/verify?token=abc';
+    const text = buildMagicLinkTextBody(url);
+    const html = buildMagicLinkHtmlBody(url);
+    expect(text.includes('your Veto access token')).toBe(true);
+    expect(text.includes('claim your token')).toBe(true);
+    expect(html.includes('One click to your token.')).toBe(true);
+    expect(html.includes('Sign in to Veto')).toBe(true);
+  });
+
+  it("'connect' purpose uses connection-centric copy with NO token language", async () => {
+    const { buildMagicLinkTextBody, buildMagicLinkHtmlBody } = await import('./email.js');
+    const url = 'https://getvetoed.com/oauth/callback?token=abc&areq=r1';
+    const text = buildMagicLinkTextBody(url, 'connect');
+    const html = buildMagicLinkHtmlBody(url, 'connect');
+    // URL still embedded in both (HTML escapes & → &amp; in the href).
+    expect(text.includes(url)).toBe(true);
+    expect(html.includes('href="https://getvetoed.com/oauth/callback?token=abc&amp;areq=r1"')).toBe(true);
+    // Connection-centric wording present.
+    expect(text.includes('connecting to Veto')).toBe(true);
+    expect(html.includes('One click to finish connecting.')).toBe(true);
+    expect(html.includes('Finish connecting')).toBe(true);
+    // No token-centric wording leaks into the connect variant.
+    expect(text.toLowerCase().includes('access token')).toBe(false);
+    expect(text.toLowerCase().includes('claim your token')).toBe(false);
+    expect(html.includes('One click to your token.')).toBe(false);
+  });
 });
 
 describe('sendMagicLinkEmail — happy path', () => {

@@ -171,7 +171,10 @@ export function registerOAuthRoutes(app: Express, baseUrl: string): void {
     // carrying the authorize-request id so we can mint the code afterwards.
     const link = issueMagicLink(email);
     const callbackUrl = `${baseUrl}/oauth/callback?token=${encodeURIComponent(link.plaintext)}&areq=${encodeURIComponent(areqId)}`;
-    await sendMagicLinkEmail({ to: email, url: callbackUrl });
+    // 'connect' copy: this link finishes authorizing an OAuth connector and
+    // redirects back — the user never sees a raw token, so the email must not
+    // use token/"paste into config" language.
+    await sendMagicLinkEmail({ to: email, url: callbackUrl, purpose: 'connect' });
     logger.info({ event: 'oauth_authorize_login', areq_present: true }, 'oauth_authorize_login');
     res.status(200).send(htmlPage('Check your inbox', '<h1>Check your inbox</h1><p>Click the sign-in link we just sent to finish connecting. The link expires in 15 minutes.</p>'));
   });

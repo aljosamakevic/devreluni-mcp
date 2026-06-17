@@ -984,6 +984,17 @@
         margin-top: var(--s-2);
         padding: 6px 14px;
       }
+      .connector-steps {
+        margin: 0 0 var(--s-3);
+        padding-left: 1.25em;
+        color: var(--text-secondary);
+        font-family: var(--font-body);
+        font-size: 13px;
+        line-height: 1.6;
+        max-width: 60ch;
+      }
+      .connector-steps li { margin: 0 0 var(--s-2); }
+      .connector-steps strong { color: var(--text); font-weight: 500; }
       .token-note {
         font-family: var(--font-body);
         font-size: 12px;
@@ -1914,17 +1925,33 @@
         </div>
       </section>
 
-      <!-- Install — Claude Desktop only for now. Cursor / Codex CLI /
-           Generic / OpenAI Responses API / ChatGPT all stripped per
-           Aljosa's review 2026-06-15. OAuth is still on the roadmap;
-           when it lands, ChatGPT + the consumer surfaces come back. -->
+      <!-- Install — two paths as of 2026-06-18 (Phase 14 OAuth shipped):
+           (1) claude.ai custom connector over OAuth (recommended, no token),
+           (2) Claude Desktop / other clients via a bearer token from the form.
+           Cursor / Codex CLI accept the same URL + headers directly. -->
       <section id="install">
         <div class="container">
           <p class="eyebrow">Install</p>
-          <h2>Paste the config. Restart.</h2>
-          <p class="lede">Veto speaks MCP over Streamable HTTP with bearer-token auth. Get your token at <a href="#get-access" style="color: var(--accent); border-bottom: 0.5px solid var(--accent);">the form below</a>; paste this config into Claude Desktop.</p>
+          <h2>Two ways in.</h2>
+          <p class="lede">Veto speaks MCP over Streamable HTTP. The fastest path is the claude.ai custom connector: sign in with email, nothing to paste. Prefer Claude Desktop or another client? Get a bearer token from <a href="#get-access" style="color: var(--accent); border-bottom: 0.5px solid var(--accent);">the form below</a> and paste the config.</p>
 
           <div class="install-tier">
+            <div class="client-block">
+              <p class="tier-eyebrow">Recommended</p>
+              <h4>claude.ai (web and desktop) custom connector</h4>
+              <p class="tagline">No config file, no token to copy. Sign in with email and you're connected.</p>
+              <ol class="connector-steps">
+                <li>In claude.ai, open <strong>Settings &rarr; Connectors &rarr; Add custom connector</strong>.</li>
+                <li>Paste the connector URL below, click <strong>Add</strong>, then <strong>Connect</strong>.</li>
+                <li>Enter your email when Veto asks, then click the one-time sign-in link we send. You land back in claude.ai, connected.</li>
+              </ol>
+              <div class="copy-row">
+                <div class="copy-input" data-copy="https://getvetoed.com/mcp">https://getvetoed.com/mcp</div>
+                <button class="copy-btn" type="button" data-copy-target="prev">Copy URL</button>
+              </div>
+              <p class="token-note">Veto signs you in over OAuth. There's no token to paste; authorization happens in your browser. Same 400 tool-calls/day free tier.</p>
+            </div>
+
             <div class="client-block">
               <h4>Claude Desktop</h4>
               <p class="tagline">Anthropic's native desktop app. The reference MCP host.</p>
@@ -2086,7 +2113,7 @@
           <p class="eyebrow">Get access</p>
           <h2>Get your token.</h2>
           <div class="signup-card">
-            <p>Enter your email. You get a one-click sign-in link. The link delivers your bearer token plus the copy-paste config for your client.</p>
+            <p>For Claude Desktop and other clients that need a bearer token. Enter your email and you get a one-click sign-in link that delivers your token plus the copy-paste config. Using the claude.ai connector instead? You don't need this; just <a href="#install" style="color: var(--accent); border-bottom: 0.5px solid var(--accent);">add the connector</a> and sign in there.</p>
             <form class="signup-form" id="signup-form" novalidate>
               <div>
                 <label for="signup-email">Email</label>
