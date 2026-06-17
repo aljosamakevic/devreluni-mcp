@@ -1,8 +1,10 @@
 # Veto — Session handoff
 
-**Date:** 2026-06-15
-**Author:** Aljosa + Claude (Claude Code, Opus 4.7 [1M])
-**Why this doc exists:** the previous Claude Code session ran long. This file captures every load-bearing fact a fresh session needs to be useful immediately — what's live, what's inviolate, what's queued, how to operate the project. If anything in the codebase contradicts this doc, trust the codebase; this is a snapshot of intent at handoff time.
+**Date:** 2026-06-17
+**Author:** Aljosa + Claude (Claude Code, Opus 4.8 [1M])
+**Why this doc exists:** captures every load-bearing fact a fresh session needs to be useful immediately. If anything in the codebase contradicts this doc, trust the codebase; this is a snapshot of intent at handoff time.
+
+> **Previous handoff was 2026-06-15 at commit `6a9ba84`.** This session (2026-06-17) shipped Phases 08–14 — see "What shipped this session." All deployed to prod.
 
 ---
 
@@ -13,247 +15,194 @@
 | **Repo** | `aljosamakevic/devreluni-mcp` (GitHub, private) |
 | **Working dir** | `/Users/aljosamakevic/Documents/Buildground/Sandbox/03-devreluni-mcp/devreluni-mcp` |
 | **Default branch** | `main` |
-| **Latest commit at handoff** | `6a9ba84` (polish: accordion as one unified light document) |
-| **Live URL** | `https://getvetoed.com` (Let's Encrypt, expires 2026-08-24; auto-renews via Fly) |
+| **Latest commit at handoff** | `e38daef` (fix(oauth): serve metadata at RFC 9728 path-suffixed + openid-config paths) |
+| **Live URL** | `https://getvetoed.com` (Let's Encrypt, cert valid through 2026-08-24; auto-renews via Fly) |
 | **Fallback URL** | `https://vetoed-mcp.fly.dev` |
-| **Build status** | green (260/260 tests, `assert-fomi-run.ts` 6/6 PASS) |
-| **Deploy status** | live, last CI run 27545342093 succeeded in 1m24s |
+| **Build status** | green (365 tests pass, `assert-fomi-run.ts` 6/6 PASS) |
+| **Deploy status** | live, main deployed at `e38daef`, prod `/health` = ok |
 
-## What's deployed
+## What's deployed (unchanged infra from 2026-06-15)
 
-- **Hosting:** Fly.io app `vetoed-mcp`, region `iad` (single region)
-- **Container:** Multi-stage Dockerfile (Node 22 bookworm-slim), build runs `tsc + tsx scripts/generate-tools-section.ts`
-- **Storage:** SQLite (`better-sqlite3`, WAL mode) on persistent Fly volume `vetoed_data` mounted at `/data`
-- **CI:** `.github/workflows/deploy.yml` runs on push to `main` → tests → build → `flyctl deploy --remote-only`
-- **CI secret:** `FLY_API_TOKEN` (GitHub repo secret, deploy-scoped, 1-year expiry)
-- **Fly secrets:** `RESEND_API_KEY`, `ADMIN_PASSWORD`, `SERPER_API_KEY`, `PRODUCTHUNT_API_KEY`, `GITHUB_TOKEN`
-- **Fly env (non-secret, in `fly.toml`):** `MCP_TRANSPORT=http`, `PORT=3000`, `VETOED_DB_PATH=/data/vetoed.db`, `BASE_URL=https://getvetoed.com`
-- **Email:** Resend, domain `getvetoed.com` verified, from-address `Veto <noreply@getvetoed.com>`
+- **Hosting:** Fly.io app `vetoed-mcp`, region `iad`. Multi-stage Dockerfile (Node 22 bookworm-slim). SQLite (`better-sqlite3`, WAL) on persistent volume `vetoed_data` at `/data`.
+- **CI:** `.github/workflows/deploy.yml` on push to `main` → tests → build → `flyctl deploy --remote-only`.
+- **Fly secrets:** `RESEND_API_KEY`, `ADMIN_PASSWORD`, `SERPER_API_KEY`, `PRODUCTHUNT_API_KEY`, `GITHUB_TOKEN`. **Fly env:** `MCP_TRANSPORT=http`, `PORT=3000`, `VETOED_DB_PATH=/data/vetoed.db`, `BASE_URL=https://getvetoed.com`.
+- **Email:** Resend, `getvetoed.com` verified, from `Veto <noreply@getvetoed.com>`.
 
-## Phase 01 INVIOLATE — DO NOT TOUCH
+---
 
-These files encode the anti-bias property that makes Veto valuable. They must not be modified by any future work without explicit human review:
+## What shipped this session (2026-06-17) — Phases 08–14
 
-- `src/validation/` (entire directory)
-- `src/lib/bias.ts`
-- `src/prompts/validate-idea.ts`
-- `src/tools/finalize-validation-report.ts`
+All triggered by real `validate_idea` dogfooding that surfaced a recurring **model-rationalization anti-pattern** (see Lessons). Each phase deployed + verified on prod.
 
-`scripts/assert-fomi-run.ts` must exit 0 with 6/6 PASS after every commit. If it ever fails, fix the regression at root — do not loosen assertions, do not modify the validator, do not modify the script.
+- **Phase 08 — finalize-report DX.** Registered the `resource://report-schema` resource (JSON Schema + minimal-valid skeleton + worked example, via `zod-to-json-schema`) that the `validate_idea` prompt referenced but never existed. Enriched the `finalize_validation_report` failure envelope with `expected_skeleton` + per-issue `hints[]`. Prompt now mandates loading the resource before constructing JSON. → **4 resources now** (was 3).
+- **Phase 09 — tool envelope status discriminator.** Every tool response now carries `status: 'ok' | 'honest_gap' | 'error'` (+ optional `error: {code,message}`). `honest_gap` = ran cleanly, found nothing (the anti-bias gap signal); models must not read it as a failure. Helpers in `src/lib/envelope.ts`. Prompt forbids confabulating infra causes.
+- **Phase 10 — severity-weighted verdict + tool entity-disambiguation.** **Gate 3 (Platform/Moat) FAIL now vetoes the overall verdict to NO-GO** regardless of the fail-2 count (existential gates don't get a soft vote). Renderer never silently drops killshots. Demand/revenue tools disambiguate entities (Quivr≠"focus", "freedom"≠Freedom app). **INVIOLATE override — user-authorized.**
+- **Phase 11 — relevance hardening.** Extracted `src/lib/relevance.ts` (`competitorAppears`, `isRelevant`, `buildRelevanceTerms`); applied gating across 6 more tools; fixed the "3+ independent sources" overclaim to count **distinct hosts**, not snippets.
+- **Phase 12 — validation-core integrity (INVIOLATE, user-authorized).** V-H2 enforce killshots cite real DOK1 URLs; V-M1 sync `gate_summary.reason` on override; V-M2 pin gate-3 identity; V-M4 Source-Quality-Audit depth advisory. First dedicated `structural-validator` vitest.
+- **Phase 13 — auth hardening.** Magic-link **claims atomically before minting** (one link → one token; `claimMagicLink` + `recordConsumedToken`); PII (email) dropped from unauthenticated verify logs; usage-logger routed through pino.
+- **Phase 14 — full OAuth 2.1 bundle (built on `feat/oauth`, merged once verified end-to-end).** veto is now its own OAuth 2.1 AS + Resource Server so it can be added as a **claude.ai custom connector**.
 
-## Architecture summary
+Also: `fix(logger)` pino→stderr (stdio stdout stays clean for JSON-RPC); `fix(ratelimit)` global Serper cap **fails open when the DB is unavailable** (local stdio); onboarding surfaces hand out the `mcp-remote` config shape for Claude Desktop.
 
-### Transport
-- Stdio (default): `node build/index.js` with `MCP_TRANSPORT` unset/blank/`stdio` — used by Claude Desktop locally. Single `McpServer` instance for the process lifetime.
-- HTTP (production): `MCP_TRANSPORT=http` boots an Express app via `createHttpServer(getServer)` in `src/http/server.ts`. **Per-session McpServer factory** (D-03-7 fix) — each new MCP session via `POST /mcp` constructs a fresh McpServer because the SDK forbids one server connecting to multiple transports.
+**Audit:** `.planning/codebase/AUDIT-2026-06-17.md` — whole-project audit; most findings now fixed, remainder noted there.
 
-### Surface
-| Method | Path | Auth | Rate-limit |
-|---|---|---|---|
-| GET | `/health` | none | none |
-| POST | `/signup` (Phase 04, fallback) | none | per-IP 5/h |
-| POST | `/auth/magic-link/request` | none | per-IP 5/h + per-email 5/h |
-| GET | `/auth/magic-link/verify` | none (token is auth) | n/a (one-time use) |
-| POST | `/mcp` | Bearer | per-token 400/day |
-| GET | `/mcp` | none — 405 | n/a |
-| GET | `/admin/*` | Basic (`adminAuthRequired`, fail-closed) | none |
-| POST/DELETE | `/admin/api/*` | Basic | none |
-| GET | `/` + static | none | none |
+---
+
+## Phase 01 INVIOLATE — status after this session
+
+These files encode the anti-bias property:
+- `src/validation/` (entire directory) · `src/lib/bias.ts` · `src/prompts/validate-idea.ts` · `src/tools/finalize-validation-report.ts`
+
+**`src/validation/` and `validate-idea.ts` WERE modified this session — with explicit human authorization** (Aljosa, via AskUserQuestion, for the Phase 10 veto and Phase 12 integrity work). Authorized changes:
+- `verdict-validator.ts`: existential Gate 3 veto + killshot synthesis + `gate_summary.reason` sync.
+- `renderer.ts`: surface (never drop) killshots on softened verdicts.
+- `structural-validator.ts`: V-H2/M2/M4 checks.
+- `validate-idea.ts`: status-field + report-schema + calling-convention guidance (Step 1/Step 7 only).
+
+**The rule still holds for the next session:** do NOT modify `src/validation/*` without fresh explicit human review. `scripts/assert-fomi-run.ts` must exit 0 (6/6 PASS) after every commit — it stayed green through all of the above. (It reads a static artifact at `.planning/validation-runs/03-fomi-via-https.md`, so validator code changes don't move it; verify by re-running, not by assuming.)
+
+---
+
+## Architecture summary (updated)
 
 ### MCP entities
-- **13 tools** (one per src/tools/*.ts, excluding `*.test.ts`). Order is load-bearing — `assert-fomi-run.ts` counts tool invocations.
-- **5 prompts** (validate_idea, steelman_against, run_single_gate, generate_test_cards, quick_kill_check). The prompt-count regression lock at `src/server/prompt-count.test.ts` enforces this.
-- **3 resources** (source-tier-bias.md, tool-to-gate-map.md, evaluation-lens-matrix.md). Loaded fresh per invocation.
+- **13 tools** (one per `src/tools/*.ts` minus tests). Order load-bearing (`assert-fomi-run` counts invocations).
+- **5 prompts** (validate_idea, steelman_against, run_single_gate, generate_test_cards, quick_kill_check). Locked by `src/server/prompt-count.test.ts`.
+- **4 resources** (source-tier-bias, tool-to-gate-map, evaluation-lens-matrix, **report-schema** [new, built fresh per read]).
+- **Tool response envelope** (`src/types.ts` `ToolResult<T>`): `{ status, data, sources, confidence_note, fallbacks_used, error? }`. Build via `src/lib/envelope.ts` (`okResult`/`honestGapResult`/`errorResult`) — never hand-roll.
+- **Relevance gating** (`src/lib/relevance.ts`): all external-search tools route entity/category matching through it. Conservative — exclude + report weak signal rather than launder noise.
 
-### Auth + signup
-- **Magic-link self-serve (primary):** Phase 05a. User enters email at `https://getvetoed.com/` → `POST /auth/magic-link/request` → email arrives → click verifies → `GET /auth/magic-link/verify?token=...` mints a bearer token + renders inline with Claude Desktop config snippet. 15-min TTL, one-time use. No second email.
-- **Admin queue (fallback):** Phase 04. `POST /signup` still works; admin dashboard at `/admin` can approve → token emailed via Resend, or deny → silent.
-- **Bearer token shape:** `pv_<base64url-32-bytes>`. Stored as sha256 hash in `tokens.token_hash`. First 7 chars stored as `token_prefix` for grep-friendliness.
+### Verdict math (spec + Phase 10 amendment)
+Order in `verdict-validator.ts`: per-gate source/bias rules → fail-2 math → **existential Gate 3 veto** → validation-check decision matrix. A Gate 3 FAIL forces NO-GO; a Fundamental validation-check still overrides to INCONCLUSIVE.
 
-### Rate limits (subject to retune — see queue)
-- Per-token: 400 tool calls / 24h sliding window. Sufficient for ~20 worst-case spec-bound `validate_idea` runs per day.
-- Global Serper: 1,500 calls / UTC day. Graceful degradation when hit (returns stub data + `fallbacks_used: ['serper_global_cap']`, NOT a 429).
-- Per-IP: 5/hour on `/signup` + 5/hour each on `/auth/magic-link/request` (per-IP and per-email).
+### Auth + signup (updated)
+- **Static bearer (unchanged):** `pv_<base64url-32>`, sha256 in `tokens.token_hash`. `authRequired` validates. Claude Desktop uses `mcp-remote` shim (see `docs/HOSTED_SETUP.md` §2) — the `{ url, headers }` shape is NOT accepted by Claude Desktop; hand out the `command: npx mcp-remote` shape.
+- **Magic-link self-serve:** `POST /auth/magic-link/request` → email → `GET /auth/magic-link/verify` mints a bearer. Now **claim-before-mint** (one-time-use is atomic).
+- **OAuth 2.1 (NEW, live, additive):** veto is its own AS+RS. OAuth access tokens are normal `pv_` tokens minted into `tokens`, so `authRequired` validates OAuth + static identically. Endpoints in `src/http/oauth-routes.ts`, storage/PKCE in `src/auth/oauth.ts`. Magic-link is the human login step inside `/authorize`.
 
-### Observability
-- pino structured JSON logs to stdout (Fly captures). Redaction list: `*.authorization`, `*.token`, `*.token_hash`, `*.password`, plus env-var-value substring scrub (`SERPER_API_KEY` etc.).
-- `/health` returns `{ status, version, uptime_s, db_ok, last_error_at, cache_hit_rate, transport, checked_at }`. Always 200; subsystem degradation surfaces in the `status` field.
+### Rate limits (updated)
+- **Per-user** (`src/ratelimit/per-user.ts`, `PER_USER_LIMIT=400`/24h) — counts across ALL of a user's tokens (so OAuth refresh can't multiply quota). Middleware prefers per-user when an email is bound, falls back to per-token.
+- **Global Serper:** 1,500/UTC-day, graceful degradation; **fails open if the DB can't be opened** (local stdio) — does NOT disable the hosted cap (verified).
 
-## Active queue (task chips, fetched via the session UI)
+### HTTP surface (new/changed rows)
+| Method | Path | Auth | Notes |
+|---|---|---|---|
+| GET | `/.well-known/oauth-protected-resource[/mcp]` | none | RFC 9728 (also openid-configuration alias) |
+| GET | `/.well-known/oauth-authorization-server[/mcp]` | none | RFC 8414 |
+| POST | `/register` | none | Dynamic Client Registration (RFC 7591) |
+| GET | `/authorize` | none | OAuth 2.1 + PKCE → magic-link login |
+| POST | `/authorize/login` | none | email → magic link |
+| GET | `/oauth/callback` | none | magic-link verify → auth code → 302 to client |
+| POST | `/token` | none (PKCE) | authorization_code + refresh_token grants |
+| GET/POST | `/account/upgrade` | none | waitlist (no payment), per-IP capped |
+| POST | `/mcp` | Bearer | 401 now carries `resource_metadata=...` |
 
-These are filed and waiting. The chip system spawns them in a fresh session when you click "Start":
+---
 
-1. **`task_2e5f51d3` — Tune per-token + global rate limits.** Current 400 tool calls/day and 1500 Serper/UTC-day were sized in Phase 03 with no usage data. Revisit when real users land. Affects `src/ratelimit/per-token.ts`, `src/ratelimit/global.ts`, plus user-facing docs in `docs/HOSTED_SETUP.md` and CONCERNS.md D-03-4.
+## OPEN ITEMS (start here next session)
 
-2. **`task_dc941873` — Phase 08: OAuth + per-user rate limits + waitlist tier UI.** Big phase, 4 sub-phases (~21-27 commits total). Unlocks ChatGPT consumer install + cleaner per-user rate limiting + paid tier groundwork (with waitlist signup form on `/account/upgrade` instead of Stripe checkout — Aljosa explicitly chose waitlist over payment integration). **Trigger to dispatch:** first paying-customer signal OR consumer-ChatGPT becomes load-bearing for distribution.
+1. **claude.ai connector still not connecting.** Server is provably healthy (TLS valid, `GET /mcp`→405, `POST /mcp`→401 in ~200ms with `resource_metadata`, DCR returns a valid client, full handshake passes in tests + live HTTP). **But Fly logs show ZERO requests from claude.ai across every attempt** — no `/.well-known`, `/register`, `/authorize`, `/token`, or `/mcp`. So claude.ai lists the connector but never initiates the connection/OAuth flow. The fix is on the claude.ai side: **remove → re-add the connector → click Connect → complete the Veto email sign-in.** Diagnostic question for the user: *did a Veto sign-in/authorize prompt ever appear?* To debug a fresh attempt: `flyctl logs -a vetoed-mcp` and watch for `oauth_authorize_login` / `oauth_code_issued` / `oauth_token_issued` events — if none appear, claude.ai isn't reaching the server.
+2. **`estimate_demand_signals` oversized-output bug.** On some categories (e.g. "event marketing automation") the tool returns >340K chars (huge GitHub repo list) and the MCP client rejects it as too large → the tool effectively errors. Fix: cap/trim the repo payload (it already filters off-topic repos for the *signal*, but still returns the full list in `data`). Low effort, real bug. Not yet filed as a phase.
 
-## What was just shipped in this session (chronological tail)
+---
 
-The session covered a lot. Most recent ~10 commits:
+## Active queue (task chips)
 
-| Commit | Subject |
-|---|---|
-| `6a9ba84` | polish: accordion as one unified light document; per-gate descriptions in headers |
-| `680b67b` | polish: evidence section as 5-gate accordion (all light docs, G4 open) |
-| `f59a4ac` | polish: em-dash sweep across all user-facing copy |
-| `22a2bb7` | polish: evidence frame as a light document (Gate 4 deep dive) |
-| `7160cd6` | polish: add favicon (V mark in accent yellow on dark) |
-| `b678b59` | polish: nav "Docs" link → #tools (Inside the framework section) |
-| `6ad40ce` | remove(phase-07): drop validate_assumption — generate_test_cards is the prompt |
-| `21e9330` | polish: evidence sample — Gate 4 (Pricing) deep dive + cross-gate snippets |
-| `c5e725d` | polish: framework section — prompts first + plain-English descriptions |
-| `cafa42e` | polish: install section — Claude Desktop only |
-| `5074f76` | polish: hide GitHub nav link + rename hero CTA |
+1. **`task_dc941873` — Phase 08 OAuth + per-user limits + waitlist UI.** ✅ **DONE this session** (Phase 14). If still showing pending in the UI, dismiss it.
+2. **`task_2e5f51d3` — Tune per-token + global rate limits.** Partially addressed: per-token replaced by **per-user** (400/day). Global Serper still 1,500/UTC-day. Revisit thresholds when real usage data exists; update `docs/HOSTED_SETUP.md` if changed.
 
-Bigger phases shipped: Phase 06 (Brand landing rebuild — 17 commits), Phase 07 (validate_assumption — shipped then UNWOUND in this session because `generate_test_cards` already does what Aljosa actually wanted), Phase 05a (Magic link auth), Phase 04 (Self-serve admin queue), Phase 03 (Multi-tenant HTTPS).
-
-**Heads-up: validate_assumption was shipped (PR #6) then removed in this same session.** `.planning/phases/07-validate-assumption/CONTEXT.md` + `PLAN.md` stay in git as historical record but the code is gone. `generate_test_cards` is the actual "input idea → output hypotheses + experiment designs + pass/fail metrics" prompt — see `src/prompts/generate-test-cards.ts`.
+---
 
 ## Common operations
 
 ```bash
 # Local dev
-npm run build         # tsc + chmod + copy schema + generate tools section
-npm test              # vitest run, 260 tests
-npm run smoke:http    # end-to-end Streamable HTTP smoke (spawns child, 13/13 tools)
-npx tsx scripts/assert-fomi-run.ts   # anti-bias regression gate, MUST exit 0
-npx tsx scripts/assert-fomi-run.ts --artifact .planning/validation-runs/03-fomi-via-https.md
-
-# HTML validation for landing changes
+npm run build          # tsc + chmod + copy schema + generate tools section
+npm test               # vitest run (365 tests)
+npm run smoke:http     # end-to-end Streamable HTTP smoke (13/13 tools)
+npx tsx scripts/assert-fomi-run.ts   # anti-bias regression gate, MUST exit 0 (6/6)
 npx --yes html-validate@9 public/index.html
 
-# In-container admin (token issue / list / revoke)
-flyctl ssh console -a vetoed-mcp
-# inside:
-cd /app && npm run admin -- list-tokens
-cd /app && npm run admin -- issue-token --email=alice@example.com
-cd /app && npm run admin -- revoke-token pv_<prefix-or-id>
+# Verify stdio stdout stays clean (must be 0 bytes — JSON-RPC channel)
+( node build/index.js > /tmp/o.log 2>/dev/null & P=$!; sleep 1; kill $P; wait ); wc -c < /tmp/o.log
 
-# Live logs
+# OAuth live check against prod
+curl -sS https://getvetoed.com/.well-known/oauth-protected-resource
+curl -sS -X POST https://getvetoed.com/register -H 'content-type: application/json' -d '{"client_name":"x","redirect_uris":["https://claude.ai/cb"]}'
+
+# In-container admin / logs / deploy
+flyctl ssh console -a vetoed-mcp          # then: cd /app && npm run admin -- list-tokens
 flyctl logs -a vetoed-mcp
-flyctl logs --since 5m -a vetoed-mcp | grep -E 'resend_disabled|approval_email_failed|magic_link_email_failed'
-
-# Health + cert
-curl -sS https://getvetoed.com/health
-flyctl certs check getvetoed.com --app vetoed-mcp
-
-# Manual deploy
 flyctl deploy --remote-only --app vetoed-mcp
-
-# PR workflow
-gh pr create --base main --head <branch> --title "..." --body "..."
-gh pr merge <num> --merge --repo aljosamakevic/devreluni-mcp
-gh run list --workflow=deploy.yml --limit 3
 gh run watch <run-id> --exit-status
+
+# PR/merge: OAuth-style risky work → branch, verify e2e, merge --no-ff, deploy.
 ```
 
-## Test credentials (still valid at handoff time)
+## Test credentials (low-security, rotate before truly public)
 
 - **Admin password (local + Fly):** `nD9H3F8EjBFqL884rBpnBFEBv-sHehCn`
-- **Test bearer token (issued T-final-3b, still active):** `pv_HxTO10-scbE5yDS6hBJUiVFBWsENRKbl59zKWqIINHY` — bound to `test@vetoed.local`
-
-Both should be considered low-security since they're in this file in the repo. Rotate before going truly public.
-
-## Project conventions (lessons from this session)
-
-- **Atomic commits.** One concern per commit. Subject line starts with phase number or `polish:` / `fix:` / `chore:` etc. Body explains WHY, not WHAT.
-- **Build + test green after every commit.** No exceptions.
-- **No em dashes in user-facing copy.** Use periods, middle dots (`·`), or pipes (`|`). Em dashes preserved verbatim in the captured Fomi artifact (`.planning/validation-runs/03-fomi-via-https.md`) per spec §10 "don't reinterpret the source." Internal code/HTML/CSS comments untouched.
-- **BRAND.md is the source of truth for visual + voice decisions.** Located at repo root. 364 lines. Read sections "Personality," "Color," "Typography," "What NOT to do" before any UI change.
-- **No "powerful," "insights," "AI-powered," "discover," "unlock," "supercharge," "game-changer."** BRAND.md forbids these.
-- **Verdicts are all-caps:** GO / NO-GO / CONDITIONAL GO / PASS / FAIL / INCONCLUSIVE. Never softened.
-- **GitHub nav link is hidden** (repo is private). Restore by uncommenting the line in `public/index.html` `<nav>` block when repo goes public.
-- **Old GSD format.** This project predates the `gsd-sdk` CLI. Phases live at `.planning/phases/NN-slug/CONTEXT.md` + `PLAN.md`. No ROADMAP.md, no STATE.md. The official `gsd-add-phase` / `gsd-discuss-phase` skills won't work without the SDK installed — run them manually following the Phase 03 pattern.
-
-## Things I learned NOT to do this session
-
-- Don't put `<div>` or `<p>` inside `<summary>` — html-validate flags it. Use `<span>` with `display: block` / `display: grid` via CSS.
-- Don't run `git add -A` — it stages embedded git repos in `.claude/worktrees/` and `.worktrees/`. Always stage specific files.
-- Don't change `npm run build` semantics without updating the Dockerfile builder stage to copy any new dependencies (`scripts/` and `public/` are needed at build time as of Phase 06 — see Dockerfile comment).
-- Don't trust `dig getvetoed.com` from this machine — local mDNSResponder cache can stay stuck on Namecheap's parking IP for hours. Use `dig @8.8.8.8 getvetoed.com` to bypass.
-- Don't trust Node's `dns.lookup()` either — it shares the macOS mDNS cache. For scripts that hit the canonical hostname, use a Node preload that swaps `dns.lookup` for `dns.resolve4` (see `T-final-3b` commit notes — the throwaway `/tmp/dns-bypass.mjs` pattern).
-
-## File map (where things live)
-
-```
-/
-├── BRAND.md                        # locked v1 visual + voice identity
-├── HANDOFF.md                      # this file
-├── Dockerfile                      # multi-stage; builder COPYs scripts/ + public/ BEFORE build
-├── fly.toml                        # app=vetoed-mcp, region=iad, mounts vetoed_data
-├── package.json                    # build script includes tools-section generator
-├── public/
-│   ├── index.html                  # landing — 1900+ lines, inline CSS + JS
-│   ├── favicon.svg                 # V mark, accent yellow on dark
-│   └── admin/                      # admin dashboard (Basic-auth gated)
-├── src/
-│   ├── index.ts                    # entry point + createMcpServer factory
-│   ├── http/server.ts              # Express + per-session MCP transport
-│   ├── http/magic-link-pages.ts    # success + 4 error page HTML
-│   ├── http/admin-api.ts           # admin endpoints
-│   ├── http/usage-logger.ts        # res.write/end wrapper for usage_log
-│   ├── auth/                       # tokens, middleware, admin-middleware, magic-link, signup-requests
-│   ├── ratelimit/                  # per-token, global, signup-ip, magic-link-ip, magic-link-email
-│   ├── lib/email.ts                # Resend wrapper, both email templates
-│   ├── lib/logger.ts               # pino with redaction
-│   ├── lib/cache.ts                # in-process cache, instrumented (D-03-1)
-│   ├── lib/serper.ts               # Serper wrapper with global-cap graceful degradation
-│   ├── db/                         # schema.sql + connection.ts
-│   ├── tools/                      # 13 tool files
-│   ├── prompts/                    # 5 prompt files
-│   ├── resources/                  # 3 reference markdown files
-│   ├── server/prompt-count.test.ts # regression lock at 5 prompts
-│   └── validation/                 # PHASE 01 INVIOLATE — do not touch
-├── scripts/
-│   ├── admin.ts                    # CLI: issue-token / list-tokens / revoke-token
-│   ├── smoke-http.ts               # end-to-end MCP client smoke
-│   ├── assert-fomi-run.ts          # PHASE 01 INVIOLATE regression gate
-│   ├── capture-fomi-via-https.ts   # captures Fomi artifact via live HTTPS
-│   ├── run-fomi-via-https.ts       # T-final-3a HTTPS client (placeholder smoke)
-│   └── generate-tools-section.ts   # build-time auto-extraction of prompts + tools for landing
-├── docs/
-│   ├── HOSTED_SETUP.md             # user-facing onboarding
-│   ├── OPERATIONS.md               # ops runbook (Fly secrets, admin path, log inspection)
-│   └── DNS_SETUP.md                # CNAME + cert setup for getvetoed.com
-└── .planning/
-    ├── spec/                       # build-spec-v1.0.md + framework-context.md (immutable record)
-    ├── codebase/                   # ARCHITECTURE, CONCERNS, CONVENTIONS, etc.
-    ├── phases/                     # NN-slug/ per phase, CONTEXT.md + PLAN.md inside each
-    └── validation-runs/            # captured Fomi artifacts (regression baselines)
-```
-
-## How to resume in a fresh session
-
-1. **Read this file** (you're here). Then `cat BRAND.md` if doing UI work.
-2. **Verify state:**
-   ```bash
-   cd /Users/aljosamakevic/Documents/Buildground/Sandbox/03-devreluni-mcp/devreluni-mcp
-   git fetch origin
-   git status                    # expect clean working tree
-   git log --oneline -5          # expect 6a9ba84 or newer at HEAD
-   npm test                      # expect 260 passed
-   npx tsx scripts/assert-fomi-run.ts   # expect 6/6 PASS
-   ```
-3. **Check live:**
-   ```bash
-   curl -sS https://getvetoed.com/health    # expect 200 + db_ok:true
-   ```
-4. **Read pending task chips** if the session UI shows any. If `task_2e5f51d3` or `task_dc941873` are still pending, decide whether to dispatch them or keep deferring.
-5. **Ask Aljosa what he wants to work on.** Most likely candidates:
-   - More landing polish (cheap, fast)
-   - Phase 08 OAuth (big, expensive — only if there's a real trigger)
-   - Rate limit retune (cheap, fast — only if there's usage data)
-   - A new feature he describes
-
-## Open product directions (Aljosa's mental model)
-
-- **Trigger for OAuth:** first user emails asking to pay for more capacity, OR consumer ChatGPT becomes load-bearing for distribution. Until then, magic-link + Claude Desktop is enough.
-- **Tier model:** free 400/day, paid (TBD) higher cap. Stripe checkout deferred — waitlist signup is the v1 interest-capture mechanism.
-- **No federated identity** (Google/GitHub) in v1. Magic-link is the auth backend for OAuth when it ships.
-- **Single region.** Multi-region only if latency complaints emerge.
-- **No analytics in landing yet.** Plausible / Umami may come later as a separate small phase.
-- **No paid LLM in the loop.** Veto stays MCP-first; users supply Claude (or Cursor, etc.). Frontend-with-live-validator was discussed and explicitly deferred — economics don't work until there's a tier model + Stripe.
+- **Test bearer token (active):** `pv_HxTO10-scbE5yDS6hBJUiVFBWsENRKbl59zKWqIINHY` — bound to `test@vetoed.local`. Used against prod this session; works.
 
 ---
 
-*Generated by Claude Code session ending 2026-06-15. If something in the codebase contradicts this file, trust the codebase.*
+## Project conventions (carried + new)
+
+- **Atomic commits**, build + test + `assert-fomi-run` green after every commit. Commit body explains WHY. Co-author trailer: `Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>`.
+- **No em dashes in user-facing copy** (BRAND.md). Verdicts all-caps (GO/NO-GO/CONDITIONAL GO/PASS/FAIL/INCONCLUSIVE).
+- **BRAND.md is the source of truth** for visual + voice. Forbidden words: powerful, insights, AI-powered, discover, unlock, supercharge, game-changer.
+- **Don't `git add -A`** — stages embedded git repos in `.claude/`/`.worktrees/`. Stage specific files. (`.claude/`, `.worktrees/`, `coverage/` are untracked and expected.)
+- **Old GSD format** — manual phases at `.planning/phases/NN-slug/` (CONTEXT.md + PLAN.md). No SDK; `/gsd-*` skills run manually following the Phase 03 pattern.
+- **OAuth / production auth = branch-first.** Build on a feature branch, verify end-to-end (unit + live HTTP), merge `--no-ff`, deploy as one unit. Never half-ship an auth flow to main.
+
+## Lessons from this session (important — read before trusting a bug report)
+
+- **The model-rationalization anti-pattern.** A calling LLM hit four "failures" this session and each time confabulated a plausible-but-wrong infrastructure cause: "schema isn't publicly documented," "MCP server is timing out," "two tools can't open their database," "fetch through an artifact → NetworkError." Every one was either a real bug with a *different* root cause or a wrong assumption — **verified against logs/code, not the model's narration.** Discipline: when a model (or this doc) claims a cause, reproduce it against `flyctl logs` / the code before believing it. This is literally the bias Veto exists to prevent, applied to its own operation.
+- **`honest_gap` ≠ failure.** Empty tool results are a finding (the status discriminator exists precisely so models stop reading "no data" as "broken").
+- **Claude Desktop rejects the `{ url, headers }` MCP shape** — use the `mcp-remote` `command/args` shape. claude.ai (remote connector) uses OAuth, not a pasted token.
+- **stdio stdout is the JSON-RPC channel** — anything written to it (a stray pino line, an oversized payload) corrupts the client. Logger writes to stderr.
+
+---
+
+## File map (new files this session marked ✨)
+
+```
+src/
+├── types.ts                         # ToolResult now has status + error discriminator
+├── lib/
+│   ├── envelope.ts          ✨      # okResult / honestGapResult / errorResult
+│   ├── relevance.ts         ✨      # competitorAppears / isRelevant / buildRelevanceTerms
+│   ├── logger.ts                    # pino → STDERR (fd 2)
+│   └── serper.ts                    # global cap fails open when DB unavailable
+├── resources/
+│   └── report-schema.ts     ✨      # buildReportSchemaResource() + MINIMAL_VALID_SKELETON
+├── auth/
+│   ├── oauth.ts             ✨      # AS storage, DCR, PKCE codes, refresh rotation
+│   ├── waitlist.ts          ✨      # addToWaitlist
+│   └── magic-link.ts                # + claimMagicLink / recordConsumedToken
+├── ratelimit/
+│   └── per-user.ts          ✨      # checkPerUserLimit (cross-token, by email)
+├── http/
+│   ├── oauth-routes.ts      ✨      # all OAuth 2.1 endpoints + /account/upgrade
+│   ├── server.ts                    # mounts registerOAuthRoutes
+│   └── usage-logger.ts              # error path via pino
+├── validation/                      # INVIOLATE — Phase 10/12 changes (authorized)
+│   ├── verdict-validator.ts         # existential veto + killshot synth + reason sync
+│   ├── structural-validator.ts      # V-H2/M2/M4
+│   └── renderer.ts                  # killshots surfaced, not dropped
+└── db/schema.sql                    # + oauth_clients/codes/refresh/authorize_requests, waitlist
+
+.planning/
+├── codebase/AUDIT-2026-06-17.md ✨  # whole-project audit (prioritized backlog)
+└── phases/08..14-*/             ✨  # CONTEXT.md + PLAN.md per phase
+```
+
+## How to resume
+
+1. Read this file. `cat BRAND.md` for UI work. Skim `.planning/codebase/AUDIT-2026-06-17.md` for the remaining backlog.
+2. Verify: `git status` (clean), `git log --oneline -3` (expect `e38daef`), `npm test` (365), `npx tsx scripts/assert-fomi-run.ts` (6/6), `curl -sS https://getvetoed.com/health`.
+3. **Most likely first task:** the claude.ai connector (Open Item #1 — operational, on the claude.ai side) or the `estimate_demand_signals` oversized-output bug (Open Item #2 — a real, small code fix).
+4. Remaining audit backlog (AUDIT doc): mostly closed; check the "Recommended next phases" section for anything deferred.
+
+---
+*Generated by Claude Code session ending 2026-06-17 (Opus 4.8 [1M]). If the codebase contradicts this file, trust the codebase.*
