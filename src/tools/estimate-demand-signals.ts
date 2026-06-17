@@ -21,6 +21,7 @@ import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 import type { ToolResult, ToolSource } from '../types.js';
 import { okResult } from '../lib/envelope.js';
+import { isRelevant, buildRelevanceTerms } from '../lib/relevance.js';
 import {
   searchRepos,
   isGitHubLive,
@@ -159,58 +160,21 @@ function scoreSignalStrength(
 // Phase fetchers
 // ───────────────────────────────────────────────────────────────────────────
 
-// Generic tech words that match almost any repo — excluded from the
-// relevance vocabulary so a single match on "app"/"ai"/"tool" can't make an
-// off-topic repo look on-topic. Phase 10 (entity disambiguation).
-const GENERIC_CATEGORY_TOKENS = new Set([
-  'app', 'apps', 'application', 'tool', 'tools', 'platform', 'software',
-  'ai', 'ml', 'native', 'mobile', 'web', 'ios', 'android', 'service',
-  'saas', 'api', 'the', 'for', 'and', 'a', 'an',
-]);
-
-/** Whole-word membership test (so "focus" does not match "focused"). */
-function hasWholeWord(haystack: string, word: string): boolean {
-  if (word.includes(' ')) return haystack.includes(word); // multi-word phrase
-  const re = new RegExp(`\\b${word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`);
-  return re.test(haystack);
-}
-
 /**
- * Phase 10 — relevance gate for the GitHub demand signal. A repo counts only
- * if it plausibly belongs to the category, not merely shares one generic word.
- * For "focus app" this drops Quivr ("...Focus on your product...", a RAG
- * framework) and Joplin (notes) which previously dominated total_stars by
- * matching the single word "focus". Conservative by design: when in doubt the
- * tool excludes and reports a weaker, honest signal rather than launder noise.
+ * Relevance gate for the GitHub demand signal — drops repos that match only a
+ * generic category word (Quivr/"focus", Joplin/"focused") so they don't
+ * inflate the signal. Phase 11: the matching logic lives in src/lib/relevance.ts;
+ * this thin wrapper adapts a repo object to the shared isRelevant(). Re-exported
+ * (with buildRelevanceTerms) for the tool's unit tests.
  */
 export function isRepoRelevant(
   repo: Pick<GitHubRepoStats, 'full_name' | 'description'>,
   relevanceTerms: string[],
   categoryPhrase: string,
 ): boolean {
-  const hay = `${repo.full_name} ${repo.description ?? ''}`.toLowerCase();
-  if (categoryPhrase && hay.includes(categoryPhrase)) return true; // full category phrase
-  let singleWordHits = 0;
-  for (const term of relevanceTerms) {
-    if (!hasWholeWord(hay, term)) continue;
-    if (term.includes(' ')) return true; // a specific multi-word keyword is decisive
-    singleWordHits++;
-  }
-  return singleWordHits >= 2; // ≥2 distinct specific single-word terms
+  return isRelevant(`${repo.full_name} ${repo.description ?? ''}`, relevanceTerms, categoryPhrase);
 }
-
-export function buildRelevanceTerms(category: string, keywords: string[]): string[] {
-  const out = new Set<string>();
-  for (const kw of keywords) {
-    const k = kw.trim().toLowerCase();
-    if (k.length > 0) out.add(k); // keep multi-word keywords intact
-  }
-  for (const tok of category.toLowerCase().split(/\s+/)) {
-    const t = tok.replace(/[^a-z0-9]/g, '');
-    if (t.length > 1 && !GENERIC_CATEGORY_TOKENS.has(t)) out.add(t);
-  }
-  return Array.from(out);
-}
+export { buildRelevanceTerms };
 
 async function fetchGitHubSignals(
   candidateRepos: string[],

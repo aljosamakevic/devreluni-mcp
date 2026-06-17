@@ -24,6 +24,7 @@ import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 import type { ToolResult, ToolSource } from '../types.js';
 import { okResult, honestGapResult } from '../lib/envelope.js';
+import { competitorAppears } from '../lib/relevance.js';
 import {
   serperSearch,
   isSerperLive,
@@ -176,24 +177,10 @@ async function fetchIndieHackers(
   return entries;
 }
 
-/**
- * Phase 10 — does `competitor` appear in `originalText` as a real entity?
- * Multi-word names ("The RealReal") are specific enough to match
- * case-insensitively. Single-word names must appear as a Capitalized
- * proper-noun whole-word ("Freedom", not "freedom") so common English words
- * used in prose are not mistaken for the same-named app. Exported for tests.
- */
-export function competitorAppears(originalText: string, competitor: string): boolean {
-  const c = competitor.trim();
-  if (!c) return false;
-  const esc = (s: string): string => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  if (/\s/.test(c)) {
-    return new RegExp(`\\b${esc(c)}\\b`, 'i').test(originalText);
-  }
-  // Single-word: require the Capitalized form (case-sensitive on first letter).
-  const cap = c.charAt(0).toUpperCase() + c.slice(1);
-  return new RegExp(`\\b${esc(cap)}\\b`).test(originalText);
-}
+// Phase 11 — competitorAppears moved to src/lib/relevance.ts (shared with the
+// other gate tools); imported above. Re-exported so existing tests that import
+// it from this module keep working.
+export { competitorAppears };
 
 async function fetchFounderTweets(
   competitors: string[],
