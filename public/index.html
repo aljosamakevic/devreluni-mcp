@@ -249,6 +249,18 @@
         gap: var(--s-4);
       }
       .footer-inner .wordmark { font-size: 14px; }
+      .footer-brand {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+      .footer-tagline {
+        font-family: var(--font-mono);
+        font-size: var(--fs-eyebrow);
+        text-transform: uppercase;
+        letter-spacing: 0.10em;
+        color: var(--text-tertiary);
+      }
       .footer-links {
         font-family: var(--font-mono);
         font-size: 12px;
@@ -1944,17 +1956,17 @@
             <div class="client-block">
               <p class="tier-eyebrow">Also supported</p>
               <h4>ChatGPT custom connector</h4>
-              <p class="tagline">Same URL, added as a connector. No token to paste.</p>
+              <p class="tagline">Added via Developer mode using the same URL. No token to paste.</p>
               <ol class="connector-steps">
-                <li>In ChatGPT, open <strong>Settings &rarr; Connectors</strong> and choose <strong>Add custom connector</strong>.</li>
-                <li>Paste the connector URL below and add it.</li>
-                <li>Sign in with your email when Veto asks. Once connected, ask ChatGPT to validate an idea.</li>
+                <li>In ChatGPT on the web, open <strong>Settings &rarr; Connectors &rarr; Advanced settings</strong> and turn on <strong>Developer mode</strong>.</li>
+                <li>Back in <strong>Connectors</strong>, click <strong>Create</strong>. Name it Veto, paste the URL below as the <strong>MCP Server URL</strong>, and set authentication to <strong>OAuth</strong>.</li>
+                <li>Click <strong>Create</strong>, sign in with your email when prompted, and click <strong>Allow</strong>. To use it, open a chat and pick Veto from <strong>+ &rarr; More &rarr; Developer mode</strong>.</li>
               </ol>
               <div class="copy-row">
                 <div class="copy-input" data-copy="https://getvetoed.com/mcp">https://getvetoed.com/mcp</div>
                 <button class="copy-btn" type="button" data-copy-target="prev">Copy URL</button>
               </div>
-              <p class="token-note">Same <code>https://getvetoed.com/mcp</code> endpoint, same OAuth email sign-in, same 400 tool-calls/day free tier.</p>
+              <p class="token-note">Requires ChatGPT Plus, Pro, Business, Enterprise, or Edu on the web. Developer mode is in beta and not available on Free; on Business and Enterprise a workspace admin must enable it first. Same OAuth email sign-in, same 400 tool-calls/day free tier.</p>
             </div>
           </div>
         </div>
@@ -2122,7 +2134,10 @@
     <!-- ──────────────────────────────────────────────────────────────── -->
     <footer id="footer" class="site-footer">
       <div class="container footer-inner">
-        <span class="wordmark">VETO</span>
+        <div class="footer-brand">
+          <span class="wordmark">VETO</span>
+          <span class="footer-tagline">Idea validation MCP</span>
+        </div>
         <div class="footer-links">
           Built by Aljosa Makevic ·
           <a href="https://www.linkedin.com/in/aljosamakevic/">LinkedIn</a> ·
