@@ -39,6 +39,13 @@ interface IndieHackersEntry {
   mrr: string;
   url: string;
   snippet: string;
+  /**
+   * Phase 10 — true when `company` is a confident named-competitor match
+   * (proper-noun whole-word), not just a common English word that happened
+   * to appear (e.g. "freedom" the life-goal vs. the Freedom app). Only
+   * confident entries count toward paid_comparables / signal strength.
+   */
+  confident_match: boolean;
 }
 
 interface FounderMrrTweet {
@@ -153,16 +160,39 @@ async function fetchIndieHackers(
   const entries: IndieHackersEntry[] = [];
   for (const r of results) {
     if (r.title.startsWith('[STUB]')) continue;
-    // Heuristic: match the result to whichever competitor (or the category) appears.
-    const haystack = `${r.title} ${r.snippet}`.toLowerCase();
-    const matchedCompetitor = capped.find((c) =>
-      haystack.includes(c.toLowerCase()),
-    );
+    // Phase 10 — entity disambiguation. Match the result to a competitor with
+    // proper-noun (capitalized whole-word) matching so a common English word
+    // like "freedom"/"forest"/"opal" used in prose does NOT get attributed to
+    // the same-named app. Original-case text preserved for the capitalization
+    // signal. A confident match is required for the entry to count toward the
+    // paid-comparable signal; non-confident entries are still surfaced for
+    // transparency but flagged.
+    const original = `${r.title} ${r.snippet}`;
+    const matchedCompetitor = capped.find((c) => competitorAppears(original, c));
     const company = matchedCompetitor ?? extractCompanyFromTitle(r.title) ?? category;
-    const mrr = extractMrrString(`${r.title} ${r.snippet}`) ?? '';
-    entries.push({ company, mrr, url: r.link, snippet: r.snippet });
+    const mrr = extractMrrString(original) ?? '';
+    entries.push({ company, mrr, url: r.link, snippet: r.snippet, confident_match: matchedCompetitor != null });
   }
   return entries;
+}
+
+/**
+ * Phase 10 — does `competitor` appear in `originalText` as a real entity?
+ * Multi-word names ("The RealReal") are specific enough to match
+ * case-insensitively. Single-word names must appear as a Capitalized
+ * proper-noun whole-word ("Freedom", not "freedom") so common English words
+ * used in prose are not mistaken for the same-named app. Exported for tests.
+ */
+export function competitorAppears(originalText: string, competitor: string): boolean {
+  const c = competitor.trim();
+  if (!c) return false;
+  const esc = (s: string): string => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  if (/\s/.test(c)) {
+    return new RegExp(`\\b${esc(c)}\\b`, 'i').test(originalText);
+  }
+  // Single-word: require the Capitalized form (case-sensitive on first letter).
+  const cap = c.charAt(0).toUpperCase() + c.slice(1);
+  return new RegExp(`\\b${esc(cap)}\\b`).test(originalText);
 }
 
 async function fetchFounderTweets(
@@ -304,8 +334,10 @@ function summarize(
   sec: SecFiling[],
   os: OpenStartupEntry[],
 ): RevenueSummary {
+  // Phase 10 — only confident named-competitor IH matches count as paid
+  // comparables; common-word false positives ("freedom") are excluded.
   const paidComparablesCount =
-    ih.filter((e) => e.mrr.length > 0).length +
+    ih.filter((e) => e.confident_match && e.mrr.length > 0).length +
     sec.length +
     os.filter((e) => /\$/.test(e.snippet)).length;
 
@@ -318,7 +350,9 @@ function summarize(
       highest = { str: raw, dollars };
     }
   };
-  for (const e of ih) if (e.mrr) considerMrr(e.mrr);
+  // Phase 10 — headline MRR only from confident named-competitor matches, so
+  // a common-word false positive can't set "highest observed".
+  for (const e of ih) if (e.confident_match && e.mrr) considerMrr(e.mrr);
   for (const t of tweets) {
     const mrr = extractMrrString(t.claim);
     if (mrr) considerMrr(mrr);
@@ -364,6 +398,7 @@ function scoreSignal(
   // Strong: ≥3 IH with $10k+ MRR, OR ≥1 SEC filing showing $100M+ ARR signal,
   // OR clear public ARR figure from $1B+ company.
   const ihWithBigMrr = ih.filter((e) => {
+    if (!e.confident_match) return false; // Phase 10 — exclude common-word false positives
     const d = mrrToDollars(e.mrr);
     return Number.isFinite(d) && d >= STRONG_IH_MRR_DOLLARS;
   }).length;
@@ -378,7 +413,7 @@ function scoreSignal(
   if (strongPublicArr) return 'strong';
 
   // Moderate: 1-2 IH entries with verifiable MRR OR converging tweet MRR claims.
-  const ihWithAnyMrr = ih.filter((e) => e.mrr.length > 0).length;
+  const ihWithAnyMrr = ih.filter((e) => e.confident_match && e.mrr.length > 0).length;
   const tweetsWithMrr = tweets.filter((t) => extractMrrString(t.claim) !== null).length;
   if (ihWithAnyMrr >= 1 || tweetsWithMrr >= 2) return 'moderate';
 
@@ -521,9 +556,10 @@ export function registerFindPublicRevenueSignals(server: McpServer): void {
       const lifestyleWeight = builderHint === 'solo';
       const fundedWeight = builderHint === 'funded';
 
+      const ihConfidentCount = ih.filter((e) => e.confident_match).length;
       const ihBlurb =
         ih.length > 0
-          ? `${ih.length} IndieHackers entr${ih.length === 1 ? 'y' : 'ies'}${summary.highest_observed_mrr ? ` (highest: ${summary.highest_observed_mrr})` : ''}`
+          ? `${ih.length} IndieHackers entr${ih.length === 1 ? 'y' : 'ies'} (${ihConfidentCount} confident named match${ihConfidentCount === 1 ? '' : 'es'}${summary.highest_observed_mrr ? `; highest confident: ${summary.highest_observed_mrr}` : ''})`
           : 'no IndieHackers entries';
       const tweetBlurb = tweets.length > 0 ? `${tweets.length} founder MRR tweet(s)` : 'no founder MRR tweets';
       const secBlurb = sec.length > 0 ? `${sec.length} SEC filing(s)` : 'no public-company SEC filings';
