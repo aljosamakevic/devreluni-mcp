@@ -332,13 +332,19 @@ export function verdictValidate(
     enforceSourceCountRules(gate, issues);
   }
 
-  // Sync the gate_summary table so renderer reflects post-adjustment statuses.
+  // Sync the gate_summary table so the renderer reflects post-adjustment
+  // statuses. V-M1 — when a gate's status was overridden, its summary `reason`
+  // (written by the LLM for the original status) is now stale and can read as a
+  // "passes because…" line next to a ❌ glyph. Replace it with the adjusted
+  // gate's DOK 4 reasoning so the above-the-fold table can't self-contradict.
   if (Array.isArray(adjusted.verdict.gate_summary)) {
     for (const row of adjusted.verdict.gate_summary) {
       const g = adjusted.gates.find((x) => x.gate === row.gate);
-      if (g) {
-        row.status = g.status;
+      if (!g) continue;
+      if (row.status !== g.status) {
+        row.reason = g.dok4_verdict?.reasoning?.trim() || `Status adjusted to ${g.status} by mechanical rules.`;
       }
+      row.status = g.status;
     }
   }
 
