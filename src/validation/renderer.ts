@@ -103,8 +103,17 @@ function renderVerdict(v: Verdict): string {
     );
   }
 
-  if (v.overall === 'NO-GO' && v.killshots.length > 0) {
-    lines.push('', '### Killshot reasons', '');
+  // Phase 10 — never silently drop killshots. On NO-GO they ARE the
+  // verdict-determining killshots (unchanged heading). When the verdict was
+  // softened by the mechanical rules but the model still flagged killshots,
+  // surface them under "Key risks flagged" so the existential reasoning is
+  // not lost (the previous behavior hid them entirely on any non-NO-GO verdict).
+  if (v.killshots.length > 0) {
+    const heading =
+      v.overall === 'NO-GO'
+        ? '### Killshot reasons'
+        : '### Key risks flagged (not verdict-determining)';
+    lines.push('', heading, '');
     for (const k of v.killshots) {
       lines.push(`- ${renderKillshot(k)}`);
     }
