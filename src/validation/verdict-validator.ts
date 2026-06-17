@@ -198,6 +198,28 @@ function applyExistentialVeto(
   return 'NO-GO';
 }
 
+/**
+ * Audit H1 — build killshots from the FAIL gates when a NO-GO would otherwise
+ * render with none. Each FAIL gate contributes one killshot: its DOK 4
+ * reasoning as the reason, and its deciding-tier (S/A/B) source URLs as the
+ * citations — so the synthesized killshots cite real DOK 1 facts by
+ * construction. Capped at 3 (spec §5 Section 2: "2-3 specific findings").
+ */
+function synthesizeKillshotsFromFailGates(
+  gates: GateReport[],
+): { reason: string; cited_source_urls: string[] }[] {
+  const out: { reason: string; cited_source_urls: string[] }[] = [];
+  for (const g of gates) {
+    if (g.status !== 'FAIL') continue;
+    const reasoning = g.dok4_verdict?.reasoning?.trim();
+    if (!reasoning) continue;
+    const urls = decidingSources(g).map((s) => s.url);
+    out.push({ reason: `${g.name}: ${reasoning}`, cited_source_urls: urls });
+    if (out.length >= 3) break;
+  }
+  return out;
+}
+
 // ──────────────────────────────────────────────────────────────────────────
 // Validation-check decision matrix (H5)
 // ──────────────────────────────────────────────────────────────────────────
@@ -329,6 +351,26 @@ export function verdictValidate(
   // Step 3 — decision matrix override (can still force INCONCLUSIVE on a
   // Fundamental validation-check, even over the veto).
   const { overall, confidence } = applyDecisionMatrix(adjusted, afterVeto, issues);
+
+  // Phase 10 (audit H1) — a mechanically-produced NO-GO must never render with
+  // zero killshots. When the existential veto (or fail-2 count) forces NO-GO
+  // but the LLM emitted no killshots (it thought the verdict was softer),
+  // synthesize them from the FAIL gates so the report's most important
+  // reasoning is present AND cites real DOK 1 source URLs (by construction).
+  if (overall === 'NO-GO' && adjusted.verdict.killshots.length === 0) {
+    const synthesized = synthesizeKillshotsFromFailGates(adjusted.gates);
+    if (synthesized.length > 0) {
+      adjusted.verdict.killshots = synthesized;
+      issues.push(
+        issue(
+          'minor',
+          'killshots_synthesized',
+          `NO-GO had no killshots; synthesized ${synthesized.length} from the FAIL gate(s)' DOK 4 reasoning + deciding-tier source URLs so the verdict is not rendered bare.`,
+          'verdict.killshots'
+        )
+      );
+    }
+  }
 
   // Apply overrides to the report.
   if (adjusted.verdict.overall !== overall) {

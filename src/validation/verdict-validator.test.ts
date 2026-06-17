@@ -62,4 +62,30 @@ describe('existential-gate veto (Gate 3 FAIL → NO-GO)', () => {
     const { adjusted_report } = verdictValidate(r);
     expect(adjusted_report.verdict.overall).toBe('GO');
   });
+
+  // Audit H1 — a vetoed NO-GO must never render with zero killshots.
+  it('synthesizes killshots from FAIL gates when a vetoed NO-GO has none', () => {
+    const r = clone();
+    setGate(r, 3, 'FAIL');
+    r.gates.find((g) => g.gate === 3)!.dok4_verdict.reasoning =
+      'Apple owns the surface and the API; existential platform risk.';
+    r.verdict.killshots = []; // LLM thought it was CONDITIONAL GO → emitted none
+    const { adjusted_report, issues } = verdictValidate(r);
+    expect(adjusted_report.verdict.overall).toBe('NO-GO');
+    expect(adjusted_report.verdict.killshots.length).toBeGreaterThan(0);
+    // Synthesized killshot cites the FAIL gate's real DOK 1 source URL(s).
+    expect(adjusted_report.verdict.killshots[0]!.cited_source_urls.length).toBeGreaterThan(0);
+    expect(issues.some((i) => i.code === 'killshots_synthesized')).toBe(true);
+  });
+
+  it('does NOT overwrite killshots the model already supplied on NO-GO', () => {
+    const r = clone();
+    setGate(r, 1, 'FAIL');
+    setGate(r, 3, 'FAIL');
+    r.verdict.killshots = [{ reason: 'model-supplied', cited_source_urls: ['https://x'] }];
+    const { adjusted_report, issues } = verdictValidate(r);
+    expect(adjusted_report.verdict.overall).toBe('NO-GO');
+    expect(adjusted_report.verdict.killshots[0]!.reason).toBe('model-supplied');
+    expect(issues.some((i) => i.code === 'killshots_synthesized')).toBe(false);
+  });
 });
