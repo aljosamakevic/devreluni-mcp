@@ -276,7 +276,7 @@ export function registerFinalizeValidationReport(server: McpServer): void {
     'finalize_validation_report',
     {
       description:
-        "Finalize a ValidationReport. Pass the JSON you constructed in `validate_idea` (load `resource://report-schema` first for the live JSON Schema, minimal-valid skeleton, and worked example). Returns the validated markdown artifact, or a `validation_failed` envelope with `issues[]`, `hints[]` (one per issue, path-localized), and `expected_skeleton` (the minimal-valid shape to copy from). On failure, fix using the hints and retry once. **This is the ONLY way to emit the final validation artifact — do not output markdown directly, do not skip this step.** Envelope: { status: 'ok'|'error', data, sources, confidence_note, fallbacks_used, error? }. On status='error', code='invalid_input', and data carries the full FinalizeResult with issues / hints / expected_skeleton.",
+        "Finalize a ValidationReport into the validated markdown artifact. **This is the ONLY way to emit the final report — never write the markdown yourself, never skip this step.** Pass the JSON you built as `report_json`. If you have not seen the schema, FIRST load `resource://report-schema` (live JSON Schema + minimal-valid skeleton + worked example); if you cannot load resources, on the first `validation_failed` response COPY `data.expected_skeleton` wholesale and replace its values — do not rebuild the shape field-by-field. Common rejections (fix up front to avoid retries): (1) gate status is PASS / FAIL / INCONCLUSIVE only — CONDITIONAL applies to the OVERALL verdict, never a gate; (2) `gates` is an array of exactly 5 objects in order 1..5, not an object/map; (3) `verdict.killshots[]` and `methodology_notes.tool_calls[]` are OBJECTS with the schema's fields, not strings; (4) a gate with no counter-evidence must set `contradicting_evidence` to the exact sentinel string from the skeleton (do not paraphrase); (5) `spiky_pov.template` must equal the canonical blank template byte-for-byte (copy from the skeleton; do not fill it in). On success: returns `data.markdown`, the complete report — RENDER IT TO THE USER VERBATIM AND IN FULL, including the Source Appendix and every per-fact Tier/Bias citation; do not summarize or drop sources. On failure: status='error', error.code='invalid_input', and data carries issues[] / hints[] (one per issue, path-localized) / expected_skeleton — fix using the hints and retry once. Envelope: { status: 'ok'|'error', data, sources, confidence_note, fallbacks_used, error? }.",
       inputSchema: {
         report_json: z
           .string()
@@ -296,7 +296,11 @@ export function registerFinalizeValidationReport(server: McpServer): void {
       // envelope are unchanged.
       const envelope =
         result.status === 'ok'
-          ? okResult(result, [], '')
+          ? okResult(
+              result,
+              [],
+              "Render `data.markdown` to the user verbatim and in full — this markdown IS the deliverable. Include the entire Source Appendix (Section 7) and every per-fact Tier/Bias citation. Do not summarize, paraphrase, truncate, or drop sources. If `data.adjustments_made` is non-empty, add a short 'Server-side adjustments:' note listing them.",
+            )
           : errorResult(
               TOOL_ERROR_CODES.INVALID_INPUT,
               `ValidationReport rejected at stage: ${result.stage}. See data.issues and data.hints for path-localized guidance; copy data.expected_skeleton's shape and retry once.`,

@@ -149,7 +149,7 @@ Top-level fields (summary — see \`resource://report-schema\` for the exhaustiv
 Maximum 2 attempts. If \`finalize_validation_report\` returns \`status: validation_failed\`, the response includes \`expected_skeleton\` (the minimal-valid skeleton — copy its shape) and \`hints[]\` (one per issue, path-localized — e.g. \`gates.2.dok1_facts.3.tier — expected one of "S","A","B","C","D"; got "high"\`). Read them, fix the specific issues, and emit corrected JSON on attempt 2 with a fresh tool call. If attempt 2 also fails, surface the \`validation_failed\` payload to the user verbatim — do NOT attempt to render markdown directly, do NOT make a 3rd attempt, and do NOT skip the finalize step.
 </retry_policy>
 
-On \`status: ok\`: relay the tool's \`markdown\` field to the user verbatim. If \`adjustments_made\` is non-empty, append a short "Server-side adjustments:" note listing them so the user knows the verdict-validator overrode something.
+On \`status: ok\`: relay the tool's \`markdown\` field to the user VERBATIM AND IN FULL — render every section, including Section 7 (Source Appendix) and every per-fact Tier/Bias citation. Do NOT summarize, paraphrase, truncate, or drop sources; the markdown IS the deliverable. If \`adjustments_made\` is non-empty, append a short "Server-side adjustments:" note listing them so the user knows the verdict-validator overrode something.
 
 ANTI-PATTERN CHECKLIST (before output):
 [ ] Every DOK 1 fact has both tier badge AND bias flag

@@ -326,9 +326,24 @@ export const APPROVAL_EMAIL_FROM = RESEND_FROM;
 
 const MAGIC_LINK_SUBJECT = 'Your Veto sign-in link';
 
+/**
+ * The two contexts a magic link is sent in:
+ *   - 'token'   → standalone /auth/magic-link/request form. Clicking the link
+ *                 mints a bearer token and SHOWS it to the user to paste into a
+ *                 client config (Claude Desktop). Token-centric copy.
+ *   - 'connect' → OAuth /authorize/login (claude.ai custom connector). Clicking
+ *                 the link finishes authorizing the connector and redirects
+ *                 back; the user never sees or handles a raw token. Connection-
+ *                 centric copy with NO token language.
+ * The verify URL differs per context (the caller builds it); only the wording
+ * changes here. Defaults to 'token' for backward compatibility.
+ */
+export type MagicLinkPurpose = 'token' | 'connect';
+
 export interface SendMagicLinkEmailInput {
   to: string;
   url: string;
+  purpose?: MagicLinkPurpose;
 }
 
 export type SendMagicLinkEmailResult =
@@ -339,11 +354,20 @@ export type SendMagicLinkEmailResult =
  * Build the plain-text body for the magic link email. URL appears verbatim
  * so plain-text mail clients can copy it without HTML parsing.
  */
-export function buildMagicLinkTextBody(url: string): string {
+export function buildMagicLinkTextBody(
+  url: string,
+  purpose: MagicLinkPurpose = 'token'
+): string {
+  const intro =
+    purpose === 'connect'
+      ? "You're one click away from connecting to Veto.\n" +
+        '\n' +
+        'Click to authorize the connection:\n'
+      : "You're one click away from your Veto access token.\n" +
+        '\n' +
+        'Sign in to claim your token:\n';
   return (
-    "You're one click away from your Veto access token.\n" +
-    '\n' +
-    'Sign in to claim your token:\n' +
+    intro +
     '\n' +
     `    ${url}\n` +
     '\n' +
@@ -365,7 +389,10 @@ export function buildMagicLinkTextBody(url: string): string {
  * The CTA button is the magic link itself in primary CTA shape
  * (#D4F233 background, #111210 text, DM Mono 13/500 0.04em uppercase).
  */
-export function buildMagicLinkHtmlBody(url: string): string {
+export function buildMagicLinkHtmlBody(
+  url: string,
+  purpose: MagicLinkPurpose = 'token'
+): string {
   const esc = (s: string): string =>
     s
       .replace(/&/g, '&amp;')
@@ -373,6 +400,14 @@ export function buildMagicLinkHtmlBody(url: string): string {
       .replace(/>/g, '&gt;')
       .replace(/"/g, '&quot;')
       .replace(/'/g, '&#39;');
+
+  const connect = purpose === 'connect';
+  const eyebrow = connect ? 'Connect' : 'Sign in';
+  const heading = connect ? 'One click to finish connecting.' : 'One click to your token.';
+  const subhead = connect
+    ? "You're one click away from connecting to Veto."
+    : "You're one click away from your Veto access token.";
+  const cta = connect ? 'Finish connecting' : 'Sign in to Veto';
 
   const safeUrl = esc(url);
   return `<!DOCTYPE html>
@@ -388,14 +423,14 @@ export function buildMagicLinkHtmlBody(url: string): string {
           </tr>
           <tr>
             <td style="padding:32px 0 16px;">
-              <div style="font-family:'DM Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:10px;letter-spacing:0.10em;text-transform:uppercase;color:rgba(245,244,240,0.55);margin:0 0 12px;">Sign in</div>
-              <h1 style="font-family:'DM Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-weight:500;font-size:28px;letter-spacing:-0.02em;line-height:1.1;color:#F5F4F0;margin:0 0 16px;">One click to your token.</h1>
-              <p style="font-family:Inter,-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;font-size:16px;line-height:1.6;color:rgba(245,244,240,0.55);margin:0 0 24px;">You're one click away from your Veto access token.</p>
+              <div style="font-family:'DM Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:10px;letter-spacing:0.10em;text-transform:uppercase;color:rgba(245,244,240,0.55);margin:0 0 12px;">${eyebrow}</div>
+              <h1 style="font-family:'DM Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-weight:500;font-size:28px;letter-spacing:-0.02em;line-height:1.1;color:#F5F4F0;margin:0 0 16px;">${heading}</h1>
+              <p style="font-family:Inter,-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;font-size:16px;line-height:1.6;color:rgba(245,244,240,0.55);margin:0 0 24px;">${subhead}</p>
             </td>
           </tr>
           <tr>
             <td style="padding:8px 0 32px;">
-              <a href="${safeUrl}" style="display:inline-block;background:#D4F233;color:#111210;font-family:'DM Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;font-weight:500;letter-spacing:0.04em;text-transform:uppercase;padding:12px 24px;border-radius:2px;text-decoration:none;">Sign in to Veto</a>
+              <a href="${safeUrl}" style="display:inline-block;background:#D4F233;color:#111210;font-family:'DM Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;font-weight:500;letter-spacing:0.04em;text-transform:uppercase;padding:12px 24px;border-radius:2px;text-decoration:none;">${cta}</a>
             </td>
           </tr>
           <tr>
@@ -443,8 +478,9 @@ export async function sendMagicLinkEmail(
     return { ok: false, error: 'invalid_url' };
   }
 
-  const html = buildMagicLinkHtmlBody(input.url);
-  const text = buildMagicLinkTextBody(input.url);
+  const purpose = input.purpose ?? 'token';
+  const html = buildMagicLinkHtmlBody(input.url, purpose);
+  const text = buildMagicLinkTextBody(input.url, purpose);
 
   let timer: ReturnType<typeof setTimeout> | undefined;
   const timeout = new Promise<SendMagicLinkEmailResult>((resolve) => {
