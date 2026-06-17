@@ -55,16 +55,24 @@ export function registerOAuthRoutes(app: Express, baseUrl: string): void {
   const urlencoded = express.urlencoded({ extended: false });
 
   // ── Discovery metadata ────────────────────────────────────────────────
-  app.get('/.well-known/oauth-protected-resource', (_req: Request, res: Response) => {
+  // Served at BOTH the root well-known path AND the RFC 9728 §3.1
+  // resource-path-suffixed variant (…/oauth-protected-resource/mcp), because
+  // MCP clients differ: some follow the `resource_metadata` URL from the 401
+  // header (root), others CONSTRUCT the path-suffixed URL from the resource
+  // identifier. Serving both removes a discovery dead-end. Likewise the AS
+  // metadata is aliased at /.well-known/openid-configuration.
+  const protectedResourceMetadata = (_req: Request, res: Response): void => {
     res.json({
       resource: `${baseUrl}/mcp`,
       authorization_servers: [baseUrl],
       scopes_supported: [ACCESS_TOKEN_SCOPE],
       bearer_methods_supported: ['header'],
     });
-  });
+  };
+  app.get('/.well-known/oauth-protected-resource', protectedResourceMetadata);
+  app.get('/.well-known/oauth-protected-resource/mcp', protectedResourceMetadata);
 
-  app.get('/.well-known/oauth-authorization-server', (_req: Request, res: Response) => {
+  const authorizationServerMetadata = (_req: Request, res: Response): void => {
     res.json({
       issuer: baseUrl,
       authorization_endpoint: `${baseUrl}/authorize`,
@@ -76,7 +84,10 @@ export function registerOAuthRoutes(app: Express, baseUrl: string): void {
       token_endpoint_auth_methods_supported: ['none'],
       scopes_supported: [ACCESS_TOKEN_SCOPE],
     });
-  });
+  };
+  app.get('/.well-known/oauth-authorization-server', authorizationServerMetadata);
+  app.get('/.well-known/oauth-authorization-server/mcp', authorizationServerMetadata);
+  app.get('/.well-known/openid-configuration', authorizationServerMetadata);
 
   // ── Dynamic Client Registration (RFC 7591) ────────────────────────────
   app.post('/register', express.json(), (req: Request, res: Response) => {

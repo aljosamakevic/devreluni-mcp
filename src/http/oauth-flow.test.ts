@@ -55,6 +55,17 @@ describe('discovery metadata', () => {
     expect(asm.body.code_challenge_methods_supported).toEqual(['S256']);
     expect(asm.body.token_endpoint).toBe(`${BASE}/token`);
   });
+
+  it('also serves the RFC 9728 path-suffixed + openid-configuration variants', async () => {
+    const app = makeApp();
+    // Clients that construct the path-suffixed metadata URL from the resource id.
+    const prmPath = await request(app).get('/.well-known/oauth-protected-resource/mcp');
+    expect(prmPath.status).toBe(200);
+    expect(prmPath.body.resource).toBe(`${BASE}/mcp`);
+    const oidc = await request(app).get('/.well-known/openid-configuration');
+    expect(oidc.status).toBe(200);
+    expect(oidc.body.token_endpoint).toBe(`${BASE}/token`);
+  });
 });
 
 describe('full authorization_code + PKCE flow', () => {
