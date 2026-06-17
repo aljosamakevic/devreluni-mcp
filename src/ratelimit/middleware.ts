@@ -16,8 +16,9 @@
 import type { Request, Response, NextFunction } from 'express';
 import { getDb } from '../db/connection.js';
 import { checkPerTokenLimit } from './per-token.js';
+import { checkPerUserLimit } from './per-user.js';
 import { logger } from '../lib/logger.js';
-import '../auth/types.js'; // declaration merge for req.tokenId.
+import '../auth/types.js'; // declaration merge for req.tokenId / req.tokenEmail.
 
 export function rateLimit(req: Request, res: Response, next: NextFunction): void {
   const tokenId = req.tokenId;
@@ -28,7 +29,12 @@ export function rateLimit(req: Request, res: Response, next: NextFunction): void
     return;
   }
 
-  const check = checkPerTokenLimit(tokenId);
+  // Phase 14 — prefer the per-USER limiter (counts across all of a user's
+  // tokens) so OAuth refresh rotation can't multiply quota; fall back to
+  // per-token when no email is bound (defensive — authRequired sets it).
+  const email = req.tokenEmail;
+  const reason = typeof email === 'string' && email.length > 0 ? 'per_user_limit_exceeded' : 'per_token_limit_exceeded';
+  const check = reason === 'per_user_limit_exceeded' ? checkPerUserLimit(email as string) : checkPerTokenLimit(tokenId);
   if (!check.allowed) {
     // Record the rate-limit denial BEFORE responding so concurrent next-window
     // math is consistent. T11's SQL excludes status='rate_limited' rows, so
@@ -62,7 +68,7 @@ export function rateLimit(req: Request, res: Response, next: NextFunction): void
     res.setHeader('Retry-After', String(check.retryAfterSec));
     res.status(429).json({
       error: 'rate_limited',
-      reason: 'per_token_limit_exceeded',
+      reason,
       retry_after_sec: check.retryAfterSec,
     });
     return;

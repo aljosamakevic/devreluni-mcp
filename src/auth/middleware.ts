@@ -14,7 +14,12 @@ import type { Request, Response, NextFunction } from 'express';
 import { validateToken } from './tokens.js';
 import './types.js'; // declaration merge for req.tokenId / req.tokenEmail.
 
-const WWW_AUTH = 'Bearer realm="vetoed"';
+// Phase 14 — the 401 now points clients at the OAuth Protected Resource
+// Metadata (RFC 9728) so MCP clients (e.g. claude.ai) can discover the
+// authorization server and start the OAuth flow. Static bearer tokens still
+// work unchanged; this header only guides clients that DON'T already have one.
+const RESOURCE_METADATA_URL = `${process.env['BASE_URL'] ?? 'https://getvetoed.com'}/.well-known/oauth-protected-resource`;
+const WWW_AUTH = `Bearer realm="vetoed", resource_metadata="${RESOURCE_METADATA_URL}"`;
 
 export function authRequired(req: Request, res: Response, next: NextFunction): void {
   const header = req.headers['authorization'];

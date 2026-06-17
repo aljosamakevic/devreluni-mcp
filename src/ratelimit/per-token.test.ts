@@ -168,7 +168,10 @@ describe('rateLimit middleware (via supertest)', () => {
     expect(Number(res.headers['retry-after'])).toBeGreaterThan(0);
     expect(res.body).toMatchObject({
       error: 'rate_limited',
-      reason: 'per_token_limit_exceeded',
+      // Phase 14 — issued tokens carry an email, so the middleware now applies
+      // the per-USER limiter (counts across all of the user's tokens). Same
+      // 400 threshold and 429 shape; only the reason label changed.
+      reason: 'per_user_limit_exceeded',
     });
     expect(typeof res.body.retry_after_sec).toBe('number');
     expect(res.body.retry_after_sec).toBeGreaterThan(0);
