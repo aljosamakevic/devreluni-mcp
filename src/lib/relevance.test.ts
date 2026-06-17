@@ -55,3 +55,25 @@ describe('competitorAppears', () => {
     expect(competitorAppears('Forestry software', 'Forest')).toBe(false);
   });
 });
+
+// The exact noise that triggered the 2026-06-17 audit — these are the calls
+// every gate tool (T1-T5) now delegates to. Lock them as regressions.
+describe('audit-noise regressions', () => {
+  it('T1: "Opal apples"/"opal jewelry" are not the Opal app', () => {
+    expect(competitorAppears('Anyone else disappointed in the Opal apples this year? Mealy.', 'Opal')).toBe(true); // capitalized — name appears
+    // ...but the category/product gate (applied in-tool) rejects it:
+    const terms = buildRelevanceTerms('focus app', []);
+    expect(isRelevant('Anyone else disappointed in the Opal apples this year? Mealy.', terms, 'focus app')).toBe(false);
+  });
+
+  it('T2: an off-topic "Google announces" snippet is not category-relevant', () => {
+    const terms = buildRelevanceTerms('secondhand clothing marketplace', []);
+    expect(isRelevant('Google announces new Pixel camera features at I/O', terms, 'secondhand clothing marketplace')).toBe(false);
+    // A real post-mortem mentioning the category IS relevant:
+    expect(isRelevant('The secondhand clothing marketplace shut down after running out of runway', terms, 'secondhand clothing marketplace')).toBe(true);
+  });
+
+  it('T2: a known-product mention rescues a snippet with no category words', () => {
+    expect(competitorAppears('Poshmark post-mortem: why it stalled', 'Poshmark')).toBe(true);
+  });
+});
