@@ -48,6 +48,8 @@ interface GitHubSignals {
   total_stars_top5: number;
   avg_days_since_last_commit: number | null;
   languages_seen: string[];
+  /** Phase 10 — repos dropped as off-topic keyword matches before scoring. */
+  filtered_off_topic_count: number;
 }
 
 interface SubredditSignal {
@@ -157,9 +159,63 @@ function scoreSignalStrength(
 // Phase fetchers
 // ───────────────────────────────────────────────────────────────────────────
 
+// Generic tech words that match almost any repo — excluded from the
+// relevance vocabulary so a single match on "app"/"ai"/"tool" can't make an
+// off-topic repo look on-topic. Phase 10 (entity disambiguation).
+const GENERIC_CATEGORY_TOKENS = new Set([
+  'app', 'apps', 'application', 'tool', 'tools', 'platform', 'software',
+  'ai', 'ml', 'native', 'mobile', 'web', 'ios', 'android', 'service',
+  'saas', 'api', 'the', 'for', 'and', 'a', 'an',
+]);
+
+/** Whole-word membership test (so "focus" does not match "focused"). */
+function hasWholeWord(haystack: string, word: string): boolean {
+  if (word.includes(' ')) return haystack.includes(word); // multi-word phrase
+  const re = new RegExp(`\\b${word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`);
+  return re.test(haystack);
+}
+
+/**
+ * Phase 10 — relevance gate for the GitHub demand signal. A repo counts only
+ * if it plausibly belongs to the category, not merely shares one generic word.
+ * For "focus app" this drops Quivr ("...Focus on your product...", a RAG
+ * framework) and Joplin (notes) which previously dominated total_stars by
+ * matching the single word "focus". Conservative by design: when in doubt the
+ * tool excludes and reports a weaker, honest signal rather than launder noise.
+ */
+export function isRepoRelevant(
+  repo: Pick<GitHubRepoStats, 'full_name' | 'description'>,
+  relevanceTerms: string[],
+  categoryPhrase: string,
+): boolean {
+  const hay = `${repo.full_name} ${repo.description ?? ''}`.toLowerCase();
+  if (categoryPhrase && hay.includes(categoryPhrase)) return true; // full category phrase
+  let singleWordHits = 0;
+  for (const term of relevanceTerms) {
+    if (!hasWholeWord(hay, term)) continue;
+    if (term.includes(' ')) return true; // a specific multi-word keyword is decisive
+    singleWordHits++;
+  }
+  return singleWordHits >= 2; // ≥2 distinct specific single-word terms
+}
+
+export function buildRelevanceTerms(category: string, keywords: string[]): string[] {
+  const out = new Set<string>();
+  for (const kw of keywords) {
+    const k = kw.trim().toLowerCase();
+    if (k.length > 0) out.add(k); // keep multi-word keywords intact
+  }
+  for (const tok of category.toLowerCase().split(/\s+/)) {
+    const t = tok.replace(/[^a-z0-9]/g, '');
+    if (t.length > 1 && !GENERIC_CATEGORY_TOKENS.has(t)) out.add(t);
+  }
+  return Array.from(out);
+}
+
 async function fetchGitHubSignals(
   candidateRepos: string[],
   category: string,
+  categoryKeywords: string[],
 ): Promise<GitHubSignals> {
   // Strategy: each candidate query → searchRepos(query, undefined, 5). Then
   // pool, dedupe by full_name, sort by stars desc, keep top 5. If no
@@ -181,7 +237,15 @@ async function fetchGitHubSignals(
     }
   }
 
-  const pooled = Array.from(byName.values()).sort((a, b) => b.stars - a.stars);
+  // Phase 10 — relevance filter before the signal is computed. Off-topic
+  // keyword matches are excluded so total_stars / topRepo reflect the actual
+  // category, not whatever GitHub returned for a shared generic word.
+  const relevanceTerms = buildRelevanceTerms(category, categoryKeywords);
+  const pooledAll = Array.from(byName.values());
+  const pooled = pooledAll
+    .filter((r) => isRepoRelevant(r, relevanceTerms, category.toLowerCase()))
+    .sort((a, b) => b.stars - a.stars);
+  const filtered_off_topic_count = pooledAll.length - pooled.length;
   const top = pooled.slice(0, 5);
 
   const total_stars_top5 = top.reduce((sum, r) => sum + r.stars, 0);
@@ -202,7 +266,7 @@ async function fetchGitHubSignals(
     ),
   );
 
-  return { top_repos: top, total_stars_top5, avg_days_since_last_commit, languages_seen };
+  return { top_repos: top, total_stars_top5, avg_days_since_last_commit, languages_seen, filtered_off_topic_count };
 }
 
 async function fetchRedditSignals(
@@ -347,7 +411,7 @@ export function registerEstimateDemandSignals(server: McpServer): void {
       // Parallel fan-out across the three signal types — Promise.allSettled
       // matches the existing pattern in check-big-tech-encroachment.ts.
       const [githubSettled, redditSettled, launchSettled] = await Promise.allSettled([
-        fetchGitHubSignals(githubQueries, category),
+        fetchGitHubSignals(githubQueries, category, keywords),
         fetchRedditSignals(subredditCandidates),
         fetchLaunchClusterSignals([category, ...keywords].join(' ')),
       ]);
@@ -355,7 +419,7 @@ export function registerEstimateDemandSignals(server: McpServer): void {
       const githubData: GitHubSignals =
         githubSettled.status === 'fulfilled'
           ? githubSettled.value
-          : { top_repos: [], total_stars_top5: 0, avg_days_since_last_commit: null, languages_seen: [] };
+          : { top_repos: [], total_stars_top5: 0, avg_days_since_last_commit: null, languages_seen: [], filtered_off_topic_count: 0 };
       const redditData =
         redditSettled.status === 'fulfilled'
           ? redditSettled.value
@@ -441,7 +505,7 @@ export function registerEstimateDemandSignals(server: McpServer): void {
 
       const confidenceParts: string[] = [];
       confidenceParts.push(
-        `GitHub: ${isGitHubLive() ? 'live (authenticated)' : 'unauthenticated 60 req/hr'}; surfaced ${githubData.top_repos.length} repo(s) across ${githubQueries.length || 1} query/queries.`,
+        `GitHub: ${isGitHubLive() ? 'live (authenticated)' : 'unauthenticated 60 req/hr'}; surfaced ${githubData.top_repos.length} on-topic repo(s) across ${githubQueries.length || 1} query/queries${githubData.filtered_off_topic_count > 0 ? ` (excluded ${githubData.filtered_off_topic_count} off-topic keyword match(es) from the signal)` : ''}.`,
       );
       confidenceParts.push(
         `Reddit: ${redditData.resolvedCount}/${redditData.attemptedCount} candidate subreddits resolved (null = doesn't exist or private).`,
