@@ -1009,89 +1009,6 @@
         border-color: var(--accent);
       }
 
-      /* Get access — magic-link signup card */
-      .signup-card {
-        border: 0.5px solid var(--border);
-        border-radius: var(--radius);
-        padding: var(--s-6);
-        background: var(--surface);
-        max-width: 560px;
-      }
-      .signup-form {
-        display: flex;
-        flex-direction: column;
-        gap: var(--s-3);
-        margin: var(--s-4) 0 0;
-      }
-      .signup-form label {
-        font-family: var(--font-mono);
-        font-size: var(--fs-eyebrow);
-        text-transform: uppercase;
-        letter-spacing: 0.10em;
-        color: var(--text-tertiary);
-      }
-      .signup-form input[type="email"],
-      .signup-form input[type="text"] {
-        background: var(--bg);
-        border: 0.5px solid var(--border);
-        border-radius: var(--radius);
-        padding: 12px 14px;
-        font-family: var(--font-body);
-        font-size: 15px;
-        color: var(--text);
-        width: 100%;
-      }
-      .signup-form input[type="email"]:focus,
-      .signup-form input[type="text"]:focus {
-        outline: none;
-        border-color: var(--accent);
-      }
-      .signup-form button {
-        align-self: flex-start;
-        background: var(--accent);
-        color: var(--bg);
-        font-family: var(--font-mono);
-        font-size: 13px;
-        font-weight: 500;
-        letter-spacing: 0.04em;
-        padding: 10px 20px;
-        border-radius: var(--radius);
-        border: none;
-        text-transform: uppercase;
-        cursor: pointer;
-        transition: opacity 120ms ease;
-      }
-      .signup-form button:hover { opacity: 0.88; }
-      .signup-form button:disabled { opacity: 0.4; cursor: wait; }
-      .signup-honeypot {
-        position: absolute;
-        left: -9999px;
-        top: -9999px;
-        height: 0;
-        width: 0;
-        overflow: hidden;
-      }
-      .signup-message {
-        margin: var(--s-3) 0 0;
-        font-family: var(--font-mono);
-        font-size: 12px;
-        letter-spacing: 0.04em;
-        padding: 10px 12px;
-        border-radius: var(--radius);
-        display: none;
-      }
-      .signup-message.show { display: block; }
-      .signup-message.success {
-        background: var(--accent-bg);
-        border: 0.5px solid var(--accent);
-        color: var(--accent);
-      }
-      .signup-message.error {
-        background: var(--status-fail-bg);
-        border: 0.5px solid var(--status-fail);
-        color: var(--status-fail);
-      }
-
       /* Toast for copy buttons */
       .toast {
         position: fixed;
@@ -1927,14 +1844,13 @@
 
       <!-- Install — connector-only onboarding as of 2026-06-18 (Phase 14 OAuth).
            Claude and ChatGPT both add Veto as a custom connector via one URL
-           (https://getvetoed.com/mcp) + OAuth email sign-in. No config-paste.
-           Other MCP clients (Cursor, Codex CLI) can still use a bearer token
-           from the get-access form. -->
+           (https://getvetoed.com/mcp) + OAuth email sign-in. No config-paste,
+           no token form. -->
       <section id="install">
         <div class="container">
           <p class="eyebrow">Install</p>
           <h2>Add the connector.</h2>
-          <p class="lede">Veto speaks MCP over Streamable HTTP. Add it as a custom connector in Claude or ChatGPT using one URL, sign in with email, and you're connected. Nothing to paste, no config file. Using another MCP client like Cursor or Codex CLI? Grab a bearer token from <a href="#get-access" style="color: var(--accent); border-bottom: 0.5px solid var(--accent);">the form below</a>.</p>
+          <p class="lede">Veto speaks MCP over Streamable HTTP. Add it as a custom connector in Claude or ChatGPT using one URL, sign in with email, and you're connected. Nothing to paste, no config file.</p>
 
           <div class="install-tier">
             <div class="client-block">
@@ -2093,40 +2009,6 @@
         </div>
       </section>
 
-      <!-- Get access (T07) — magic-link signup form. Restyled per
-           BRAND.md; preserves the Phase 05a POST /auth/magic-link/request
-           wire + honeypot semantics. -->
-      <section id="get-access">
-        <div class="container">
-          <p class="eyebrow">Get access</p>
-          <h2>Get your token.</h2>
-          <div class="signup-card">
-            <p>Only for other MCP clients that need a bearer token, like Cursor or Codex CLI. Enter your email and you get a one-click sign-in link that delivers your token. On Claude or ChatGPT you don't need this; just <a href="#install" style="color: var(--accent); border-bottom: 0.5px solid var(--accent);">add the connector</a> and sign in there.</p>
-            <form class="signup-form" id="signup-form" novalidate>
-              <div>
-                <label for="signup-email">Email</label>
-                <input
-                  type="email"
-                  id="signup-email"
-                  name="email"
-                  required
-                  autocomplete="email"
-                  placeholder="you@example.com"
-                  style="margin-top: 6px;"
-                >
-              </div>
-              <div class="signup-honeypot" aria-hidden="true">
-                <label for="signup-website">Website (leave blank)</label>
-                <input type="text" id="signup-website" name="website" autocomplete="off" tabindex="-1">
-              </div>
-              <div>
-                <button type="submit" id="signup-submit">Send sign-in link</button>
-              </div>
-              <p class="signup-message" id="signup-message" role="status" aria-live="polite"></p>
-            </form>
-          </div>
-        </div>
-      </section>
     </main>
 
     <!-- ──────────────────────────────────────────────────────────────── -->
@@ -2237,74 +2119,6 @@
             var text = target.getAttribute('data-copy') || target.textContent || '';
             copyText(text.trim(), btn);
           });
-        });
-      })();
-
-      // ─────────────────────────────────────────────────────────────────
-      // T07 — Magic-link signup form (Phase 05a wire preserved).
-      // POSTs to /auth/magic-link/request; honeypot semantics unchanged:
-      // bots that fill `website` see an identical success message.
-      // ─────────────────────────────────────────────────────────────────
-      (function () {
-        'use strict';
-        var form = document.getElementById('signup-form');
-        if (!form) return;
-        var submitBtn = document.getElementById('signup-submit');
-        var msgEl = document.getElementById('signup-message');
-
-        function showMessage(text, kind) {
-          msgEl.textContent = text;
-          msgEl.className = 'signup-message show ' + kind;
-        }
-        function clearMessage() {
-          msgEl.textContent = '';
-          msgEl.className = 'signup-message';
-        }
-
-        form.addEventListener('submit', function (ev) {
-          ev.preventDefault();
-          clearMessage();
-          submitBtn.disabled = true;
-
-          var email = (document.getElementById('signup-email').value || '').trim();
-          var website = (document.getElementById('signup-website').value || '').trim();
-
-          fetch('/auth/magic-link/request', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email: email, website: website })
-          })
-            .then(function (res) {
-              return res.json().then(function (body) {
-                return { status: res.status, retryAfter: res.headers.get('Retry-After'), body: body };
-              });
-            })
-            .then(function (result) {
-              if (result.status === 200 && result.body && result.body.ok) {
-                form.reset();
-                showMessage(
-                  result.body.message || 'Check your inbox for a sign-in link.',
-                  'success'
-                );
-              } else if (result.status === 429) {
-                var sec = result.body && result.body.retry_after_sec ? result.body.retry_after_sec : (result.retryAfter ? parseInt(result.retryAfter, 10) : 0);
-                var mins = sec > 0 ? Math.ceil(sec / 60) : 0;
-                showMessage(
-                  'Too many requests. Try again in about ' + (mins > 0 ? mins + ' minute' + (mins === 1 ? '' : 's') : 'a bit') + '.',
-                  'error'
-                );
-              } else if (result.status === 400 && result.body && result.body.message) {
-                showMessage(result.body.message, 'error');
-              } else {
-                showMessage('Something went wrong. Please try again in a moment.', 'error');
-              }
-            })
-            .catch(function () {
-              showMessage('Network error. Please try again in a moment.', 'error');
-            })
-            .then(function () {
-              submitBtn.disabled = false;
-            });
         });
       })();
     </script>
