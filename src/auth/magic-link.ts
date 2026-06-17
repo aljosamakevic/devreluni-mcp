@@ -164,6 +164,47 @@ export function markMagicLinkUsed(
 }
 
 /**
+ * Phase 13 (audit S-M1) — atomically CLAIM a magic link before any bearer
+ * token is minted. Sets used_at IF still null and not expired, in a single
+ * UPDATE; returns true only for the one caller that wins. The verify handler
+ * mints a bearer ONLY when this returns true, so two concurrent clicks (link
+ * prefetchers, double-clicks) can no longer each mint a valid token.
+ * consumed_token_id is recorded afterwards via recordConsumedToken().
+ */
+export function claimMagicLink(plaintext: string): boolean {
+  if (typeof plaintext !== 'string' || plaintext.length === 0) {
+    return false;
+  }
+  const hash = hashToken(plaintext);
+  const now = new Date().toISOString();
+  const db = getDb();
+  const info = db
+    .prepare(
+      `UPDATE magic_link_tokens
+          SET used_at = ?
+        WHERE token_hash = ?
+          AND used_at IS NULL
+          AND expires_at > ?`
+    )
+    .run(now, hash, now);
+  return info.changes === 1;
+}
+
+/**
+ * Phase 13 — bind the freshly-minted bearer token id to an already-claimed
+ * magic link, for audit. Separate from claimMagicLink so the claim can happen
+ * before the bearer exists.
+ */
+export function recordConsumedToken(plaintext: string, bearerTokenId: number): void {
+  if (typeof plaintext !== 'string' || plaintext.length === 0) return;
+  const hash = hashToken(plaintext);
+  const db = getDb();
+  db.prepare(
+    `UPDATE magic_link_tokens SET consumed_token_id = ? WHERE token_hash = ?`
+  ).run(bearerTokenId, hash);
+}
+
+/**
  * Best-effort housekeeping. DELETE rows whose expires_at is more than 1 day
  * in the past AND (used_at is null OR used_at is more than 1 day in the
  * past). Returns the number of rows removed.

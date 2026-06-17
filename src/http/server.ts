@@ -29,7 +29,8 @@ import {
 import { createSignupRequest, hashIp } from '../auth/signup-requests.js';
 import {
   issueMagicLink,
-  markMagicLinkUsed,
+  claimMagicLink,
+  recordConsumedToken,
   peekMagicLink,
 } from '../auth/magic-link.js';
 import { issueToken } from '../auth/tokens.js';
@@ -423,6 +424,9 @@ export function createHttpServer(getServer: () => McpServer): HttpServerHandle {
         return;
       }
 
+      // S-M2 — this endpoint is triggerable by anyone holding the link (mail-
+      // security prefetchers, shared screenshots), so it must not log the
+      // email (PII) on its unauthenticated paths.
       const peek = peekMagicLink(rawToken);
       if (!peek) {
         logger.warn({ event: 'magic_link_verify_not_found' }, 'magic_link_verify_not_found');
@@ -430,48 +434,34 @@ export function createHttpServer(getServer: () => McpServer): HttpServerHandle {
         return;
       }
       if (peek.status === 'expired') {
-        logger.warn(
-          { event: 'magic_link_verify_expired', email: peek.email },
-          'magic_link_verify_expired'
-        );
+        logger.warn({ event: 'magic_link_verify_expired' }, 'magic_link_verify_expired');
         res.status(200).send(renderMagicLinkErrorPage('expired'));
         return;
       }
       if (peek.status === 'used') {
-        logger.warn(
-          { event: 'magic_link_verify_replay', email: peek.email },
-          'magic_link_verify_replay'
-        );
+        logger.warn({ event: 'magic_link_verify_replay' }, 'magic_link_verify_replay');
         res.status(200).send(renderMagicLinkErrorPage('already_used'));
         return;
       }
 
-      // peek.status === 'ok' → mint bearer + mark used.
-      const bearer = issueToken(peek.email);
-      const marked = markMagicLinkUsed(rawToken, bearer.id);
-      if (!marked) {
-        // Race loss — another click finished between peek and mark. The
-        // bearer we just minted is still valid for this user; we accept
-        // the duplicate per the multi-device contract. Log so operators
-        // can quantify the frequency.
-        logger.warn(
-          {
-            event: 'magic_link_verify_race_loss',
-            email: peek.email,
-            bearer_prefix: bearer.prefix,
-          },
-          'magic_link_verify_race_loss'
-        );
-      } else {
-        logger.info(
-          {
-            event: 'magic_link_verify_success',
-            email: peek.email,
-            bearer_prefix: bearer.prefix,
-          },
-          'magic_link_verify_success'
-        );
+      // S-M1 — CLAIM the link atomically BEFORE minting. Only the caller that
+      // flips used_at IS NULL → now wins; everyone else gets already_used and
+      // mints nothing. This closes the "two valid tokens from one link" race
+      // (link prefetchers, double-clicks).
+      const claimed = claimMagicLink(rawToken);
+      if (!claimed) {
+        logger.warn({ event: 'magic_link_verify_race_loss' }, 'magic_link_verify_race_loss');
+        res.status(200).send(renderMagicLinkErrorPage('already_used'));
+        return;
       }
+
+      // Won the claim → mint exactly one bearer and bind it for audit.
+      const bearer = issueToken(peek.email);
+      recordConsumedToken(rawToken, bearer.id);
+      logger.info(
+        { event: 'magic_link_verify_success', bearer_prefix: bearer.prefix },
+        'magic_link_verify_success'
+      );
 
       res.status(200).send(renderMagicLinkSuccessPage(bearer.token));
     } catch (err) {

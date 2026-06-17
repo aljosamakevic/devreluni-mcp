@@ -19,6 +19,8 @@ import {
   cleanupExpiredMagicLinks,
   issueMagicLink,
   markMagicLinkUsed,
+  claimMagicLink,
+  recordConsumedToken,
   peekMagicLink,
 } from './magic-link.js';
 import { issueToken } from './tokens.js';
@@ -236,5 +238,36 @@ describe('cleanupExpiredMagicLinks', () => {
 
     // Row should still be retrievable.
     expect(peekMagicLink(plaintext)).not.toBeNull();
+  });
+});
+
+// Phase 13 (audit S-M1) — claim-first one-time-use. Two concurrent verifies
+// of one link must yield exactly one successful claim (→ one bearer token).
+describe('claimMagicLink (mint-after-claim)', () => {
+  it('only the first claim succeeds; the second loses', () => {
+    const { plaintext } = issueMagicLink('nina@example.com');
+    expect(claimMagicLink(plaintext)).toBe(true);
+    expect(claimMagicLink(plaintext)).toBe(false);
+  });
+
+  it('does not claim an expired link', () => {
+    vi.useFakeTimers();
+    const { plaintext } = issueMagicLink('oscar@example.com');
+    vi.advanceTimersByTime(MAGIC_LINK_TTL_MS + 1000);
+    expect(claimMagicLink(plaintext)).toBe(false);
+    vi.useRealTimers();
+  });
+
+  it('rejects empty/bogus input', () => {
+    expect(claimMagicLink('')).toBe(false);
+    expect(claimMagicLink('bogus')).toBe(false);
+  });
+
+  it('recordConsumedToken binds the bearer after a claim (peek shows used)', () => {
+    const { plaintext } = issueMagicLink('peter@example.com');
+    expect(claimMagicLink(plaintext)).toBe(true);
+    const bearer = issueToken('peter@example.com');
+    recordConsumedToken(plaintext, bearer.id);
+    expect(peekMagicLink(plaintext)?.status).toBe('used');
   });
 });

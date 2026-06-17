@@ -22,6 +22,7 @@
 
 import type { Request, Response, NextFunction } from 'express';
 import { getDb } from '../db/connection.js';
+import { logger } from '../lib/logger.js';
 import '../auth/types.js'; // declaration merge for req.tokenId.
 
 interface JsonRpcLike {
@@ -133,7 +134,12 @@ export function usageLogHook(req: Request, res: Response, next: NextFunction): v
         )
         .run(tokenId, toolName, durationMs, status, new Date().toISOString());
     } catch (err) {
-      console.error('[usage-logger] failed to insert usage_log row:', err);
+      // S-L1 — route through pino (stderr + redaction) instead of console.error,
+      // so this matches every other handler's logging guarantees.
+      logger.error(
+        { event: 'usage_log_insert_failed', err: err instanceof Error ? err.message : String(err) },
+        'usage_log_insert_failed'
+      );
     }
   });
 
