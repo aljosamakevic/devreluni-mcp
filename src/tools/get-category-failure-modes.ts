@@ -5,6 +5,7 @@ import { okResult, honestGapResult } from '../lib/envelope.js';
 import { serperSearch, serperSource, serperConfidenceNote, isSerperLive } from '../lib/serper.js';
 import { searchReddit, redditSource, redditConfidenceNote, isRedditLive } from '../lib/reddit.js';
 import { searchHN, hnSource } from '../lib/hn.js';
+import { competitorAppears, isRelevant, buildRelevanceTerms } from '../lib/relevance.js';
 
 interface FailureMode {
   pattern: string;
@@ -82,6 +83,17 @@ export function registerGetCategoryFailureModes(server: McpServer): void {
     async ({ category, known_products }) => {
       const fallbacksUsed: string[] = [];
       const allEvidence: Array<{ text: string; url?: string; source: string }> = [];
+      let droppedOffTopic = 0;
+
+      // Phase 11 — only attribute a failure pattern to evidence that is
+      // actually about this category or a known product. Without this, any
+      // post-mortem snippet mentioning "Google" tripped "Free alternative from
+      // big tech" regardless of relevance.
+      const categoryTerms = buildRelevanceTerms(category, []);
+      const products = known_products ?? [];
+      const evidenceRelevant = (text: string): boolean =>
+        isRelevant(text, categoryTerms, category) ||
+        products.some((p) => competitorAppears(text, p));
 
       const productContext = known_products?.length ? `${known_products.slice(0, 3).join(' OR ')} ` : '';
       const serperQuery = `${productContext}${category} startup failed OR shutdown OR "post-mortem" OR "cancelled"`;
@@ -117,9 +129,13 @@ export function registerGetCategoryFailureModes(server: McpServer): void {
         });
       }
 
-      // Build failure modes
+      // Build failure modes — only from category/known-product-relevant evidence.
       const modeMap: Record<string, FailureMode> = {};
       for (const ev of allEvidence) {
+        if (!evidenceRelevant(ev.text)) {
+          droppedOffTopic++;
+          continue;
+        }
         const matched = matchPatterns(ev.text);
         for (const pattern of matched) {
           if (!modeMap[pattern]) {
@@ -140,10 +156,11 @@ export function registerGetCategoryFailureModes(server: McpServer): void {
         }
       }
 
-      // Mark structural (3+ independent sources)
+      // Phase 11 — structural requires 3+ DISTINCT sources (products_affected
+      // is a deduped host list), not 3 snippets that can all come from one
+      // query's result set.
       for (const mode of Object.values(modeMap)) {
-        mode.is_structural = mode.evidence.length >= 3;
-        // Cap evidence array
+        mode.is_structural = mode.products_affected.length >= 3;
         mode.evidence = mode.evidence.slice(0, 5);
         mode.products_affected = mode.products_affected.slice(0, 5);
       }
@@ -157,11 +174,11 @@ export function registerGetCategoryFailureModes(server: McpServer): void {
       if (failure_modes.length === 0) {
         verdict = `No historical failure modes found for "${category}". This may indicate insufficient data or a genuinely novel category. Treat as an evidence gap, not validation.`;
       } else if (structural_count >= 3) {
-        verdict = `High-risk category — ${structural_count} structural failure modes with 3+ evidence sources each: ${failure_modes.filter((m) => m.is_structural).map((m) => m.pattern).join('; ')}. Any new entrant must have explicit mitigation for each.`;
+        verdict = `High-risk category — ${structural_count} structural failure modes, each seen across 3+ distinct sources: ${failure_modes.filter((m) => m.is_structural).map((m) => m.pattern).join('; ')}. Any new entrant must have explicit mitigation for each.`;
       } else if (structural_count >= 1) {
-        verdict = `Medium-risk category — ${structural_count} structural failure mode(s): ${failure_modes.filter((m) => m.is_structural).map((m) => m.pattern).join('; ')}. Address these in your positioning.`;
+        verdict = `Medium-risk category — ${structural_count} structural failure mode(s) (3+ distinct sources): ${failure_modes.filter((m) => m.is_structural).map((m) => m.pattern).join('; ')}. Address these in your positioning.`;
       } else {
-        verdict = `Low structural risk — ${failure_modes.length} failure patterns found but none confirmed by 3+ sources. Most are surface-level risks that can be mitigated with good execution.`;
+        verdict = `Low structural risk — ${failure_modes.length} failure pattern(s) found but none recur across 3+ distinct sources. Most are surface-level risks that can be mitigated with good execution.`;
       }
 
       // Phase 09: if the structural search returned no failure modes, this is
@@ -178,7 +195,12 @@ export function registerGetCategoryFailureModes(server: McpServer): void {
         serperConfidenceNote(),
         redditConfidenceNote(),
         'HN data is live.',
-      ].join(' ');
+        droppedOffTopic > 0
+          ? `Excluded ${droppedOffTopic} snippet(s) not relevant to "${category}" or a known product (off-topic keyword-match guard).`
+          : '',
+      ]
+        .filter(Boolean)
+        .join(' ');
       const result: ToolResult<GetCategoryFailureModesData> =
         failure_modes.length === 0
           ? honestGapResult(envelopeData, envelopeSources, envelopeNote, fallbacksUsed)
