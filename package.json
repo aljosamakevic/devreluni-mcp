@@ -10,6 +10,7 @@
     "test:coverage": "vitest run --coverage",
     "build": "tsc && chmod 755 build/index.js && mkdir -p build/db && cp src/db/schema.sql build/db/schema.sql && tsx scripts/generate-tools-section.ts",
     "smoke:http": "tsx scripts/smoke-http.ts",
+    "og": "node scripts/generate-og.mjs",
     "admin": "tsx scripts/admin.ts",
     "fomi:https": "tsx scripts/run-fomi-via-https.ts"
   },
@@ -36,6 +37,7 @@
     "zod-to-json-schema": "^3.25.2"
   },
   "devDependencies": {
+    "@resvg/resvg-js": "^2.6.2",
     "@types/better-sqlite3": "^7.6.13",
     "@types/express": "^5.0.6",
     "@types/node": "^25.7.0",
